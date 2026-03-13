@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -804,18 +804,18 @@ function showScreen(id, tab) {
 mapboxgl.accessToken = 'pk.eyJ1IjoibXV6em1pY2s3NyIsImEiOiJjbW1vZnRjNGIwZDFpMndteXU0b3ZuY2toIn0.Tr-mGo-xQSWC8S8gRisiXA';
 
 const hotspots = [
-  {lng:147.9830,lat:-37.8855,name:"Entrance Channel",score:92,temp:"19.8°C",species:"Snapper · Bream · Whiting",depth:"4–8m",color:"#f97316"},
-  {lng:147.9630,lat:-37.8830,name:"Reeve Channel",score:78,temp:"18.9°C",species:"Flathead · Bream",depth:"3–6m",color:"#f97316"},
-  {lng:147.8900,lat:-37.8950,name:"Lake King Shallows",score:71,temp:"20.1°C",species:"Bream · Mullet",depth:"1–3m",color:"#f97316"},
-  {lng:148.0050,lat:-37.8980,name:"Outer Bar",score:65,temp:"18.2°C",species:"Salmon · Tailor",depth:"6–15m",color:"#f97316"},
-  {lng:148.0400,lat:-37.8900,name:"Sperm Whale Head",score:58,temp:"17.8°C",species:"Snapper",depth:"10–25m",color:"#f97316"},
+  {lng:147.9830,lat:-37.8790,name:"Entrance Channel",score:92,temp:"19.8°C",species:"Snapper · Bream · Whiting",depth:"4–8m",color:"#f97316"},
+  {lng:147.9600,lat:-37.8760,name:"Reeve Channel",score:78,temp:"18.9°C",species:"Flathead · Bream",depth:"3–6m",color:"#f97316"},
+  {lng:147.8900,lat:-37.8850,name:"Lake King Shallows",score:71,temp:"20.1°C",species:"Bream · Mullet",depth:"1–3m",color:"#f97316"},
+  {lng:148.0100,lat:-37.9100,name:"Outer Bar",score:65,temp:"18.2°C",species:"Salmon · Tailor",depth:"6–15m",color:"#f97316"},
+  {lng:148.0500,lat:-37.9050,name:"Sperm Whale Head",score:58,temp:"17.8°C",species:"Snapper",depth:"10–25m",color:"#f97316"},
 ];
 
 const vessels = [
-  {lng:147.9840,lat:-37.8860,name:"MV Seabreeze III",type:"commercial"},
-  {lng:147.9650,lat:-37.8840,name:"Lakes Sport Fishing",type:"charter"},
-  {lng:147.9750,lat:-37.8845,name:"Rec 7R-221",type:"recreational"},
-  {lng:147.9550,lat:-37.8870,name:"MV Gippsland Star",type:"commercial"},
+  {lng:147.9830,lat:-37.8780,name:"MV Seabreeze III",type:"commercial"},
+  {lng:147.9650,lat:-37.8760,name:"Lakes Sport Fishing",type:"charter"},
+  {lng:147.9720,lat:-37.8770,name:"Rec 7R-221",type:"recreational"},
+  {lng:147.9500,lat:-37.8800,name:"MV Gippsland Star",type:"commercial"},
 ];
 
 let map;
@@ -1129,12 +1129,12 @@ function animVMS(){
     vmsMap.on('load', () => {
       // Real vessel positions in water
       const vmsCoords = [
-        {lng:147.9860,lat:-37.8895},
-        {lng:147.9700,lat:-37.8950},
-        {lng:147.9750,lat:-37.8880},
-        {lng:147.9820,lat:-37.8910},
-        {lng:148.0000,lat:-37.9100},
-        {lng:148.0300,lat:-37.8900},
+        {lng:147.9830,lat:-37.8780},
+        {lng:147.9500,lat:-37.8800},
+        {lng:147.9650,lat:-37.8760},
+        {lng:147.9720,lat:-37.8770},
+        {lng:148.0100,lat:-37.9100},
+        {lng:148.0500,lat:-37.9050},
       ];
       vmsVessels.forEach((v, i) => {
         const color = v.type==='commercial'?'#f97316':v.type==='charter'?'#a855f7':'#00ffe0';
@@ -1441,6 +1441,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
 
 
 
