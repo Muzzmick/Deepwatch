@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepWatch — Full Platform</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --deep: #020d18;
+  --mid: #041f35;
+  --surface: #063352;
+  --biolum: #00ffe0;
+  --biolum-dim: rgba(0,255,224,0.12);
+  --warm: #f97316;
+  --warm-dim: rgba(249,115,22,0.15);
+  --purple: #a855f7;
+  --green: #22c55e;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --text: #e0f4f1;
+  --muted: rgba(224,244,241,0.45);
+  --panel: rgba(4,31,53,0.92);
+  --border: rgba(0,255,224,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'JetBrains Mono',monospace;background:var(--deep);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* ── NAV ── */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:rgba(2,13,24,0.97);border-bottom:1px solid var(--border);flex-shrink:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.logo-mark{width:30px;height:30px;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:var(--biolum);letter-spacing:-0.5px;}
+.logo-sub{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.nav-tabs{display:flex;gap:2px;}
+.nav-tab{padding:6px 14px;border:1px solid transparent;border-radius:5px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;color:var(--muted);transition:all .2s;background:none;font-family:'JetBrains Mono',monospace;}
+.nav-tab:hover{color:var(--biolum);border-color:var(--border);}
+.nav-tab.active{color:var(--biolum);background:var(--biolum-dim);border-color:rgba(0,255,224,0.25);}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.user-pill{display:flex;align-items:center;gap:8px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;}
+.user-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.user-name{font-size:10px;color:var(--text);}
+.user-badge{font-size:7px;letter-spacing:1px;padding:2px 5px;border-radius:3px;text-transform:uppercase;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+
+/* ── SCREENS ── */
+.screen{display:none;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* ── MAP SCREEN ── */
+#mapScreen{flex-direction:row;}
+.sidebar{width:270px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(12px);}
+.sidebar-scroll{flex:1;overflow-y:auto;}
+.sidebar-scroll::-webkit-scrollbar{width:2px;}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border);}
+.map-center{flex:1;position:relative;overflow:hidden;}
+.sidebar-right{width:290px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;backdrop-filter:blur(12px);}
+.sidebar-right::-webkit-scrollbar{width:2px;}
+.sidebar-right::-webkit-scrollbar-thumb{background:var(--border);}
+
+.sec{padding:12px 14px;border-bottom:1px solid var(--border);}
+.sec-label{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+
+/* Score card */
+.score-card{background:linear-gradient(135deg,rgba(0,255,224,.08),rgba(0,255,224,.02));border:1px solid rgba(0,255,224,.2);border-radius:8px;padding:12px;position:relative;overflow:hidden;}
+.score-card::after{content:'AI POWERED';position:absolute;top:8px;right:10px;font-size:7px;letter-spacing:2px;color:var(--biolum);opacity:.35;}
+.score-num{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;color:var(--biolum);line-height:1;text-shadow:0 0 30px rgba(0,255,224,.4);}
+.score-desc{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:.5px;}
+.score-text{font-size:10px;color:var(--text);margin-top:8px;line-height:1.5;opacity:.8;}
+
+/* Cond grid */
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.cond{background:rgba(6,51,82,.5);border:1px solid var(--border);border-radius:6px;padding:8px 10px;}
+.cond-val{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+.cond-name{font-size:8px;color:var(--muted);letter-spacing:.5px;margin-top:2px;}
+
+/* Hotspot list */
+.hs-list{display:flex;flex-direction:column;gap:4px;}
+.hs{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all .2s;}
+.hs:hover,.hs.active{background:var(--biolum-dim);border-color:rgba(0,255,224,.2);}
+.hs-rank{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--biolum);width:16px;}
+.hs-info{flex:1;}
+.hs-name{font-size:11px;}
+.hs-spp{font-size:8px;color:var(--muted);margin-top:1px;}
+.hs-bar{width:40px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:4px;}
+.hs-fill{height:100%;background:linear-gradient(90deg,var(--biolum),#00c4ff);border-radius:2px;}
+.hs-temp{font-size:10px;color:var(--warm);}
+
+/* Layer toggles */
+.layer-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;}
+.layer-left{display:flex;align-items:center;gap:7px;}
+.layer-dot{width:8px;height:8px;border-radius:50%;}
+.layer-name{font-size:10px;}
+.tog{width:28px;height:15px;border-radius:8px;background:rgba(255,255,255,.1);position:relative;cursor:pointer;transition:background .2s;border:none;flex-shrink:0;}
+.tog.on{background:var(--biolum);}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:#fff;transition:transform .2s;}
+.tog.on::after{transform:translateX(13px);}
+
+/* Map canvas */
+#mapCanvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,255,224,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,224,.04) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
+.map-ctrl{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:4px;}
+.map-btn{width:32px;height:32px;background:rgba(2,13,24,.9);border:1px solid var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--muted);transition:all .2s;font-family:'Syne',sans-serif;font-weight:700;}
+.map-btn:hover{color:var(--biolum);border-color:rgba(0,255,224,.3);}
+.sat-bar{position:absolute;top:14px;left:14px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none;}
+.sat-chip{display:flex;align-items:center;gap:5px;padding:4px 9px;background:rgba(2,13,24,.88);border:1px solid var(--border);border-radius:4px;font-size:8px;letter-spacing:.5px;color:var(--muted);backdrop-filter:blur(8px);}
+.sat-chip b{color:var(--biolum);}
+.map-tooltip{position:absolute;padding:10px 14px;background:rgba(2,13,24,.97);border:1px solid rgba(0,255,224,.3);border-radius:7px;font-size:10px;pointer-events:none;display:none;backdrop-filter:blur(12px);min-width:170px;}
+.tt-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--biolum);margin-bottom:6px;}
+.tt-row{display:flex;justify-content:space-between;gap:14px;margin-bottom:2px;}
+.tt-k{color:var(--muted);}
+.compass{position:absolute;bottom:18px;right:18px;width:44px;height:44px;border:1px solid var(--border);border-radius:50%;background:rgba(2,13,24,.85);display:flex;align-items:center;justify-content:center;}
+
+/* Right sidebar */
+.pred-card{background:var(--warm-dim);border:1px solid rgba(249,115,22,.25);border-radius:8px;padding:12px;margin-bottom:8px;}
+.pred-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--warm);}
+.pred-row{display:flex;align-items:center;gap:7px;margin-top:5px;}
+.pred-name{font-size:10px;flex:1;}
+.pred-pbar{width:60px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.pred-pfill{height:100%;background:linear-gradient(90deg,var(--warm),#fbbf24);border-radius:2px;}
+.pred-pct{font-size:9px;color:var(--warm);width:28px;text-align:right;}
+
+.sat-pass-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;background:rgba(6,51,82,.4);border:1px solid var(--border);margin-bottom:4px;}
+.spi-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.spi-name{font-size:10px;}
+.spi-time{font-size:8px;color:var(--muted);margin-top:1px;}
+.spi-status{font-size:8px;letter-spacing:1px;margin-left:auto;}
+
+.catch-item{padding:8px 10px;border-radius:5px;border-left:2px solid transparent;cursor:pointer;transition:background .2s;margin-bottom:3px;}
+.catch-item:hover{background:rgba(6,51,82,.5);}
+.catch-top{display:flex;justify-content:space-between;}
+.catch-vessel{font-size:10px;}
+.catch-time{font-size:8px;color:var(--muted);}
+.catch-detail{font-size:9px;color:var(--muted);margin-top:2px;}
+
+.tide-svg{width:100%;height:56px;}
+
+.reg-item{display:flex;align-items:center;gap:7px;font-size:10px;padding:5px 8px;border-radius:4px;margin-bottom:3px;}
+.reg-item.ok{background:rgba(34,197,94,.08);color:#86efac;}
+.reg-item.warn{background:rgba(249,115,22,.08);color:#fdba74;}
+.reg-item.closed{background:rgba(239,68,68,.08);color:#fca5a5;}
+
+.alert-item{display:flex;gap:7px;padding:8px 10px;border-radius:5px;font-size:10px;line-height:1.4;margin-bottom:4px;}
+.alert-item.warn{background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);color:#fdba74;}
+.alert-item.info{background:rgba(0,255,224,.05);border:1px solid rgba(0,255,224,.12);color:var(--muted);}
+.alert-item.danger{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#fca5a5;}
+
+/* ── AI SCREEN ── */
+#aiScreen{flex-direction:column;overflow-y:auto;padding:28px 32px;gap:20px;}
+#aiScreen::-webkit-scrollbar{width:3px;}
+#aiScreen::-webkit-scrollbar-thumb{background:var(--border);}
+.ai-header{margin-bottom:4px;}
+.ai-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--biolum);}
+.ai-sub{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.ai-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;backdrop-filter:blur(8px);}
+.ai-card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.ai-card-title span{font-size:14px;}
+.model-stat{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.model-stat:last-child{border-bottom:none;}
+.ms-key{font-size:10px;color:var(--muted);}
+.ms-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--biolum);}
+.feature-list{display:flex;flex-direction:column;gap:5px;}
+.feat{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:5px;background:rgba(6,51,82,.4);font-size:10px;}
+.feat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sat-source{display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;background:rgba(6,51,82,.4);border:1px solid var(--border);margin-bottom:5px;}
+.sat-source-icon{font-size:18px;}
+.sat-source-name{font-size:11px;}
+.sat-source-detail{font-size:8px;color:var(--muted);margin-top:1px;}
+.sat-source-status{margin-left:auto;font-size:8px;letter-spacing:1px;padding:2px 6px;border-radius:3px;}
+.ss-live{background:rgba(34,197,94,.15);color:var(--green);}
+.ss-sched{background:rgba(59,130,246,.1);color:#93c5fd;}
+
+/* ── CATCH LOG SCREEN ── */
+#catchScreen{flex-direction:column;overflow:hidden;}
+.catch-screen-top{padding:20px 24px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.catch-screen-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.catch-filters{display:flex;gap:8px;margin-top:12px;}
+.filter-btn{padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:none;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;}
+.filter-btn.active,.filter-btn:hover{color:var(--biolum);border-color:rgba(0,255,224,.3);background:var(--biolum-dim);}
+.catch-body{flex:1;overflow:hidden;display:flex;gap:0;}
+.catch-table-wrap{flex:1;overflow-y:auto;padding:16px 24px;}
+.catch-table-wrap::-webkit-scrollbar{width:3px;}
+.catch-table-wrap::-webkit-scrollbar-thumb{background:var(--border);}
+.ctable{width:100%;border-collapse:collapse;}
+.ctable th{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--deep);}
+.ctable td{padding:10px 12px;font-size:10px;border-bottom:1px solid rgba(0,255,224,.05);}
+.ctable tr:hover td{background:rgba(6,51,82,.3);}
+.type-badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:8px;letter-spacing:1px;text-transform:uppercase;}
+.tb-com{background:var(--warm-dim);color:var(--warm);}
+.tb-rec{background:var(--biolum-dim);color:var(--biolum);}
+.tb-cha{background:rgba(168,85,247,.12);color:var(--purple);}
+.catch-stats-panel{width:240px;flex-shrink:0;border-left:1px solid var(--border);padding:18px;overflow-y:auto;}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:12px;margin-bottom:10px;}
+.stat-big{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--biolum);}
+.stat-label{font-size:8px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.log-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:6px;background:var(--biolum-dim);border:1px solid rgba(0,255,224,.25);color:var(--biolum);font-size:10px;letter-spacing:1px;cursor:pointer;margin-bottom:12px;transition:all .2s;}
+.log-btn:hover{background:rgba(0,255,224,.2);}
+
+/* ── VMS SCREEN ── */
+#vmsScreen{flex-direction:column;overflow:hidden;}
+.vms-top{padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;}
+.vms-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;}
+.vms-body{flex:1;display:flex;overflow:hidden;}
+.vms-list{width:320px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:12px;}
+.vms-list::-webkit-scrollbar{width:2px;}
+.vms-list::-webkit-scrollbar-thumb{background:var(--border);}
+.vessel-card{border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .2s;}
+.vessel-card:hover,.vessel-card.active{border-color:rgba(0,255,224,.3);background:rgba(6,51,82,.4);}
+.vc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.vc-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;}
+.vc-status{width:7px;height:7px;border-radius:50%;}
+.vc-row{display:flex;gap:12px;}
+.vc-stat{font-size:9px;color:var(--muted);}
+.vc-stat b{color:var(--text);font-weight:400;}
+.vms-map{flex:1;position:relative;overflow:hidden;}
+#vmsCanvas{position:absolute;inset:0;width:100%;height:100%;}
+.vms-detail{width:260px;flex-shrink:0;border-left:1px solid var(--border);padding:16px;overflow-y:auto;}
+.vd-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:12px;color:var(--biolum);}
+.vd-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:10px;}
+.vd-key{color:var(--muted);}
+.track-point{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:10px;}
+.tp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.tp-info{flex:1;}
+.tp-loc{color:var(--text);}
+.tp-time{color:var(--muted);font-size:8px;}
+
+/* ── AUTH SCREEN ── */
+#authScreen{align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(0,255,224,.04) 0%,transparent 70%);}
+.auth-box{width:400px;border:1px solid var(--border);border-radius:12px;padding:36px;background:var(--panel);backdrop-filter:blur(20px);}
+.auth-logo{text-align:center;margin-bottom:28px;}
+.auth-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--biolum);}
+.auth-sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:4px;}
+.auth-tabs{display:flex;gap:4px;margin-bottom:24px;background:rgba(6,51,82,.4);border-radius:6px;padding:4px;}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:4px;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;color:var(--muted);border:none;background:none;font-family:'JetBrains Mono',monospace;}
+.auth-tab.active{background:var(--biolum-dim);color:var(--biolum);border:1px solid rgba(0,255,224,.25);}
+.auth-input{width:100%;background:rgba(6,51,82,.5);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:10px;outline:none;transition:border-color .2s;}
+.auth-input:focus{border-color:rgba(0,255,224,.4);}
+.auth-input::placeholder{color:var(--muted);}
+.auth-select{width:100%;background:rgba(6,51,82,.5);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:10px;outline:none;}
+.licence-tiers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px;}
+.tier{border:1px solid var(--border);border-radius:7px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;}
+.tier.selected,.tier:hover{border-color:rgba(0,255,224,.35);background:var(--biolum-dim);}
+.tier-icon{font-size:18px;margin-bottom:4px;}
+.tier-name{font-size:9px;color:var(--biolum);letter-spacing:1px;text-transform:uppercase;}
+.tier-desc{font-size:8px;color:var(--muted);margin-top:2px;}
+.auth-btn{width:100%;padding:12px;background:linear-gradient(135deg,rgba(0,255,224,.25),rgba(0,255,224,.1));border:1px solid rgba(0,255,224,.35);border-radius:6px;color:var(--biolum);font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;margin-top:6px;}
+.auth-btn:hover{background:linear-gradient(135deg,rgba(0,255,224,.35),rgba(0,255,224,.15));}
+.perms-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:12px;}
+.perm{display:flex;align-items:center;gap:6px;font-size:9px;color:var(--muted);}
+.perm-check{color:var(--green);}
+
+/* ── MOBILE SCREEN ── */
+#mobileScreen{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,rgba(0,255,224,.05),transparent 60%);}
+.phone-frame{width:340px;height:640px;border:2px solid rgba(0,255,224,.25);border-radius:36px;background:#010912;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(0,255,224,.08),inset 0 0 40px rgba(0,0,0,.5);}
+.phone-notch{width:90px;height:22px;background:#010912;border:2px solid rgba(0,255,224,.15);border-radius:0 0 14px 14px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:10;}
+.phone-screen{position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column;}
+.mob-header{padding:30px 16px 12px;display:flex;justify-content:space-between;align-items:flex-end;flex-shrink:0;}
+.mob-greeting{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;}
+.mob-sub{font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.mob-score-pill{background:var(--biolum-dim);border:1px solid rgba(0,255,224,.3);border-radius:20px;padding:5px 12px;text-align:center;}
+.mob-score-num{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--biolum);}
+.mob-score-lbl{font-size:7px;color:var(--biolum);letter-spacing:1px;}
+.mob-map-preview{flex:1;background:#021020;position:relative;overflow:hidden;margin:0 12px;border-radius:12px;border:1px solid var(--border);min-height:160px;max-height:180px;}
+.mob-map-label{position:absolute;bottom:8px;left:10px;font-size:8px;color:var(--biolum);letter-spacing:1px;}
+.mob-hotspot-badge{position:absolute;top:8px;right:8px;background:rgba(249,115,22,.85);color:#fff;font-size:8px;padding:3px 7px;border-radius:10px;}
+.mob-cards{padding:10px 12px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;flex:1;}
+.mob-card{background:rgba(4,31,53,.8);border:1px solid var(--border);border-radius:10px;padding:12px;}
+.mob-card-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;}
+.mob-cond-row{display:flex;justify-content:space-between;}
+.mob-cond-item{text-align:center;}
+.mob-cond-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;}
+.mob-cond-name{font-size:7px;color:var(--muted);}
+.mob-fish-row{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.mob-fish-name{font-size:10px;flex:1;}
+.mob-fish-pct{font-size:9px;color:var(--warm);}
+.mob-nav{display:flex;border-top:1px solid var(--border);flex-shrink:0;}
+.mob-nav-btn{flex:1;padding:10px 4px 8px;text-align:center;cursor:pointer;border:none;background:none;color:var(--muted);transition:color .2s;font-family:'JetBrains Mono',monospace;}
+.mob-nav-btn.active{color:var(--biolum);}
+.mob-nav-icon{font-size:16px;}
+.mob-nav-label{font-size:7px;letter-spacing:.5px;display:block;margin-top:2px;}
+
+/* Mini canvas in phone */
+#mobCanvas{position:absolute;inset:0;width:100%;height:100%;}
+
+/* ── ARCH SCREEN ── */
+#archScreen{flex-direction:column;overflow-y:auto;padding:28px 32px;gap:20px;}
+#archScreen::-webkit-scrollbar{width:3px;}
+#archScreen::-webkit-scrollbar-thumb{background:var(--border);}
+.arch-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--biolum);}
+.arch-sub{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+.arch-diagram{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative;}
+.arch-layer{margin-bottom:20px;}
+.arch-layer-label{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.arch-boxes{display:flex;gap:10px;flex-wrap:wrap;}
+.arch-box{padding:10px 14px;border-radius:7px;border:1px solid;font-size:10px;display:flex;flex-direction:column;gap:4px;}
+.arch-box-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;}
+.arch-box-detail{font-size:8px;opacity:.7;}
+.arch-arrow{text-align:center;color:var(--muted);font-size:12px;margin:4px 0;}
+.tech-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.tech-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;}
+.tech-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;margin-bottom:8px;color:var(--biolum);}
+.tech-item{font-size:9px;color:var(--muted);padding:3px 0;border-bottom:1px solid rgba(0,255,224,.05);}
+.tech-item:last-child{border:none;}
+
+/* Shared util */
+.row{display:flex;align-items:center;}
+.gap-8{gap:8px;}
+.flex1{flex:1;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN WALL -->
+<div id="loginWall" style="display:none;position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,rgba(0,255,224,.05),#020d18 70%);align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;">
+  <div style="width:400px;border:1px solid rgba(0,255,224,.1);border-radius:12px;padding:36px;background:rgba(4,31,53,.97);backdrop-filter:blur(20px);">
+    <div style="text-align:center;margin-bottom:24px;">
+      <svg width="36" height="36" viewBox="0 0 30 30" fill="none" style="margin:0 auto;display:block;"><circle cx="15" cy="15" r="14" stroke="rgba(0,255,224,.4)" stroke-width="1.5"/><path d="M4 15 Q10 8 15 15 Q20 22 26 15" stroke="#00ffe0" stroke-width="2" fill="none"/><circle cx="15" cy="15" r="4" fill="#00ffe0" opacity=".9"/></svg>
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#00ffe0;margin-top:10px;">DeepWatch</div>
+      <div style="font-size:9px;color:rgba(224,244,241,.45);letter-spacing:2px;margin-top:4px;">LAKES ENTRANCE FISHING INTELLIGENCE</div>
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:20px;background:rgba(6,51,82,.4);border-radius:6px;padding:4px;">
+      <button id="tabSignIn" onclick="switchAuthTab('login')" style="flex:1;padding:8px;border-radius:4px;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:#00ffe0;background:rgba(0,255,224,.12);border:1px solid rgba(0,255,224,.25);font-family:'JetBrains Mono',monospace;">Sign In</button>
+      <button id="tabRegister" onclick="switchAuthTab('register')" style="flex:1;padding:8px;border-radius:4px;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:rgba(224,244,241,.45);background:none;border:1px solid transparent;font-family:'JetBrains Mono',monospace;">Register</button>
+    </div>
+    <div id="wallLoginForm">
+      <input id="loginEmail" type="email" placeholder="Email address" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:10px;outline:none;"/>
+      <input id="loginPassword" type="password" placeholder="Password" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:10px;outline:none;"/>
+      <button onclick="doLogin()" style="width:100%;padding:12px;background:linear-gradient(135deg,rgba(0,255,224,.25),rgba(0,255,224,.1));border:1px solid rgba(0,255,224,.35);border-radius:6px;color:#00ffe0;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'JetBrains Mono',monospace;">SIGN IN →</button>
+    </div>
+    <div id="wallRegisterForm" style="display:none;">
+      <input id="regName" placeholder="Full name" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:10px;outline:none;"/>
+      <input id="regEmail" type="email" placeholder="Email address" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:10px;outline:none;"/>
+      <input id="regPassword" type="password" placeholder="Password (min 6 characters)" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:10px;outline:none;"/>
+      <button onclick="doRegister()" style="width:100%;padding:12px;background:linear-gradient(135deg,rgba(0,255,224,.25),rgba(0,255,224,.1));border:1px solid rgba(0,255,224,.35);border-radius:6px;color:#00ffe0;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'JetBrains Mono',monospace;">CREATE ACCOUNT →</button>
+    </div>
+    <div id="loginMsg" style="margin-top:12px;font-size:10px;text-align:center;min-height:16px;color:rgba(224,244,241,.45);"></div>
+  </div>
+</div>
+
+<!-- APP WRAPPER -->
+<div id="appWrapper" style="display:none;flex-direction:column;height:100vh;">
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="showScreen('mapScreen')">
+    <svg class="logo-mark" viewBox="0 0 30 30" fill="none">
+      <circle cx="15" cy="15" r="14" stroke="rgba(0,255,224,.3)" stroke-width="1"/>
+      <path d="M4 15 Q10 8 15 15 Q20 22 26 15" stroke="#00ffe0" stroke-width="1.5" fill="none"/>
+      <circle cx="15" cy="15" r="3.5" fill="#00ffe0" opacity=".85"/>
+      <circle cx="15" cy="15" r="7" stroke="rgba(0,255,224,.2)" stroke-width="1" stroke-dasharray="2 3"/>
+    </svg>
+    <div>
+      <div class="logo-text">DeepWatch</div>
+      <div class="logo-sub">Lakes Entrance · Intelligence</div>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showScreen('mapScreen',this)">🗺 Map</button>
+    <button class="nav-tab" onclick="showScreen('aiScreen',this)">🤖 AI Model</button>
+    <button class="nav-tab" onclick="showScreen('catchScreen',this)">📋 Catch Log</button>
+    <button class="nav-tab" onclick="showScreen('vmsScreen',this)">🚢 Fleet VMS</button>
+    <button class="nav-tab" onclick="showScreen('mobileScreen',this)">📱 Mobile App</button>
+    <button class="nav-tab" onclick="showScreen('archScreen',this)">⚙ Architecture</button>
+    <button class="nav-tab" onclick="showScreen('authScreen',this)">🔐 Auth</button>
+  </div>
+
+  <div class="nav-right">
+    <div class="live-dot"></div>
+    <div class="user-pill" id="userPill" onclick="showScreen('authScreen')">
+      <div class="user-avatar" style="background:var(--warm-dim);color:var(--warm)">CM</div>
+      <div>
+        <div class="user-name" id="userNameDisplay">Loading...</div>
+        <div class="user-badge" style="background:var(--warm-dim);color:var(--warm)">COMMERCIAL</div>
+      </div>
+    </div>
+    <button onclick="toggleAIChat()" style="padding:5px 12px;border:1px solid rgba(0,255,224,.25);border-radius:4px;background:rgba(0,255,224,.08);color:#00ffe0;font-size:9px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🤖 AI CHAT</button>
+    <button onclick="doLogout()" style="padding:5px 10px;border:1px solid rgba(0,255,224,.15);border-radius:4px;background:none;color:rgba(224,244,241,.45);font-size:9px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">LOGOUT</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════ MAP SCREEN ══════════════════════════════ -->
+<div id="mapScreen" class="screen active">
+  <div class="sidebar">
+    <div class="sec">
+      <div class="sec-label">AI Fishing Score · Today</div>
+      <div class="score-card">
+        <div class="score-num">84</div>
+        <div class="score-desc">EXCELLENT CONDITIONS</div>
+        <div class="score-text">SST anomaly +2.1°C favours Snapper. Low swell 06:00–14:00. Tide window optimal 08:30.</div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">Live Conditions</div>
+      <div class="cond-grid">
+        <div class="cond"><div class="cond-val" id="liveWave">--</div><div class="cond-name">SWELL</div></div>
+        <div class="cond"><div class="cond-val" id="liveWind">--</div><div class="cond-name" id="liveWindDir">WIND</div></div>
+        <div class="cond"><div class="cond-val" id="liveTemp">--</div><div class="cond-name">SEA TEMP</div></div>
+        <div class="cond"><div class="cond-val" id="livePressure">--</div><div class="cond-name">PRESSURE</div></div>
+      </div>
+    </div>
+    <div class="sidebar-scroll">
+      <div class="sec">
+        <div class="sec-label">AI Hotspot Ranking</div>
+        <div class="hs-list">
+          <div class="hs active" onclick="selHotspot(0,this)"><div class="hs-rank">#1</div><div class="hs-info"><div class="hs-name">Entrance Channel</div><div class="hs-spp">Snapper · Bream · Whiting</div><div class="hs-bar"><div class="hs-fill" style="width:92%"></div></div></div><div class="hs-temp">19.8°</div></div>
+          <div class="hs" onclick="selHotspot(1,this)"><div class="hs-rank">#2</div><div class="hs-info"><div class="hs-name">Reeve Channel</div><div class="hs-spp">Flathead · Bream</div><div class="hs-bar"><div class="hs-fill" style="width:78%"></div></div></div><div class="hs-temp">18.9°</div></div>
+          <div class="hs" onclick="selHotspot(2,this)"><div class="hs-rank">#3</div><div class="hs-info"><div class="hs-name">Lake King Shallows</div><div class="hs-spp">Bream · Mullet</div><div class="hs-bar"><div class="hs-fill" style="width:71%"></div></div></div><div class="hs-temp">20.1°</div></div>
+          <div class="hs" onclick="selHotspot(3,this)"><div class="hs-rank">#4</div><div class="hs-info"><div class="hs-name">Outer Bar</div><div class="hs-spp">Salmon · Tailor · Snapper</div><div class="hs-bar"><div class="hs-fill" style="width:65%"></div></div></div><div class="hs-temp">18.2°</div></div>
+          <div class="hs" onclick="selHotspot(4,this)"><div class="hs-rank">#5</div><div class="hs-info"><div class="hs-name">Sperm Whale Head</div><div class="hs-spp">Snapper · Flathead</div><div class="hs-bar"><div class="hs-fill" style="width:58%"></div></div></div><div class="hs-temp">17.8°</div></div>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-label">Satellite Layers</div>
+        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#00ffe0"></div><div class="layer-name">SST Heatmap</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#f97316"></div><div class="layer-name">Hotspot Zones</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#a855f7"></div><div class="layer-name">Fleet / VMS</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#22c55e"></div><div class="layer-name">Chlorophyll-a</div></div><button class="tog" onclick="this.classList.toggle('on')"></button></div>
+        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#3b82f6"></div><div class="layer-name">Bathymetry</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#ef4444"></div><div class="layer-name">No-Take Zones</div></div><button class="tog" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-center">
+    <canvas id="mapCanvas"></canvas>
+    <div class="map-grid"></div>
+    <div class="sat-bar">
+      <div class="sat-chip">SENTINEL-3 · <b>OLCI</b></div>
+      <div class="sat-chip">SST · <b>1km</b></div>
+      <div class="sat-chip">WIND · <b>ERA5</b></div>
+      <div class="sat-chip" id="satPassChip">PASS · <b>14:32</b></div>
+    </div>
+    <div class="map-ctrl">
+      <div class="map-btn" onclick="zoom(1.2)">+</div>
+      <div class="map-btn" onclick="zoom(.83)">−</div>
+      <div class="map-btn" style="font-size:10px" onclick="resetView()">⌖</div>
+    </div>
+    <div class="compass" style="bottom:18px;right:18px;width:44px;height:44px;border:1px solid var(--border);border-radius:50%;background:rgba(2,13,24,.85);display:flex;align-items:center;justify-content:center;position:absolute;">
+      <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:var(--biolum);">N</span>
+    </div>
+    <div class="map-tooltip" id="tooltip"></div>
+  </div>
+
+  <div class="sidebar-right">
+    <div class="sec">
+      <div class="sec-label">AI Species Forecast · 6hr</div>
+      <div class="pred-card">
+        <div class="pred-title">Entrance Channel — 94% conf.</div>
+        <div class="pred-row"><div class="pred-name">Red Snapper</div><div class="pred-pbar"><div class="pred-pfill" style="width:88%"></div></div><div class="pred-pct">88%</div></div>
+        <div class="pred-row"><div class="pred-name">Bream</div><div class="pred-pbar"><div class="pred-pfill" style="width:74%"></div></div><div class="pred-pct">74%</div></div>
+        <div class="pred-row"><div class="pred-name">KG Whiting</div><div class="pred-pbar"><div class="pred-pfill" style="width:61%"></div></div><div class="pred-pct">61%</div></div>
+        <div class="pred-row"><div class="pred-name">Dusky Flathead</div><div class="pred-pbar"><div class="pred-pfill" style="width:45%"></div></div><div class="pred-pct">45%</div></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">Tide · Today</div>
+      <svg class="tide-svg" viewBox="0 0 260 56" preserveAspectRatio="none">
+        <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00ffe0" stop-opacity=".28"/><stop offset="100%" stop-color="#00ffe0" stop-opacity=".02"/></linearGradient></defs>
+        <path d="M0,40 Q20,38 40,25 Q60,12 80,18 Q100,24 120,38 Q140,50 160,42 Q180,34 200,20 Q220,8 240,14 Q252,18 260,26 L260,56 L0,56Z" fill="url(#tg)"/>
+        <path d="M0,40 Q20,38 40,25 Q60,12 80,18 Q100,24 120,38 Q140,50 160,42 Q180,34 200,20 Q220,8 240,14 Q252,18 260,26" fill="none" stroke="#00ffe0" stroke-width="1.5" opacity=".7"/>
+        <line x1="85" y1="0" x2="85" y2="56" stroke="rgba(249,115,22,.5)" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="2" y="54" fill="rgba(224,244,241,.3)" font-size="7" font-family="monospace">00:00</text>
+        <text x="115" y="54" fill="rgba(224,244,241,.3)" font-size="7" font-family="monospace">12:00</text>
+        <text x="232" y="54" fill="rgba(224,244,241,.3)" font-size="7" font-family="monospace">24:00</text>
+      </svg>
+    </div>
+    <div class="sec">
+      <div class="sec-label">Satellite Passes</div>
+      <div class="sat-pass-item"><div class="spi-dot" style="background:var(--green)"></div><div><div class="spi-name">Sentinel-3A · OLCI/SLSTR</div><div class="spi-time">14:32 AEST — Full coverage</div></div><div class="spi-status" style="color:var(--green)">LIVE</div></div>
+      <div class="sat-pass-item"><div class="spi-dot" style="background:#60a5fa"></div><div><div class="spi-name">Sentinel-2B · MSI 10m</div><div class="spi-time">16:18 AEST — RGB+NIR</div></div><div class="spi-status" style="color:#60a5fa">+1h46m</div></div>
+      <div class="sat-pass-item"><div class="spi-dot" style="background:var(--muted)"></div><div><div class="spi-name">MODIS Aqua · SST Night</div><div class="spi-time">02:14 AEST — Thermal IR</div></div><div class="spi-status" style="color:var(--muted)">+11h42m</div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">Recent Catches</div>
+      <div class="catch-item" style="border-left-color:var(--warm)"><div class="catch-top"><span class="catch-vessel">MV Seabreeze III</span><span class="catch-time">13:41</span></div><div class="catch-detail">Commercial · 42kg Snapper · Entrance Ch.</div></div>
+      <div class="catch-item" style="border-left-color:var(--biolum)"><div class="catch-top"><span class="catch-vessel">Rec · 7R-221</span><span class="catch-time">12:15</span></div><div class="catch-detail">3× Bream 34–38cm · Lake King</div></div>
+      <div class="catch-item" style="border-left-color:var(--purple)"><div class="catch-top"><span class="catch-vessel">Lakes Sport Fishing</span><span class="catch-time">10:52</span></div><div class="catch-detail">Charter · Mixed bag · Reeve Channel</div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">Regulations</div>
+      <div class="reg-item ok">✓ Snapper — min 27cm, open</div>
+      <div class="reg-item ok">✓ Bream — min 25cm, bag 5</div>
+      <div class="reg-item warn">⚠ KGW — bag limit 5/person</div>
+      <div class="reg-item warn">⚠ Flathead — slot 30–55cm</div>
+      <div class="reg-item closed">✕ MNP — No take zone active</div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">Alerts</div>
+      <div class="alert-item warn">⚡ Wind increase 15:00–18:00. Bar may deteriorate.</div>
+      <div class="alert-item info">🛰 New SST processed. Thermal front 3.2nm SE.</div>
+      <div class="alert-item danger">⛔ Marine mammal — exclusion near outer bar.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ AI SCREEN ══════════════════════════════ -->
+<div id="aiScreen" class="screen">
+  <div class="ai-header">
+    <div class="ai-title">AI Intelligence Engine</div>
+    <div class="ai-sub">Satellite-driven predictive fishing model · Lakes Entrance region</div>
+  </div>
+  <div class="ai-grid">
+    <div class="ai-card">
+      <div class="ai-card-title"><span>🧠</span> Prediction Model</div>
+      <div class="model-stat"><span class="ms-key">Architecture</span><span class="ms-val">Gradient Boost + LSTM</span></div>
+      <div class="model-stat"><span class="ms-key">Training data</span><span class="ms-val">18 years · 2.4M records</span></div>
+      <div class="model-stat"><span class="ms-key">Input features</span><span class="ms-val">47 variables</span></div>
+      <div class="model-stat"><span class="ms-key">Accuracy (7d)</span><span class="ms-val" style="color:var(--green)">81.3% F1</span></div>
+      <div class="model-stat"><span class="ms-key">Retrained</span><span class="ms-val">Weekly · auto</span></div>
+      <div class="model-stat"><span class="ms-key">Inference latency</span><span class="ms-val">&lt; 200ms</span></div>
+    </div>
+    <div class="ai-card">
+      <div class="ai-card-title"><span>🛰</span> Satellite Data Sources</div>
+      <div class="sat-source"><div class="sat-source-icon">🌍</div><div><div class="sat-source-name">Copernicus / Sentinel Hub</div><div class="sat-source-detail">SST · Chlorophyll · True colour · 300m–10m</div></div><span class="sat-source-status ss-live">LIVE</span></div>
+      <div class="sat-source"><div class="sat-source-icon">🌊</div><div><div class="sat-source-name">IMOS Ocean Portal</div><div class="sat-source-detail">Australian in-situ · Argo floats · mooring data</div></div><span class="sat-source-status ss-live">LIVE</span></div>
+      <div class="sat-source"><div class="sat-source-icon">🌬</div><div><div class="sat-source-name">ERA5 / BOM AIFS</div><div class="sat-source-detail">Wind · Swell · Pressure · 0.25° global</div></div><span class="sat-source-status ss-live">LIVE</span></div>
+      <div class="sat-source"><div class="sat-source-icon">🔴</div><div><div class="sat-source-name">Landsat-9 / MODIS</div><div class="sat-source-detail">Thermal IR · Turbidity · Sediment plumes</div></div><span class="sat-source-status ss-sched">SCHEDULED</span></div>
+      <div class="sat-source"><div class="sat-source-icon">🌐</div><div><div class="sat-source-name">GEBCO Bathymetry</div><div class="sat-source-detail">15-arc-sec global seafloor depth</div></div><span class="sat-source-status ss-sched">STATIC</span></div>
+    </div>
+    <div class="ai-card">
+      <div class="ai-card-title"><span>⚙</span> Model Feature Importance</div>
+      <div class="feature-list">
+        <div class="feat"><div class="feat-dot" style="background:var(--biolum)"></div><span style="flex:1">Sea Surface Temperature</span><span style="color:var(--biolum)">23.4%</span></div>
+        <div class="feat"><div class="feat-dot" style="background:#60a5fa"></div><span style="flex:1">Tidal phase & height</span><span style="color:#60a5fa">18.7%</span></div>
+        <div class="feat"><div class="feat-dot" style="background:var(--warm)"></div><span style="flex:1">Moon phase / luminance</span><span style="color:var(--warm)">14.2%</span></div>
+        <div class="feat"><div class="feat-dot" style="background:var(--green)"></div><span style="flex:1">Chlorophyll-a concentration</span><span style="color:var(--green)">11.8%</span></div>
+        <div class="feat"><div class="feat-dot" style="background:#f59e0b"></div><span style="flex:1">Wind speed & direction</span><span style="color:#f59e0b">9.6%</span></div>
+        <div class="feat"><div class="feat-dot" style="background:var(--purple)"></div><span style="flex:1">Historical catch density</span><span style="color:var(--purple)">8.1%</span></div>
+        <div class="feat"><div class="feat-dot" style="background:#ec4899"></div><span style="flex:1">SST gradient / fronts</span><span style="color:#ec4899">7.3%</span></div>
+        <div class="feat"><div class="feat-dot" style="background:var(--muted)"></div><span style="flex:1">Water turbidity</span><span style="color:var(--muted)">6.9%</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-title">🖥 Backend</div>
+      <div class="tech-item">FastAPI (Python)</div>
+      <div class="tech-item">PostgreSQL + PostGIS</div>
+      <div class="tech-item">Redis (caching)</div>
+      <div class="tech-item">Celery (task queue)</div>
+      <div class="tech-item">Docker / Kubernetes</div>
+      <div class="tech-item">AWS ECS · S3 · RDS</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-title">🤖 ML Stack</div>
+      <div class="tech-item">XGBoost · LightGBM</div>
+      <div class="tech-item">PyTorch (LSTM)</div>
+      <div class="tech-item">scikit-learn</div>
+      <div class="tech-item">MLflow (tracking)</div>
+      <div class="tech-item">Rasterio / GDAL</div>
+      <div class="tech-item">Anthropic Claude API</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-title">🗺 Geospatial</div>
+      <div class="tech-item">Sentinel Hub API</div>
+      <div class="tech-item">IMOS THREDDS</div>
+      <div class="tech-item">GeoServer (WMS/WFS)</div>
+      <div class="tech-item">Mapbox GL JS</div>
+      <div class="tech-item">Turf.js (spatial ops)</div>
+      <div class="tech-item">NetCDF4 processing</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-title">📱 Frontend</div>
+      <div class="tech-item">React + TypeScript</div>
+      <div class="tech-item">React Native (mobile)</div>
+      <div class="tech-item">Deck.gl (viz layers)</div>
+      <div class="tech-item">Recharts (analytics)</div>
+      <div class="tech-item">Expo (mobile build)</div>
+      <div class="tech-item">PWA offline support</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ CATCH LOG SCREEN ══════════════════════════════ -->
+<div id="catchScreen" class="screen">
+  <div class="catch-screen-top">
+    <div class="catch-screen-title">Catch Log & Reporting</div>
+    <div class="catch-filters">
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn" onclick="filterCatch('commercial',this)">Commercial</button>
+      <button class="filter-btn" onclick="filterCatch('recreational',this)">Recreational</button>
+      <button class="filter-btn" onclick="filterCatch('charter',this)">Charter</button>
+      <button class="filter-btn" onclick="filterCatch('aquaculture',this)">Aquaculture</button>
+    </div>
+  </div>
+  <div class="catch-body">
+    <div class="catch-table-wrap">
+      <table class="ctable">
+        <thead>
+          <tr><th>TIME</th><th>VESSEL / ID</th><th>TYPE</th><th>LOCATION</th><th>SPECIES</th><th>QUANTITY</th><th>WEIGHT</th><th>METHOD</th><th>COMPLIANCE</th></tr>
+        </thead>
+        <tbody id="catchTbody"></tbody>
+      </table>
+    </div>
+    <div class="catch-stats-panel">
+      <div class="log-btn" onclick="openLogModal()">+ Log New Catch</div>
+      <div class="stat-card"><div class="stat-big">284</div><div class="stat-label">TOTAL CATCHES TODAY</div></div>
+      <div class="stat-card"><div class="stat-big" style="color:var(--warm)">4.2t</div><div class="stat-label">COMMERCIAL TONNAGE</div></div>
+      <div class="stat-card"><div class="stat-big" style="color:var(--green)">✓ 97%</div><div class="stat-label">COMPLIANCE RATE</div></div>
+      <div class="stat-card" style="margin-top:4px">
+        <div class="sec-label" style="margin-bottom:8px">TOP SPECIES TODAY</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div class="pred-row"><div class="pred-name">Snapper</div><div class="pred-pbar"><div class="pred-pfill" style="width:85%"></div></div><div class="pred-pct">1.8t</div></div>
+          <div class="pred-row"><div class="pred-name">Bream</div><div class="pred-pbar"><div class="pred-pfill" style="width:60%"></div></div><div class="pred-pct">0.9t</div></div>
+          <div class="pred-row"><div class="pred-name">Flathead</div><div class="pred-pbar"><div class="pred-pfill" style="width:45%"></div></div><div class="pred-pct">0.6t</div></div>
+          <div class="pred-row"><div class="pred-name">Whiting</div><div class="pred-pbar"><div class="pred-pfill" style="width:30%"></div></div><div class="pred-pct">0.4t</div></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="sec-label" style="margin-bottom:8px">VFA EXPORT READY</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.6">All commercial catch data formatted for Victorian Fisheries Authority electronic logbook submission.</div>
+        <div style="margin-top:8px;padding:7px 10px;border:1px solid rgba(0,255,224,.2);border-radius:5px;font-size:9px;color:var(--biolum);cursor:pointer;text-align:center;letter-spacing:1px;">EXPORT VFA REPORT →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ VMS SCREEN ══════════════════════════════ -->
+<div id="vmsScreen" class="screen">
+  <div class="vms-top">
+    <div>
+      <div class="vms-title">Fleet Monitoring · VMS</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:1px;">VESSEL MONITORING SYSTEM · REAL-TIME AIS + VMS INTEGRATION</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <div style="font-size:10px;color:var(--muted)">TRACKING <span style="color:var(--biolum);font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">18</span> VESSELS</div>
+      <div class="live-dot"></div>
+    </div>
+  </div>
+  <div class="vms-body">
+    <div class="vms-list" id="vmsVesselList"></div>
+    <div class="vms-map">
+      <canvas id="vmsCanvas"></canvas>
+      <div class="map-grid"></div>
+    </div>
+    <div class="vms-detail" id="vmsDetail">
+      <div class="vd-title">Select a vessel</div>
+      <div style="font-size:10px;color:var(--muted)">Click any vessel in the list or on the map to view details, track history, and compliance status.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ MOBILE SCREEN ══════════════════════════════ -->
+<div id="mobileScreen" class="screen">
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen" style="background:#010912;">
+        <div class="mob-header">
+          <div>
+            <div class="mob-greeting">G'day, Capt. McArdle</div>
+            <div class="mob-sub">LAKES ENTRANCE · THURSDAY</div>
+          </div>
+          <div class="mob-score-pill">
+            <div class="mob-score-num">84</div>
+            <div class="mob-score-lbl">AI SCORE</div>
+          </div>
+        </div>
+        <div class="mob-map-preview" style="margin:0 12px;border-radius:12px;border:1px solid var(--border);">
+          <canvas id="mobCanvas"></canvas>
+          <div class="mob-map-label">LAKES ENTRANCE</div>
+          <div class="mob-hotspot-badge">5 hotspots</div>
+        </div>
+        <div class="mob-cards">
+          <div class="mob-card">
+            <div class="mob-card-title"><span>🌊 Conditions</span><span style="font-size:8px;color:var(--green)">EXCELLENT</span></div>
+            <div class="mob-cond-row">
+              <div class="mob-cond-item"><div class="mob-cond-val">0.8m</div><div class="mob-cond-name">SWELL</div></div>
+              <div class="mob-cond-item"><div class="mob-cond-val">12kn</div><div class="mob-cond-name">WIND</div></div>
+              <div class="mob-cond-item"><div class="mob-cond-val" style="color:var(--warm)">19.4°</div><div class="mob-cond-name">SST</div></div>
+              <div class="mob-cond-item"><div class="mob-cond-val">↑1.4m</div><div class="mob-cond-name">TIDE</div></div>
+            </div>
+          </div>
+          <div class="mob-card">
+            <div class="mob-card-title"><span>🎯 AI Predictions</span><span style="font-size:8px;color:var(--warm)">6HR WINDOW</span></div>
+            <div class="mob-fish-row"><div class="mob-fish-name">Red Snapper</div><div class="mob-fish-pct">88%</div></div>
+            <div class="mob-fish-row"><div class="mob-fish-name">Bream</div><div class="mob-fish-pct">74%</div></div>
+            <div class="mob-fish-row"><div class="mob-fish-name">KG Whiting</div><div class="mob-fish-pct">61%</div></div>
+          </div>
+          <div class="mob-card" style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.2)">
+            <div class="mob-card-title" style="color:var(--warm)"><span>⚠ Alert</span></div>
+            <div style="font-size:9px;line-height:1.5;color:#fdba74;">Wind picking up 15:00. Consider heading in by 14:30. Bar crossing window closes.</div>
+          </div>
+        </div>
+        <div class="mob-nav">
+          <button class="mob-nav-btn active"><div class="mob-nav-icon">🗺</div><span class="mob-nav-label">Map</span></button>
+          <button class="mob-nav-btn"><div class="mob-nav-icon">🎯</div><span class="mob-nav-label">AI</span></button>
+          <button class="mob-nav-btn"><div class="mob-nav-icon">📋</div><span class="mob-nav-label">Log</span></button>
+          <button class="mob-nav-btn"><div class="mob-nav-icon">⚙</div><span class="mob-nav-label">More</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="position:absolute;right:48px;top:50%;transform:translateY(-50%);width:220px;display:flex;flex-direction:column;gap:12px;">
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--biolum);">Mobile App</div>
+    <div style="font-size:9px;color:var(--muted);letter-spacing:1px;line-height:1.7;">React Native · iOS & Android<br>PWA offline support<br>Push notifications<br>Background GPS tracking<br>Offline chart downloads<br>Camera catch logging</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+      <div style="padding:8px 14px;border:1px solid var(--border);border-radius:6px;font-size:10px;color:var(--biolum);cursor:pointer;text-align:center;letter-spacing:1px;">📱 App Store</div>
+      <div style="padding:8px 14px;border:1px solid var(--border);border-radius:6px;font-size:10px;color:var(--biolum);cursor:pointer;text-align:center;letter-spacing:1px;">🤖 Google Play</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ ARCH SCREEN ══════════════════════════════ -->
+<div id="archScreen" class="screen">
+  <div>
+    <div class="arch-title">Platform Architecture</div>
+    <div class="arch-sub">Full-stack technical blueprint · DeepWatch Lakes Entrance</div>
+  </div>
+  <div class="arch-diagram">
+    <div class="arch-layer">
+      <div class="arch-layer-label">Data Sources</div>
+      <div class="arch-boxes">
+        <div class="arch-box" style="border-color:rgba(0,255,224,.25);background:rgba(0,255,224,.05)"><div class="arch-box-title" style="color:var(--biolum)">🛰 Copernicus</div><div class="arch-box-detail">Sentinel-2/3 · SST · CHL · 10m imagery</div></div>
+        <div class="arch-box" style="border-color:rgba(0,255,224,.25);background:rgba(0,255,224,.05)"><div class="arch-box-title" style="color:var(--biolum)">🌊 IMOS</div><div class="arch-box-detail">In-situ ocean · Argo · Moorings</div></div>
+        <div class="arch-box" style="border-color:rgba(0,255,224,.25);background:rgba(0,255,224,.05)"><div class="arch-box-title" style="color:var(--biolum)">🌬 ERA5 / BOM</div><div class="arch-box-detail">Wind · Swell · Pressure forecast</div></div>
+        <div class="arch-box" style="border-color:rgba(0,255,224,.25);background:rgba(0,255,224,.05)"><div class="arch-box-title" style="color:var(--biolum)">📡 AIS / VMS</div><div class="arch-box-detail">Vessel position · Speed · Heading</div></div>
+        <div class="arch-box" style="border-color:rgba(0,255,224,.25);background:rgba(0,255,224,.05)"><div class="arch-box-title" style="color:var(--biolum)">📋 VFA Catch DB</div><div class="arch-box-detail">Historical logbook · 18 years</div></div>
+        <div class="arch-box" style="border-color:rgba(0,255,224,.25);background:rgba(0,255,224,.05)"><div class="arch-box-title" style="color:var(--biolum)">🌙 USNO / BOM</div><div class="arch-box-detail">Tide predictions · Moon phase</div></div>
+      </div>
+    </div>
+    <div class="arch-arrow">↓ ingest pipeline (Celery workers · S3 data lake · PostGIS) ↓</div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">AI / ML Layer</div>
+      <div class="arch-boxes">
+        <div class="arch-box" style="border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.06)"><div class="arch-box-title" style="color:var(--warm)">🎯 Species Predictor</div><div class="arch-box-detail">XGBoost · 47 features · 81.3% F1</div></div>
+        <div class="arch-box" style="border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.06)"><div class="arch-box-title" style="color:var(--warm)">🗺 Hotspot Engine</div><div class="arch-box-detail">Spatial clustering · H3 hexagonal grid</div></div>
+        <div class="arch-box" style="border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.06)"><div class="arch-box-title" style="color:var(--warm)">📈 Condition Scorer</div><div class="arch-box-detail">Composite index · 0–100 daily score</div></div>
+        <div class="arch-box" style="border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.06)"><div class="arch-box-title" style="color:var(--warm)">🤖 Claude AI Chat</div><div class="arch-box-detail">Natural language Q&A · Regulation lookup</div></div>
+      </div>
+    </div>
+    <div class="arch-arrow">↓ REST API (FastAPI · JWT auth · rate limiting) ↓</div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">Application Layer</div>
+      <div class="arch-boxes">
+        <div class="arch-box" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.06)"><div class="arch-box-title" style="color:#93c5fd)">🖥 Web Dashboard</div><div class="arch-box-detail">React · Mapbox GL · Deck.gl</div></div>
+        <div class="arch-box" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.06)"><div class="arch-box-title" style="color:#93c5fd">📱 Mobile App</div><div class="arch-box-detail">React Native · Expo · PWA</div></div>
+        <div class="arch-box" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.06)"><div class="arch-box-title" style="color:#93c5fd">🚢 VMS Console</div><div class="arch-box-detail">Fleet tracking · Compliance · AIS</div></div>
+        <div class="arch-box" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.06)"><div class="arch-box-title" style="color:#93c5fd">📋 Catch Logger</div><div class="arch-box-detail">VFA export · Quota tracking</div></div>
+        <div class="arch-box" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.06)"><div class="arch-box-title" style="color:#93c5fd">🔐 Auth Portal</div><div class="arch-box-detail">Role-based · Commercial/Rec/Charter</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ AUTH SCREEN ══════════════════════════════ -->
+<div id="authScreen" class="screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <svg width="36" height="36" viewBox="0 0 30 30" fill="none">
+        <circle cx="15" cy="15" r="14" stroke="rgba(0,255,224,.4)" stroke-width="1.5"/>
+        <path d="M4 15 Q10 8 15 15 Q20 22 26 15" stroke="#00ffe0" stroke-width="2" fill="none"/>
+        <circle cx="15" cy="15" r="4" fill="#00ffe0" opacity=".9"/>
+      </svg>
+      <div class="auth-title" style="margin-top:8px">DeepWatch</div>
+      <div class="auth-sub">LAKES ENTRANCE FISHING INTELLIGENCE</div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="authTab('login',this)">Sign In</button>
+      <button class="auth-tab" onclick="authTab('register',this)">Register</button>
+    </div>
+    <div id="loginForm">
+      <input class="auth-input" placeholder="Email address" type="email"/>
+      <input class="auth-input" placeholder="Password" type="password"/>
+      <button class="auth-btn" onclick="doLogin()">SIGN IN →</button>
+      <div style="margin-top:12px;font-size:9px;color:var(--muted);text-align:center;letter-spacing:.5px">Forgot password? &nbsp;|&nbsp; Contact administrator</div>
+    </div>
+    <div id="registerForm" style="display:none">
+      <input class="auth-input" placeholder="Full name"/>
+      <input class="auth-input" placeholder="Email address" type="email"/>
+      <input class="auth-input" placeholder="Phone number"/>
+      <div class="sec-label" style="margin-bottom:8px">SELECT LICENCE TYPE</div>
+      <div class="licence-tiers">
+        <div class="tier selected" onclick="selTier(this)"><div class="tier-icon">🎣</div><div class="tier-name">Rec</div><div class="tier-desc">Personal<br>fishing</div></div>
+        <div class="tier" onclick="selTier(this)"><div class="tier-icon">🚢</div><div class="tier-name">Commercial</div><div class="tier-desc">VFA licence<br>holder</div></div>
+        <div class="tier" onclick="selTier(this)"><div class="tier-icon">⚓</div><div class="tier-name">Charter</div><div class="tier-desc">Charter<br>operator</div></div>
+      </div>
+      <input class="auth-input" placeholder="Licence / VFA number (if applicable)"/>
+      <button class="auth-btn" onclick="doLogin()">CREATE ACCOUNT →</button>
+    </div>
+    <div class="perms-grid" style="margin-top:14px;">
+      <div class="perm"><span class="perm-check">✓</span>AI fish predictions</div>
+      <div class="perm"><span class="perm-check">✓</span>Satellite layers</div>
+      <div class="perm"><span class="perm-check">✓</span>Catch logging</div>
+      <div class="perm"><span class="perm-check">✓</span>Regulation alerts</div>
+      <div class="perm"><span class="perm-check" style="color:var(--warm)">★</span>VMS fleet (Commercial)</div>
+      <div class="perm"><span class="perm-check" style="color:var(--warm)">★</span>VFA export (Commercial)</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ SCREEN MANAGEMENT ══
+function showScreen(id, tab) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(tab) tab.classList.add('active');
+  if(id==='vmsScreen') initVMS();
+  if(id==='mobileScreen') initMob();
+}
+
+// ══ MAP ══
+const canvas=document.getElementById('mapCanvas');
+const ctx=canvas.getContext('2d');
+const tooltip=document.getElementById('tooltip');
+let scale=1,offX=0,offY=0,selHS=0;
+
+const hotspots=[
+  {rx:.52,ry:.45,name:"Entrance Channel",score:92,temp:"19.8°C",species:"Snapper · Bream",depth:"4–8m"},
+  {rx:.42,ry:.38,name:"Reeve Channel",score:78,temp:"18.9°C",species:"Flathead · Bream",depth:"3–6m"},
+  {rx:.30,ry:.55,name:"Lake King Shallows",score:71,temp:"20.1°C",species:"Bream · Mullet",depth:"1–3m"},
+  {rx:.65,ry:.52,name:"Outer Bar",score:65,temp:"18.2°C",species:"Salmon · Tailor",depth:"6–15m"},
+  {rx:.72,ry:.35,name:"Sperm Whale Head",score:58,temp:"17.8°C",species:"Snapper",depth:"10–25m"},
+];
+const vessels=[
+  {rx:.50,ry:.47,type:'commercial',heading:45,name:'MV Seabreeze III'},
+  {rx:.33,ry:.52,type:'charter',heading:280,name:'Lakes Sport Fishing'},
+  {rx:.58,ry:.60,type:'recreational',heading:120,name:'Rec 7R-221'},
+  {rx:.44,ry:.42,type:'commercial',heading:200,name:'MV Gippsland Star'},
+  {rx:.63,ry:.44,type:'recreational',heading:315,name:'Rec 4P-887'},
+];
+
+function resizeCvs(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;}
+resizeCvs();window.addEventListener('resize',resizeCvs);
+
+function drawMap(t){
+  const W=canvas.width,H=canvas.height;
+  if(!W||!H)return;
+  ctx.clearRect(0,0,W,H);
+  const bW=W*scale,bH=H*scale;
+  const x0=W/2+offX-bW/2,y0=H/2+offY-bH/2;
+  const mx=rx=>x0+rx*bW, my=ry=>y0+ry*bH;
+
+  // ocean
+  const og=ctx.createLinearGradient(0,0,W,H);
+  og.addColorStop(0,'#020d18');og.addColorStop(1,'#041f35');
+  ctx.fillStyle=og;ctx.fillRect(0,0,W,H);
+
+  // SST thermal blobs
+  [{rx:.52,ry:.45,r:.16,c:'#ff6b35',o:.1},{rx:.30,ry:.55,r:.13,c:'#ffcc00',o:.08},{rx:.65,ry:.52,r:.11,c:'#0080ff',o:.07},{rx:.42,ry:.38,r:.10,c:'#ff8c00',o:.09}].forEach(z=>{
+    const g=ctx.createRadialGradient(mx(z.rx),my(z.ry),0,mx(z.rx),my(z.ry),z.r*bW);
+    g.addColorStop(0,z.c+Math.round(z.o*255).toString(16).padStart(2,'0'));g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  });
+
+  // mainland
+  ctx.beginPath();ctx.moveTo(mx(0),my(0.22));ctx.lineTo(mx(.18),my(.20));ctx.lineTo(mx(.35),my(.18));ctx.lineTo(mx(.50),my(.22));ctx.lineTo(mx(.62),my(.25));ctx.lineTo(mx(.78),my(.28));ctx.lineTo(mx(1),my(.30));ctx.lineTo(mx(1),my(0));ctx.lineTo(mx(0),my(0));ctx.closePath();
+  const lg=ctx.createLinearGradient(0,my(0),0,my(.3));lg.addColorStop(0,'#1a2e1a');lg.addColorStop(1,'#0f1f0f');ctx.fillStyle=lg;ctx.fill();
+  ctx.beginPath();ctx.moveTo(mx(0),my(.22));ctx.lineTo(mx(.18),my(.20));ctx.lineTo(mx(.35),my(.18));ctx.lineTo(mx(.50),my(.22));ctx.lineTo(mx(.62),my(.25));ctx.lineTo(mx(.78),my(.28));ctx.lineTo(mx(1),my(.30));
+  ctx.strokeStyle='rgba(0,255,224,.22)';ctx.lineWidth=1.5;ctx.stroke();
+
+  // barrier beach
+  ctx.beginPath();ctx.moveTo(mx(.10),my(.58));ctx.bezierCurveTo(mx(.28),my(.55),mx(.46),my(.52),mx(.58),my(.48));ctx.bezierCurveTo(mx(.68),my(.45),mx(.78),my(.47),mx(.90),my(.50));ctx.lineTo(mx(1),my(.52));ctx.lineTo(mx(1),my(.63));ctx.lineTo(mx(.90),my(.61));ctx.bezierCurveTo(mx(.75),my(.58),mx(.60),my(.59),mx(.50),my(.61));ctx.bezierCurveTo(mx(.35),my(.64),mx(.20),my(.67),mx(.10),my(.69));ctx.closePath();
+  ctx.fillStyle='#0f0e07';ctx.fill();ctx.strokeStyle='rgba(180,160,80,.25)';ctx.lineWidth=1;ctx.stroke();
+
+  // lakes
+  [[.28,.42,.14,.09,'Lake King'],[.42,.36,.07,.07,'Lake Victoria'],[.14,.40,.10,.08,'Lake Wellington']].forEach(([ex,ey,rX,rY,label])=>{
+    ctx.beginPath();ctx.ellipse(mx(ex),my(ey),bW*rX,bH*rY,-.15,0,Math.PI*2);ctx.fillStyle='#031525';ctx.fill();ctx.strokeStyle='rgba(0,255,224,.12)';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='rgba(0,255,224,.35)';ctx.font=`${8*Math.min(scale,1.5)}px JetBrains Mono`;ctx.textAlign='center';ctx.fillText(label.toUpperCase(),mx(ex),my(ey));
+  });
+
+  // entrance channel
+  ctx.beginPath();ctx.moveTo(mx(.50),my(.36));ctx.bezierCurveTo(mx(.51),my(.42),mx(.52),my(.46),mx(.54),my(.52));
+  ctx.strokeStyle='rgba(0,200,255,.18)';ctx.lineWidth=8*scale;ctx.stroke();
+  ctx.strokeStyle='rgba(0,255,224,.4)';ctx.lineWidth=1.5;ctx.stroke();
+
+  // hotspot zones
+  hotspots.forEach((h,i)=>{
+    const pulse=Math.sin(t*.002+i*1.2)*.5+.5;
+    const hx=mx(h.rx),hy=my(h.ry),r=(28+h.score*.25)*scale;
+    ctx.beginPath();ctx.arc(hx,hy,r+pulse*7*scale,0,Math.PI*2);ctx.strokeStyle=`rgba(249,115,22,${.1+pulse*.1})`;ctx.lineWidth=1;ctx.stroke();
+    const zg=ctx.createRadialGradient(hx,hy,0,hx,hy,r);zg.addColorStop(0,`rgba(249,115,22,${.12+pulse*.05})`);zg.addColorStop(1,'transparent');ctx.fillStyle=zg;ctx.beginPath();ctx.arc(hx,hy,r,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(hx,hy,13*scale,0,Math.PI*2);ctx.fillStyle=selHS===i?'rgba(249,115,22,.95)':'rgba(249,115,22,.65)';ctx.fill();
+    ctx.fillStyle='#fff';ctx.font=`bold ${10*scale}px Syne,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`#${i+1}`,hx,hy);ctx.textBaseline='alphabetic';
+  });
+
+  // vessels
+  vessels.forEach(v=>{
+    const vx=mx(v.rx),vy=my(v.ry);
+    const c=v.type==='commercial'?'#f97316':v.type==='charter'?'#a855f7':'#00ffe0';
+    ctx.save();ctx.translate(vx,vy);ctx.rotate(v.heading*Math.PI/180);
+    ctx.beginPath();ctx.moveTo(0,-8*scale);ctx.lineTo(4*scale,5*scale);ctx.lineTo(-4*scale,5*scale);ctx.closePath();ctx.fillStyle=c;ctx.fill();ctx.restore();
+    ctx.beginPath();ctx.moveTo(vx,vy);ctx.lineTo(vx-Math.sin(v.heading*Math.PI/180)*18*scale,vy+Math.cos(v.heading*Math.PI/180)*18*scale);ctx.strokeStyle=c+'44';ctx.lineWidth=2;ctx.stroke();
+  });
+
+  // exclusion zone
+  ctx.beginPath();ctx.arc(mx(.73),my(.55),19*scale,0,Math.PI*2);ctx.strokeStyle='rgba(239,68,68,.55)';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(239,68,68,.06)';ctx.fill();
+  ctx.fillStyle='rgba(239,68,68,.75)';ctx.font=`${8*scale}px JetBrains Mono`;ctx.textAlign='center';ctx.fillText('NO TAKE',mx(.73),my(.55));
+
+  ctx.fillStyle='rgba(224,244,241,.18)';ctx.font=`${9*scale}px JetBrains Mono`;ctx.fillText('BASS STRAIT',mx(.58),my(.76));
+  ctx.fillStyle='rgba(0,255,224,.5)';ctx.font=`bold ${9*scale}px Syne,sans-serif`;ctx.fillText('LAKES ENTRANCE',mx(.52),my(.32));
+}
+
+function animMap(t){drawMap(t);requestAnimationFrame(animMap);}
+requestAnimationFrame(animMap);
+
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect(),mx2=e.clientX-r.left,my2=e.clientY-r.top;
+  const W=canvas.width,H=canvas.height,bW=W*scale,bH=H*scale;
+  const x0=W/2+offX-bW/2,y0=H/2+offY-bH/2;
+  let found=null;
+  hotspots.forEach((h,i)=>{const hx=x0+h.rx*bW,hy=y0+h.ry*bH;if(Math.hypot(mx2-hx,my2-hy)<18)found={h,i};});
+  if(found){tooltip.style.display='block';tooltip.style.left=(mx2+14)+'px';tooltip.style.top=(my2-50)+'px';tooltip.innerHTML=`<div class="tt-name">${found.h.name}</div><div class="tt-row"><span class="tt-k">Score</span><span>${found.h.score}/100</span></div><div class="tt-row"><span class="tt-k">SST</span><span>${found.h.temp}</span></div><div class="tt-row"><span class="tt-k">Depth</span><span>${found.h.depth}</span></div><div class="tt-row"><span class="tt-k">Species</span><span>${found.h.species}</span></div>`;canvas.style.cursor='pointer';}
+  else{tooltip.style.display='none';canvas.style.cursor='default';}
+});
+canvas.addEventListener('mouseleave',()=>tooltip.style.display='none');
+let drag=false,lx=0,ly=0;
+canvas.addEventListener('mousedown',e=>{drag=true;lx=e.clientX;ly=e.clientY;});
+canvas.addEventListener('mousemove',e=>{if(drag){offX+=e.clientX-lx;offY+=e.clientY-ly;lx=e.clientX;ly=e.clientY;}});
+canvas.addEventListener('mouseup',()=>drag=false);
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.1:.9);},{passive:false});
+function zoom(f){scale=Math.max(.4,Math.min(4,scale*f));}
+function resetView(){scale=1;offX=0;offY=0;}
+function selHotspot(i,el){selHS=i;document.querySelectorAll('.hs').forEach((e,j)=>e.classList.toggle('active',j===i));}
+
+// ══ CATCH LOG TABLE ══
+const catchData=[
+  {time:'13:41',vessel:'MV Seabreeze III',type:'commercial',location:'Entrance Channel',species:'Red Snapper',qty:'18 fish',weight:'42kg',method:'Line',comp:'✓'},
+  {time:'13:12',vessel:'Rec · 7R-221',type:'recreational',location:'Lake King Shallows',species:'Bream',qty:'3 fish',weight:'1.8kg',method:'Spin',comp:'✓'},
+  {time:'12:58',vessel:'Lakes Sport Fishing Co.',type:'charter',location:'Reeve Channel',species:'Flathead / Bream',qty:'Mixed bag',weight:'8.4kg',method:'Bait',comp:'✓'},
+  {time:'12:30',vessel:'MV Gippsland Star',type:'commercial',location:'Outer Bar',species:'Snapper',qty:'31 fish',weight:'74kg',method:'Net',comp:'✓'},
+  {time:'11:44',vessel:'Rec · 4P-887',type:'recreational',location:'Entrance Channel',species:'KG Whiting',qty:'4 fish',weight:'2.1kg',method:'Bait',comp:'✓'},
+  {time:'10:52',vessel:'Blue Water Charters',type:'charter',location:'Reeve Channel',species:'Mixed',qty:'22 fish',weight:'14kg',method:'Lure',comp:'✓'},
+  {time:'10:15',vessel:'Rec · 8M-003',type:'recreational',location:'Lake Victoria',species:'Bream',qty:'2 fish',weight:'1.1kg',method:'Fly',comp:'✓'},
+  {time:'09:30',vessel:'MV Ocean Rover',type:'commercial',location:'Sperm Whale Head',species:'Snapper',qty:'48 fish',weight:'112kg',method:'Line',comp:'✓'},
+  {time:'09:05',vessel:'Rec · 6K-144',type:'recreational',location:'Entrance Rocks',species:'KG Whiting',qty:'5 fish',weight:'2.8kg',method:'Bait',comp:'⚠ Bag limit'},
+  {time:'07:30',vessel:'Rec · Shore angler',type:'recreational',location:'Entrance Rocks',species:'KG Whiting',qty:'1 fish',weight:'0.6kg',method:'Bait',comp:'✓'},
+];
+function renderCatchTable(){
+  const tb=document.getElementById('catchTbody');
+  if(!tb)return;
+  tb.innerHTML=catchData.map(r=>`<tr><td>${r.time}</td><td>${r.vessel}</td><td><span class="type-badge tb-${r.type.slice(0,3)}">${r.type}</span></td><td>${r.location}</td><td>${r.species}</td><td>${r.qty}</td><td>${r.weight}</td><td>${r.method}</td><td style="color:${r.comp.includes('⚠')?'#fdba74':'#86efac'}">${r.comp}</td></tr>`).join('');
+}
+renderCatchTable();
+function filterCatch(type,btn){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function openLogModal(){ document.getElementById('catchModal').style.display='flex'; }
+
+
+
+// ══ AI CHAT ══
+let aiChatOpen = false;
+const CLAUDE_KEY = fetchWeat'PASTE_YOUR_KEY_HERE'her();;
+let aiHistory = [];
+
+function toggleAIChat() {
+  aiChatOpen = !aiChatOpen;
+  document.getElementById('aiChatPanel').style.display = aiChatOpen ? 'flex' : 'none';
+  if (aiChatOpen) document.getElementById('aiInput').focus();
+}
+
+function askSuggestion(el) {
+  document.getElementById('aiInput').value = el.textContent;
+  sendAIMessage();
+}
+
+function addMessage(text, isUser) {
+  const msgs = document.getElementById('aiMessages');
+  const div = document.createElement('div');
+  div.style.cssText = isUser
+    ? 'background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);border-radius:8px;padding:10px 12px;font-size:10px;line-height:1.6;color:#fdba74;align-self:flex-end;max-width:85%;'
+    : 'background:rgba(0,255,224,.06);border:1px solid rgba(0,255,224,.12);border-radius:8px;padding:10px 12px;font-size:10px;line-height:1.6;color:#e0f4f1;max-width:90%;';
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+async function sendAIMessage() {
+  const input = document.getElementById('aiInput');
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+
+  addMessage(question, true);
+  aiHistory.push({ role: 'user', content: question });
+
+  const thinking = addMessage('...', false);
+  thinking.style.color = 'rgba(224,244,241,.4)';
+
+  // Get current live conditions for context
+  const wind = document.getElementById('liveWind')?.textContent || 'unknown';
+  const temp = document.getElementById('liveTemp')?.textContent || 'unknown';
+  const pressure = document.getElementById('livePressure')?.textContent || 'unknown';
+
+  const systemPrompt = `You are DeepWatch AI, an expert fishing assistant for Lakes Entrance and the Gippsland Lakes region in Victoria, Australia. You have deep knowledge of:
+- Local fishing spots: Entrance Channel, Reeve Channel, Lake King, Lake Victoria, Lake Wellington, Outer Bar, Sperm Whale Head, Ninety Mile Beach
+- Local species: Snapper, Bream, King George Whiting, Dusky Flathead, Australian Salmon, Tailor, Mullet, Luderick, Trevally
+- Victorian fishing regulations and size/bag limits
+- Tidal patterns, bar crossing safety, seasonal patterns
+- Best rigs, baits and lures for each species and location
+
+Current live conditions at Lakes Entrance:
+- Wind: ${wind}
+- Sea temperature: ${temp}  
+- Pressure: ${pressure}
+
+Keep answers concise, practical and specific to Lakes Entrance. Use a friendly Australian tone.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        system: systemPrompt,
+        messages: aiHistory
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || 'Sorry, I could not get a response. Please try again.';
+    
+    thinking.textContent = reply;
+    thinking.style.color = '#e0f4f1';
+    aiHistory.push({ role: 'assistant', content: reply });
+
+    // Keep history to last 10 messages
+    if (aiHistory.length > 10) aiHistory = aiHistory.slice(-10);
+
+  } catch(e) {
+    thinking.textContent = 'Connection error — please try again.';
+    thinking.style.color = '#ef4444';
+  }
+}
+
+// ══ CATCH FORM ══
+async function submitCatch() {
+  const msg = document.getElementById('catchFormMsg');
+  const vessel = document.getElementById('cf_vessel').value;
+  const type = document.getElementById('cf_type').value;
+  const location = document.getElementById('cf_location').value;
+  const species = document.getElementById('cf_species').value;
+  const qty = parseInt(document.getElementById('cf_qty').value) || 0;
+  const weight = parseFloat(document.getElementById('cf_weight').value) || 0;
+  const method = document.getElementById('cf_method').value;
+  const notes = document.getElementById('cf_notes').value;
+
+  if (!vessel || !qty) {
+    msg.textContent = '✕ Please fill in vessel name and quantity.';
+    msg.style.color = '#ef4444';
+    return;
+  }
+
+  msg.textContent = 'Saving...';
+  msg.style.color = '#00ffe0';
+
+  const { error } = await _sb.from('catches').insert([{
+    vessel_name: vessel,
+    fisher_type: type,
+    location: location,
+    species: species,
+    quantity: qty,
+    weight_kg: weight,
+    method: method,
+    notes: notes,
+    lat: -37.8813,
+    lng: 147.9837
+  }]);
+
+  if (error) {
+    msg.textContent = '✕ Error: ' + error.message;
+    msg.style.color = '#ef4444';
+  } else {
+    msg.textContent = '✓ Catch logged successfully!';
+    msg.style.color = '#22c55e';
+    setTimeout(() => {
+      document.getElementById('catchModal').style.display = 'none';
+      loadCatches();
+    }, 1500);
+  }
+}
+
+// Load real catches from Supabase
+async function loadCatches() {
+  const { data, error } = await _sb.from('catches').select('*').order('created_at', { ascending: false }).limit(50);
+  if (error || !data || data.length === 0) return;
+  const tb = document.getElementById('catchTbody');
+  if (!tb) return;
+  const time = row => new Date(row.created_at).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+  tb.innerHTML = data.map(r => `
+    <tr>
+      <td>${time(r)}</td>
+      <td>${r.vessel_name}</td>
+      <td><span class="type-badge tb-${(r.fisher_type||'rec').slice(0,3)}">${r.fisher_type}</span></td>
+      <td>${r.location}</td>
+      <td>${r.species}</td>
+      <td>${r.quantity} fish</td>
+      <td>${r.weight_kg}kg</td>
+      <td>${r.method}</td>
+      <td style="color:#86efac">✓</td>
+    </tr>`).join('');
+}
+
+// ══ VMS ══
+let vmsAnimFrame;
+const vmsVessels=[
+  {id:'V001',name:'MV Seabreeze III',type:'commercial',status:'active',speed:'8.2kn',heading:45,lat:-37.88,lon:147.98,rx:.50,ry:.47,fuel:'74%',quota:'38%',imo:'9234512'},
+  {id:'V002',name:'MV Gippsland Star',type:'commercial',status:'active',speed:'6.1kn',heading:200,lat:-37.90,lon:147.94,rx:.44,ry:.50,fuel:'52%',quota:'61%',imo:'9187643'},
+  {id:'V003',name:'Lakes Sport Fishing',type:'charter',status:'active',speed:'3.4kn',heading:280,lat:-37.87,lon:147.96,rx:.38,ry:.44,fuel:'81%',quota:'N/A',imo:'C-4421'},
+  {id:'V004',name:'Blue Water Charters',type:'charter',status:'moored',speed:'0kn',heading:0,lat:-37.88,lon:147.97,rx:.50,ry:.53,fuel:'93%',quota:'N/A',imo:'C-3318'},
+  {id:'V005',name:'Rec · 7R-221',type:'recreational',status:'active',speed:'12.0kn',heading:120,lat:-37.89,lon:148.00,rx:.62,ry:.49,fuel:'66%',quota:'N/A',imo:'R-7221'},
+  {id:'V006',name:'MV Ocean Rover',type:'commercial',status:'returning',speed:'14.3kn',heading:315,lat:-37.85,lon:148.02,rx:.68,ry:.38,fuel:'28%',quota:'82%',imo:'9301887'},
+];
+
+function initVMS(){
+  const list=document.getElementById('vmsVesselList');
+  if(!list||list.children.length>1)return;
+  list.innerHTML=vmsVessels.map((v,i)=>`
+    <div class="vessel-card" id="vc${i}" onclick="selVessel(${i})">
+      <div class="vc-top"><div class="vc-name">${v.name}</div><div class="vc-status" style="background:${v.status==='active'?'#22c55e':v.status==='moored'?'#f97316':'#3b82f6'}"></div></div>
+      <div class="vc-row">
+        <div class="vc-stat">Type: <b>${v.type}</b></div>
+        <div class="vc-stat">Speed: <b>${v.speed}</b></div>
+        <div class="vc-stat">Status: <b>${v.status}</b></div>
+      </div>
+    </div>`).join('');
+  animVMS();
+}
+function selVessel(i){
+  document.querySelectorAll('.vessel-card').forEach((c,j)=>c.classList.toggle('active',j===i));
+  const v=vmsVessels[i];
+  document.getElementById('vmsDetail').innerHTML=`
+    <div class="vd-title">${v.name}</div>
+    <div class="vd-row"><span class="vd-key">IMO / ID</span><span>${v.imo}</span></div>
+    <div class="vd-row"><span class="vd-key">Type</span><span>${v.type}</span></div>
+    <div class="vd-row"><span class="vd-key">Status</span><span style="color:${v.status==='active'?'#22c55e':v.status==='moored'?'#f97316':'#3b82f6'}">${v.status.toUpperCase()}</span></div>
+    <div class="vd-row"><span class="vd-key">Speed</span><span>${v.speed}</span></div>
+    <div class="vd-row"><span class="vd-key">Heading</span><span>${v.heading}°</span></div>
+    <div class="vd-row"><span class="vd-key">Position</span><span>${v.lat}°S ${v.lon}°E</span></div>
+    <div class="vd-row"><span class="vd-key">Fuel</span><span>${v.fuel}</span></div>
+    <div class="vd-row"><span class="vd-key">Quota used</span><span>${v.quota}</span></div>
+    <div style="margin-top:14px;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">RECENT TRACK</div>
+    ${['Outer Bar — 09:30','Entrance Channel — 11:15','Reeve Channel — 12:00','Current position — 13:41'].map((loc,j)=>`<div class="track-point"><div class="tp-dot" style="background:${j===3?'#22c55e':'rgba(0,255,224,.3)'}"></div><div class="tp-info"><div class="tp-loc">${loc.split('—')[0]}</div><div class="tp-time">${loc.split('—')[1]}</div></div></div>`).join('')}
+    <div style="margin-top:12px;padding:8px 10px;border:1px solid rgba(239,68,68,.25);border-radius:5px;background:rgba(239,68,68,.06);font-size:9px;color:#fca5a5;">⚠ VMS transponder ping every 2 minutes. Last ping 00:38 ago.</div>`;
+}
+function animVMS(){
+  const c=document.getElementById('vmsCanvas');if(!c)return;
+  c.width=c.offsetWidth;c.height=c.offsetHeight;
+  const ct=c.getContext('2d'),W=c.width,H=c.height;
+  function draw(t){
+    if(!document.getElementById('vmsScreen').classList.contains('active')){requestAnimationFrame(draw);return;}
+    ct.clearRect(0,0,W,H);
+    const og=ct.createLinearGradient(0,0,W,H);og.addColorStop(0,'#020d18');og.addColorStop(1,'#041f35');ct.fillStyle=og;ct.fillRect(0,0,W,H);
+    // simplified map
+    ct.beginPath();ct.moveTo(0,.22*H);ct.lineTo(.35*W,.18*H);ct.lineTo(.62*W,.25*H);ct.lineTo(W,.30*H);ct.lineTo(W,0);ct.lineTo(0,0);ct.closePath();ct.fillStyle='#0f1f0f';ct.fill();ct.strokeStyle='rgba(0,255,224,.2)';ct.lineWidth=1;ct.stroke();
+    [[.28,.42,.14,.09],[.42,.36,.07,.07],[.14,.40,.10,.08]].forEach(([ex,ey,rX,rY])=>{ct.beginPath();ct.ellipse(ex*W,ey*H,rX*W,rY*H,-.15,0,Math.PI*2);ct.fillStyle='#031525';ct.fill();ct.strokeStyle='rgba(0,255,224,.1)';ct.lineWidth=1;ct.stroke();});
+    ct.beginPath();ct.moveTo(.10*W,.58*H);ct.bezierCurveTo(.28*W,.55*H,.46*W,.52*H,.58*W,.48*H);ct.bezierCurveTo(.68*W,.45*H,.78*W,.47*H,.90*W,.50*H);ct.lineTo(W,.52*H);ct.lineTo(W,.63*H);ct.lineTo(.10*W,.69*H);ct.closePath();ct.fillStyle='#0f0e07';ct.fill();
+    vmsVessels.forEach((v,i)=>{
+      const vx=v.rx*W,vy=v.ry*H;
+      const oc=v.type==='commercial'?'#f97316':v.type==='charter'?'#a855f7':'#00ffe0';
+      const pulse=Math.sin(t*.003+i)*.5+.5;
+      ct.beginPath();ct.arc(vx,vy,12+pulse*4,0,Math.PI*2);ct.strokeStyle=oc+'33';ct.lineWidth=1;ct.stroke();
+      ct.save();ct.translate(vx,vy);ct.rotate(v.heading*Math.PI/180);ct.beginPath();ct.moveTo(0,-7);ct.lineTo(4,5);ct.lineTo(-4,5);ct.closePath();ct.fillStyle=oc;ct.fill();ct.restore();
+      ct.fillStyle=oc;ct.font='8px JetBrains Mono';ct.textAlign='center';ct.fillText(v.id,vx,vy+20);
+    });
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+}
+
+// ══ MOBILE MINI MAP ══
+function initMob(){
+  const mc=document.getElementById('mobCanvas');if(!mc)return;
+  function sz(){mc.width=mc.offsetWidth;mc.height=mc.offsetHeight;}sz();
+  const mct=mc.getContext('2d');
+  function drawMob(t){
+    const W=mc.width,H=mc.height;if(!W||!H){requestAnimationFrame(drawMob);return;}
+    mct.clearRect(0,0,W,H);
+    mct.fillStyle='#021020';mct.fillRect(0,0,W,H);
+    mct.beginPath();mct.moveTo(0,.22*H);mct.lineTo(.5*W,.2*H);mct.lineTo(W,.28*H);mct.lineTo(W,0);mct.lineTo(0,0);mct.closePath();mct.fillStyle='#0f1f0f';mct.fill();
+    mct.beginPath();mct.ellipse(.28*W,.42*H,.14*W,.09*H,-.15,0,Math.PI*2);mct.fillStyle='#031525';mct.fill();mct.strokeStyle='rgba(0,255,224,.15)';mct.lineWidth=1;mct.stroke();
+    hotspots.slice(0,3).forEach((h,i)=>{
+      const pulse=Math.sin(t*.002+i*1.2)*.5+.5;
+      const hx=h.rx*W,hy=h.ry*H;
+      mct.beginPath();mct.arc(hx,hy,10+pulse*3,0,Math.PI*2);mct.strokeStyle=`rgba(249,115,22,${.3+pulse*.2})`;mct.lineWidth=1;mct.stroke();
+      mct.beginPath();mct.arc(hx,hy,5,0,Math.PI*2);mct.fillStyle='rgba(249,115,22,.8)';mct.fill();
+    });
+    requestAnimationFrame(drawMob);
+  }
+  requestAnimationFrame(drawMob);
+}
+
+// ══ LIVE WEATHER ══
+async function fetchWeather() {
+  try {
+    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.8813&longitude=147.9837&current=windspeed_10m,winddirection_10m,surface_pressure,temperature_2m&timezone=Australia/Sydney');
+    const data = await res.json();
+    const c = data.current;
+    const windKn = (c.windspeed_10m * 0.539957).toFixed(1);
+    document.getElementById('liveWind').textContent = windKn + ' kn';
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    const dir = dirs[Math.round(c.winddirection_10m / 22.5) % 16];
+    document.getElementById('liveWindDir').textContent = 'WIND ' + dir;
+    document.getElementById('liveTemp').textContent = c.temperature_2m + '°C';
+    document.getElementById('livePressure').textContent = c.surface_pressure.toFixed(0) + ' hPa';
+    document.getElementById('liveWave').textContent = '~0.8m';
+  } catch(e) { console.log('Weather error', e); }
+}
+window.addEventListener('load', fetchWeather);
+setInterval(fetchWeather, 600000);
+
+// ══ SUPABASE AUTH ══
+const _supabase = supabase.createClient(
+  'https://jubrlrhwqysncngzibli.supabase.co',
+  'sb_publishable_8BaA3wzJYC-OvwVIQZt69A_5q8a9zLJ'
+);
+
+// Show login wall on load, check if already logged in
+window.addEventListener('load', async () => {
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (session) {
+    showLoggedIn(session.user);
+  } else {
+    showLoginWall();
+  }
+});
+
+function showLoginWall() {
+  document.getElementById('appWrapper').style.display = 'none';
+  document.getElementById('loginWall').style.display = 'flex';
+}
+
+function showLoggedIn(user) {
+  document.getElementById('loginWall').style.display = 'none';
+  document.getElementById('appWrapper').style.display = 'flex';
+  const email = user.email;
+  const name = email.split('@')[0];
+  document.getElementById('userNameDisplay').textContent = name;
+  fetchWeather();
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const msg = document.getElementById('loginMsg');
+  msg.textContent = 'Signing in...';
+  msg.style.color = 'var(--biolum)';
+  const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    msg.textContent = '✕ ' + error.message;
+    msg.style.color = 'var(--red)';
+  } else {
+    showLoggedIn(data.user);
+  }
+}
+
+async function doRegister() {
+  const email = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPassword').value;
+  const name = document.getElementById('regName').value;
+  const msg = document.getElementById('loginMsg');
+  msg.textContent = 'Creating account...';
+  msg.style.color = 'var(--biolum)';
+  const { data, error } = await _supabase.auth.signUp({
+    email, password,
+    options: { data: { full_name: name } }
+  });
+  if (error) {
+    msg.textContent = '✕ ' + error.message;
+    msg.style.color = 'var(--red)';
+  } else {
+    msg.textContent = '✓ Check your email to confirm your account!';
+    msg.style.color = 'var(--green)';
+  }
+}
+
+async function doLogout() {
+  await _supabase.auth.signOut();
+  showLoginWall();
+}
+
+
+// ══ SUPABASE AUTH ══
+const _sb = supabase.createClient(
+  'https://jubrlrhwqysncngzibli.supabase.co',
+  'sb_publishable_8BaA3wzJYC-OvwVIQZt69A_5q8a9zLJ'
+);
+
+window.addEventListener('load', async () => {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (session) { showApp(session.user); } else { showWall(); }
+});
+
+function showWall() {
+  document.getElementById('loginWall').style.display = 'flex';
+  document.getElementById('appWrapper').style.display = 'none';
+}
+function showApp(user) {
+  document.getElementById('loginWall').style.display = 'none';
+  document.getElementById('appWrapper').style.display = 'flex';
+  const name = user.email.split('@')[0];
+  document.getElementById('userNameDisplay').textContent = name;
+  fetchWeather();
+}
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPassword').value;
+  const msg = document.getElementById('loginMsg');
+  msg.textContent = 'Signing in...'; msg.style.color = '#00ffe0';
+  const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { msg.textContent = '\u2715 ' + error.message; msg.style.color = '#ef4444'; }
+  else { showApp(data.user); }
+}
+async function doRegister() {
+  const email = document.getElementById('regEmail').value;
+  const pass = document.getElementById('regPassword').value;
+  const name = document.getElementById('regName').value;
+  const msg = document.getElementById('loginMsg');
+  msg.textContent = 'Creating account...'; msg.style.color = '#00ffe0';
+  const { data, error } = await _sb.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+  if (error) { msg.textContent = '\u2715 ' + error.message; msg.style.color = '#ef4444'; }
+  else { msg.textContent = '\u2713 Check your email to confirm your account!'; msg.style.color = '#22c55e'; }
+}
+async function doLogout() { await _sb.auth.signOut(); showWall(); }
+function switchAuthTab(tab) {
+  document.getElementById('wallLoginForm').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('wallRegisterForm').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('tabSignIn').style.color = tab==='login' ? '#00ffe0' : 'rgba(224,244,241,.45)';
+  document.getElementById('tabRegister').style.color = tab==='register' ? '#00ffe0' : 'rgba(224,244,241,.45)';
+}
+
+
+function authTab(tab,btn){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=tab==='register'?'block':'none';
+}
+function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.remove('selected'));el.classList.add('selected');}
+</script>
+</div><!-- end appWrapper -->
+
+<!-- CATCH LOG MODAL -->
+<div id="catchModal" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(2,13,24,.85);align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="width:480px;max-height:90vh;overflow-y:auto;border:1px solid rgba(0,255,224,.2);border-radius:12px;padding:28px;background:rgba(4,31,53,.98);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#00ffe0;">Log New Catch</div>
+      <div onclick="document.getElementById('catchModal').style.display='none'" style="cursor:pointer;color:rgba(224,244,241,.45);font-size:18px;">✕</div>
+    </div>
+
+    <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">VESSEL / ANGLER NAME</div>
+    <input id="cf_vessel" placeholder="e.g. MV Seabreeze III or your name" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;"/>
+
+    <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">FISHER TYPE</div>
+    <select id="cf_type" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;">
+      <option value="recreational">Recreational</option>
+      <option value="commercial">Commercial</option>
+      <option value="charter">Charter</option>
+    </select>
+
+    <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">LOCATION</div>
+    <select id="cf_location" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;">
+      <option>Entrance Channel</option>
+      <option>Reeve Channel</option>
+      <option>Lake King Shallows</option>
+      <option>Outer Bar</option>
+      <option>Sperm Whale Head</option>
+      <option>Lake King</option>
+      <option>Lake Victoria</option>
+      <option>Lake Wellington</option>
+      <option>Ninety Mile Beach</option>
+      <option>Other</option>
+    </select>
+
+    <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">SPECIES</div>
+    <select id="cf_species" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;">
+      <option>Red Snapper</option>
+      <option>Bream</option>
+      <option>King George Whiting</option>
+      <option>Dusky Flathead</option>
+      <option>Australian Salmon</option>
+      <option>Tailor</option>
+      <option>Yellow-Eye Mullet</option>
+      <option>Luderick</option>
+      <option>Trevally</option>
+      <option>Other</option>
+    </select>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div>
+        <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">QUANTITY (fish)</div>
+        <input id="cf_qty" type="number" placeholder="e.g. 3" min="1" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;outline:none;"/>
+      </div>
+      <div>
+        <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">TOTAL WEIGHT (kg)</div>
+        <input id="cf_weight" type="number" placeholder="e.g. 4.5" step="0.1" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;outline:none;"/>
+      </div>
+    </div>
+
+    <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">METHOD</div>
+    <select id="cf_method" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;">
+      <option>Bait fishing</option>
+      <option>Lure / spin</option>
+      <option>Fly fishing</option>
+      <option>Net</option>
+      <option>Trap / pot</option>
+      <option>Line fishing</option>
+      <option>Other</option>
+    </select>
+
+    <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">NOTES (optional)</div>
+    <input id="cf_notes" placeholder="e.g. Caught on incoming tide, 3m depth" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:16px;outline:none;"/>
+
+    <div id="catchFormMsg" style="font-size:10px;text-align:center;min-height:16px;margin-bottom:10px;"></div>
+
+    <button onclick="submitCatch()" style="width:100%;padding:12px;background:linear-gradient(135deg,rgba(0,255,224,.25),rgba(0,255,224,.1));border:1px solid rgba(0,255,224,.35);border-radius:6px;color:#00ffe0;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'JetBrains Mono',monospace;">SUBMIT CATCH →</button>
+  </div>
+</div>
+
+
+<!-- AI CHAT PANEL -->
+<div id="aiChatPanel" style="display:none;position:fixed;bottom:20px;right:20px;width:360px;height:500px;z-index:9000;border:1px solid rgba(0,255,224,.25);border-radius:12px;background:rgba(4,31,53,.98);backdrop-filter:blur(20px);display:none;flex-direction:column;overflow:hidden;">
+  
+  <!-- Header -->
+  <div style="padding:14px 16px;border-bottom:1px solid rgba(0,255,224,.1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:#00ffe0;">DeepWatch AI</div>
+      <div style="font-size:8px;color:rgba(224,244,241,.45);letter-spacing:1px;margin-top:1px;">Ask me anything about fishing Lakes Entrance</div>
+    </div>
+    <div onclick="toggleAIChat()" style="cursor:pointer;color:rgba(224,244,241,.45);font-size:16px;padding:4px;">✕</div>
+  </div>
+
+  <!-- Messages -->
+  <div id="aiMessages" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;">
+    <div style="background:rgba(0,255,224,.06);border:1px solid rgba(0,255,224,.12);border-radius:8px;padding:10px 12px;font-size:10px;line-height:1.6;color:#e0f4f1;">
+      👋 G'day! I'm your DeepWatch AI assistant. Ask me anything about fishing Lakes Entrance — best spots today, regulations, tide windows, species tips, or bar crossing conditions.
+    </div>
+  </div>
+
+  <!-- Suggestions -->
+  <div style="padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid rgba(0,255,224,.06);">
+    <div onclick="askSuggestion(this)" style="padding:4px 8px;border:1px solid rgba(0,255,224,.15);border-radius:12px;font-size:8px;color:rgba(0,255,224,.7);cursor:pointer;white-space:nowrap;">Best spot today?</div>
+    <div onclick="askSuggestion(this)" style="padding:4px 8px;border:1px solid rgba(0,255,224,.15);border-radius:12px;font-size:8px;color:rgba(0,255,224,.7);cursor:pointer;white-space:nowrap;">Safe to cross the bar?</div>
+    <div onclick="askSuggestion(this)" style="padding:4px 8px;border:1px solid rgba(0,255,224,.15);border-radius:12px;font-size:8px;color:rgba(0,255,224,.7);cursor:pointer;white-space:nowrap;">Flathead size limits?</div>
+    <div onclick="askSuggestion(this)" style="padding:4px 8px;border:1px solid rgba(0,255,224,.15);border-radius:12px;font-size:8px;color:rgba(0,255,224,.7);cursor:pointer;white-space:nowrap;">Best bait for snapper?</div>
+  </div>
+
+  <!-- Input -->
+  <div style="padding:10px 14px;border-top:1px solid rgba(0,255,224,.1);display:flex;gap:8px;flex-shrink:0;">
+    <input id="aiInput" placeholder="Ask about fishing, weather, regs..." 
+      style="flex:1;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.15);border-radius:6px;padding:8px 12px;color:#e0f4f1;font-size:10px;font-family:'JetBrains Mono',monospace;outline:none;"
+      onkeydown="if(event.key==='Enter') sendAIMessage()"/>
+    <button onclick="sendAIMessage()" style="padding:8px 12px;background:rgba(0,255,224,.15);border:1px solid rgba(0,255,224,.25);border-radius:6px;color:#00ffe0;font-size:12px;cursor:pointer;">→</button>
+  </div>
+</div>
+</body>
+</html>
+
+
+
+
