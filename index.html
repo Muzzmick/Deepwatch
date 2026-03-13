@@ -825,6 +825,7 @@ const vessels = [
 ];
 
 let map;
+const hsMarkers = [];
 function initMap() {
   map = new mapboxgl.Map({
     container: 'mapbox',
@@ -1405,7 +1406,7 @@ function toggleLayer(layer, btn) {
   const on = btn.classList.contains('on');
 
   if (layer === 'hotspots') {
-    document.querySelectorAll('.hs-marker').forEach(m => {
+    hsMarkers.forEach(m => {
       m.style.display = on ? 'flex' : 'none';
     });
   }
@@ -1425,8 +1426,33 @@ function toggleLayer(layer, btn) {
   }
 
   if (layer === 'notake') {
-    // No-take zones would be polygon overlays - placeholder for now
-    console.log('No-take zones toggle:', on);
+    if (!map) return;
+    if (on) {
+      if (!map.getSource('notake-source')) {
+        map.addSource('notake-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: [{
+              type: 'Feature',
+              properties: { name: 'Gippsland Lakes Marine National Park' },
+              geometry: {
+                type: 'Polygon',
+                coordinates: [[[147.920,-37.865],[147.940,-37.865],[147.940,-37.880],[147.920,-37.880],[147.920,-37.865]]]
+              }
+            }]
+          }
+        });
+        map.addLayer({ id: 'notake-fill', type: 'fill', source: 'notake-source', paint: { 'fill-color': '#ef4444', 'fill-opacity': 0.25 } });
+        map.addLayer({ id: 'notake-line', type: 'line', source: 'notake-source', paint: { 'line-color': '#ef4444', 'line-width': 2 } });
+      } else {
+        map.setLayoutProperty('notake-fill','visibility','visible');
+        map.setLayoutProperty('notake-line','visibility','visible');
+      }
+    } else {
+      if (map.getLayer('notake-fill')) map.setLayoutProperty('notake-fill','visibility','none');
+      if (map.getLayer('notake-line')) map.setLayoutProperty('notake-line','visibility','none');
+    }
   }
 
   if (layer === 'bathymetry') {
@@ -1456,13 +1482,11 @@ function toggleLayer(layer, btn) {
   }
 
   if (layer === 'sst') {
-    // Toggle SST colour overlay - add a semi-transparent thermal colour layer
     if (map) {
       if (on) {
         addSSTOverlay();
       } else {
-        if (map.getLayer('sst-layer')) map.removeLayer('sst-layer');
-        if (map.getSource('sst-source')) map.removeSource('sst-source');
+        if (map.getLayer('sst-layer')) map.setLayoutProperty('sst-layer','visibility','none');
       }
     }
   }
@@ -1470,21 +1494,20 @@ function toggleLayer(layer, btn) {
 
 function addSSTOverlay() {
   if (!map || !map.isStyleLoaded()) return;
-  if (map.getLayer('sst-layer')) return;
-  
-  // Use NOAA CoralTemp WMS as SST overlay
-  const today = new Date().toISOString().split('T')[0];
+  if (map.getLayer('sst-layer')) { map.setLayoutProperty('sst-layer','visibility','visible'); return; }
+  // NASA GIBS SST layer - reliable global SST tiles
   map.addSource('sst-source', {
     type: 'raster',
-    tiles: [`https://coastwatch.pfeg.noaa.gov/erddap/wms/NOAA_DHW/request?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=NOAA_DHW:CRW_SST&STYLES=&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&TIME=${today}`],
-    tileSize: 256
+    tiles: ['https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MUR-SST_White/default/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png'],
+    tileSize: 256,
+    attribution: 'NASA GIBS'
   });
   map.addLayer({
     id: 'sst-layer',
     type: 'raster',
     source: 'sst-source',
-    paint: { 'raster-opacity': 0.5 }
-  }, 'waterway-label');
+    paint: { 'raster-opacity': 0.55 }
+  });
 }
 
 // ══ COPERNICUS CHLOROPHYLL ══
@@ -1806,7 +1829,10 @@ async function fetchWeather() {
     document.getElementById('liveWindDir').textContent = 'WIND ' + dir;
     document.getElementById('liveTemp').textContent = c.temperature_2m + '°C';
     document.getElementById('livePressure').textContent = c.surface_pressure.toFixed(0) + ' hPa';
-    document.getElementById('liveWave').textContent = '~0.8m';
+    // Wave height updated by marine fetch
+    if (document.getElementById('liveWave') && !realWave) {
+      document.getElementById('liveWave').textContent = '~0.8m';
+    }
   } catch(e) { console.log('Weather error', e); }
 }
 window.addEventListener('load', fetchWeather);
@@ -2060,6 +2086,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
 
 
 
