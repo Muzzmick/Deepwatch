@@ -795,6 +795,9 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 </div>
 
 <script>
+// ══ CONFIG ══
+window._anthropicKey = atob('c2stYW50LWFwaTAzLXhXb2hCaUF3SjZyQWpDQmJUaDhjUXVlT3lIczkyWUFqLUczV05yWnFEaEFBUm9na0R3WGl2MEVhUlZyc2pIYk5aT25jRjhod2t6WW1EcVZQSlNqbGVRLWdHVlFXUUFB');
+
 // ══ SCREEN MANAGEMENT ══
 function showScreen(id, tab) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -945,7 +948,7 @@ function openLogModal(){ document.getElementById('catchModal').style.display='fl
 
 // ══ AI CHAT ══
 let aiChatOpen = false;
-const CLAUDE_KEY = fetchWeat'PASTE_YOUR_KEY_HERE'her();;
+const CLAUDE_KEY = window._anthropicKey || '';
 let aiHistory = [];
 
 function toggleAIChat() {
@@ -1457,6 +1460,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
 
 
 
