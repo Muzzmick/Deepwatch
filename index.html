@@ -1388,6 +1388,138 @@ window.showApp = function(user) {
   }, 3000);
 };
 
+
+// ══ COPERNICUS CHLOROPHYLL ══
+const COPERNICUS_CLIENT_ID = 'e32014f9-7a67-49b2-a425-bb8e45946312';
+const COPERNICUS_CLIENT_SECRET = '4e42376f-869d-48cd-9368-4f62e864eeab';
+let copernicusToken = null;
+
+async function getCopernicusToken() {
+  try {
+    const res = await fetch('https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=client_credentials&client_id=${COPERNICUS_CLIENT_ID}&client_secret=${COPERNICUS_CLIENT_SECRET}`
+    });
+    const data = await res.json();
+    copernicusToken = data.access_token;
+    return copernicusToken;
+  } catch(e) {
+    console.log('Copernicus auth error:', e);
+    return null;
+  }
+}
+
+async function fetchChlorophyllLayer() {
+  try {
+    const token = await getCopernicusToken();
+    if (!token) return;
+
+    // Get today's date and 7 days ago
+    const today = new Date();
+    const weekAgo = new Date(today - 7 * 24 * 60 * 60 * 1000);
+    const dateStr = today.toISOString().split('T')[0];
+    const weekAgoStr = weekAgo.toISOString().split('T')[0];
+
+    // Sentinel-3 OLCI chlorophyll WMS for Bass Strait / Lakes Entrance area
+    const wmsUrl = `https://sh.dataspace.copernicus.eu/wms?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=OLCI-Chlorophyll&STYLES=&CRS=EPSG:3857&BBOX=147.5,-38.2,148.5,-37.5&WIDTH=512&HEIGHT=512&FORMAT=image/png&TIME=${weekAgoStr}/${dateStr}&MAXCC=20`;
+
+    // Add as image overlay on mapbox
+    if (map && map.isStyleLoaded()) {
+      // Remove existing layer if present
+      if (map.getLayer('chlorophyll-layer')) map.removeLayer('chlorophyll-layer');
+      if (map.getSource('chlorophyll-source')) map.removeSource('chlorophyll-source');
+
+      map.addSource('chlorophyll-source', {
+        type: 'image',
+        url: wmsUrl,
+        coordinates: [
+          [147.5, -37.5],
+          [148.5, -37.5],
+          [148.5, -38.2],
+          [147.5, -38.2]
+        ]
+      });
+
+      map.addLayer({
+        id: 'chlorophyll-layer',
+        type: 'raster',
+        source: 'chlorophyll-source',
+        paint: { 
+          'raster-opacity': 0.6,
+          'raster-color-mix': [0.2126, 0.7152, 0.0722, 0],
+        },
+        layout: { visibility: 'none' } // off by default, toggle with SST button
+      });
+
+      console.log('Chlorophyll layer added!');
+      
+      // Update SST toggle to also control chlorophyll
+      const sstToggle = document.querySelector('.layer-toggle');
+      if (sstToggle) {
+        sstToggle.addEventListener('change', (e) => {
+          if (map.getLayer('chlorophyll-layer')) {
+            map.setLayoutProperty('chlorophyll-layer', 'visibility', e.target.checked ? 'visible' : 'none');
+          }
+        });
+      }
+    }
+
+    // Also fetch real chlorophyll value for current location
+    const statsUrl = `https://sh.dataspace.copernicus.eu/api/v1/statistics`;
+    const statsBody = {
+      input: {
+        bounds: {
+          bbox: [147.8, -38.0, 148.1, -37.7],
+          properties: { crs: "http://www.opengis.net/def/crs/EPSG/0/4326" }
+        },
+        data: [{
+          dataFilter: { timeRange: { from: weekAgoStr + "T00:00:00Z", to: dateStr + "T23:59:59Z" } },
+          type: "sentinel-3-olci"
+        }]
+      },
+      aggregation: {
+        timeRange: { from: weekAgoStr + "T00:00:00Z", to: dateStr + "T23:59:59Z" },
+        aggregationInterval: { of: "P7D" },
+        evalscript: `//VERSION=3
+          function setup() { return { input: ["B08", "B06", "dataMask"], output: { bands: 1 } }; }
+          function evaluatePixel(sample) {
+            // OC4 chlorophyll algorithm
+            const ratio = Math.log10((Math.max(sample.B08, sample.B06)) / sample.B08);
+            const chl = Math.pow(10, 0.3255 - 2.7677*ratio + 2.4409*ratio*ratio - 1.1288*ratio*ratio*ratio - 0.4990*ratio*ratio*ratio*ratio);
+            return [chl * sample.dataMask];
+          }`
+      }
+    };
+
+    const statsRes = await fetch(statsUrl, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(statsBody)
+    });
+
+    if (statsRes.ok) {
+      const statsData = await statsRes.json();
+      const chl = statsData?.data?.[0]?.outputs?.default?.bands?.B0?.stats?.mean;
+      if (chl) {
+        console.log('Real chlorophyll:', chl.toFixed(2), 'mg/m³');
+        // Update hotspot scores with real chlorophyll
+        const chlEl = document.getElementById('chlValue');
+        if (chlEl) chlEl.textContent = chl.toFixed(2) + ' mg/m³';
+      }
+    }
+
+  } catch(e) {
+    console.log('Chlorophyll fetch error:', e);
+  }
+}
+
+// Load chlorophyll after map is ready
+window.addEventListener('load', () => setTimeout(fetchChlorophyllLayer, 4000));
+
 // ══ CATCH FORM ══
 async function submitCatch() {
   const msg = document.getElementById('catchFormMsg');
@@ -1829,6 +1961,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
 
 
 
