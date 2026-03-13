@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -805,11 +805,16 @@ function showScreen(id, tab) {
 mapboxgl.accessToken = 'pk.eyJ1IjoibXV6em1pY2s3NyIsImEiOiJjbW1vZnRjNGIwZDFpMndteXU0b3ZuY2toIn0.Tr-mGo-xQSWC8S8gRisiXA';
 
 const hotspots = [
-  {lng:147.9700,lat:-37.8802,name:"Entrance Channel",score:92,temp:"19.8°C",species:"Snapper · Bream · Whiting",depth:"4–8m",color:"#f97316"},
-  {lng:147.9445,lat:-37.8802,name:"Reeve Channel",score:78,temp:"18.9°C",species:"Flathead · Bream",depth:"3–6m",color:"#f97316"},
-  {lng:147.9100,lat:-37.8820,name:"Lake King Shallows",score:71,temp:"20.1°C",species:"Bream · Mullet",depth:"1–3m",color:"#f97316"},
-  {lng:147.9854,lat:-37.9071,name:"Outer Bar",score:65,temp:"18.2°C",species:"Salmon · Tailor",depth:"6–15m",color:"#f97316"},
-  {lng:148.0400,lat:-37.9071,name:"Sperm Whale Head",score:58,temp:"17.8°C",species:"Snapper",depth:"10–25m",color:"#f97316"},
+  // Real GPS: Entrance Navigation mark S37.53.028 E147.58.033 converted to decimal
+  {lng:147.9672,lat:-37.8838,name:"Entrance Channel",score:92,temp:"19.8°C",species:"Snapper · Bream · Whiting · Mulloway",depth:"4–8m",color:"#f97316"},
+  // North Arm deep channel - known mulloway/snapper spot
+  {lng:147.9350,lat:-37.8820,name:"North Arm Deep",score:78,temp:"18.9°C",species:"Flathead · Bream · Mulloway",depth:"3–6m",color:"#f97316"},
+  // Rigby Island edges - known bream/flathead shallow spot
+  {lng:147.9580,lat:-37.8920,name:"Rigby Island Edge",score:71,temp:"20.1°C",species:"Bream · Dusky Flathead",depth:"1–3m",color:"#f97316"},
+  // Real GPS: 6 Mile Reef S37.57.840 E147.59.882 - snapper/shark at 37m
+  {lng:147.9980,lat:-37.9640,name:"6 Mile Reef",score:65,temp:"18.2°C",species:"Snapper · Shark · Perch · Gurnard",depth:"37m",color:"#f97316"},
+  // Lake King around Raymond Island - known bream spot
+  {lng:147.8650,lat:-37.8750,name:"Raymond Island",score:58,temp:"17.8°C",species:"Bream · Flathead · Whiting",depth:"2–4m",color:"#f97316"},
 ];
 
 const vessels = [
@@ -2021,6 +2026,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
 
 
 
