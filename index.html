@@ -628,8 +628,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
   <div class="vms-body">
     <div class="vms-list" id="vmsVesselList"></div>
     <div class="vms-map">
-      <canvas id="vmsCanvas"></canvas>
-      <div class="map-grid"></div>
+      <div id="vmsMapbox" style="position:absolute;inset:0;width:100%;height:100%;"></div>
     </div>
     <div class="vms-detail" id="vmsDetail">
       <div class="vd-title">Select a vessel</div>
@@ -805,18 +804,18 @@ function showScreen(id, tab) {
 mapboxgl.accessToken = 'pk.eyJ1IjoibXV6em1pY2s3NyIsImEiOiJjbW1vZnRjNGIwZDFpMndteXU0b3ZuY2toIn0.Tr-mGo-xQSWC8S8gRisiXA';
 
 const hotspots = [
-  {lng:147.982,lat:-37.879,name:"Entrance Channel",score:92,temp:"19.8°C",species:"Snapper · Bream · Whiting",depth:"4–8m",color:"#f97316"},
-  {lng:147.965,lat:-37.872,name:"Reeve Channel",score:78,temp:"18.9°C",species:"Flathead · Bream",depth:"3–6m",color:"#f97316"},
-  {lng:147.920,lat:-37.895,name:"Lake King Shallows",score:71,temp:"20.1°C",species:"Bream · Mullet",depth:"1–3m",color:"#f97316"},
-  {lng:148.010,lat:-37.885,name:"Outer Bar",score:65,temp:"18.2°C",species:"Salmon · Tailor",depth:"6–15m",color:"#f97316"},
-  {lng:148.035,lat:-37.862,name:"Sperm Whale Head",score:58,temp:"17.8°C",species:"Snapper",depth:"10–25m",color:"#f97316"},
+  {lng:147.9860,lat:-37.8900,name:"Entrance Channel",score:92,temp:"19.8°C",species:"Snapper · Bream · Whiting",depth:"4–8m",color:"#f97316"},
+  {lng:147.9600,lat:-37.8870,name:"Reeve Channel",score:78,temp:"18.9°C",species:"Flathead · Bream",depth:"3–6m",color:"#f97316"},
+  {lng:147.8800,lat:-37.9100,name:"Lake King Shallows",score:71,temp:"20.1°C",species:"Bream · Mullet",depth:"1–3m",color:"#f97316"},
+  {lng:148.0100,lat:-37.9100,name:"Outer Bar",score:65,temp:"18.2°C",species:"Salmon · Tailor",depth:"6–15m",color:"#f97316"},
+  {lng:148.0500,lat:-37.9200,name:"Sperm Whale Head",score:58,temp:"17.8°C",species:"Snapper",depth:"10–25m",color:"#f97316"},
 ];
 
 const vessels = [
-  {lng:147.980,lat:-37.881,name:"MV Seabreeze III",type:"commercial"},
-  {lng:147.960,lat:-37.870,name:"Lakes Sport Fishing",type:"charter"},
-  {lng:147.995,lat:-37.890,name:"Rec 7R-221",type:"recreational"},
-  {lng:147.972,lat:-37.875,name:"MV Gippsland Star",type:"commercial"},
+  {lng:147.9860,lat:-37.8895,name:"MV Seabreeze III",type:"commercial"},
+  {lng:147.9750,lat:-37.8880,name:"Lakes Sport Fishing",type:"charter"},
+  {lng:148.0000,lat:-37.9150,name:"Rec 7R-221",type:"recreational"},
+  {lng:147.9550,lat:-37.8950,name:"MV Gippsland Star",type:"commercial"},
 ];
 
 let map;
@@ -824,9 +823,9 @@ function initMap() {
   map = new mapboxgl.Map({
     container: 'mapbox',
     style: 'mapbox://styles/mapbox/satellite-streets-v12',
-    center: [147.980, -37.882],
-    zoom: 12,
-    pitch: 30,
+    center: [147.978, -37.893],
+    zoom: 12.5,
+    pitch: 40,
     bearing: 0
   });
 
@@ -1112,29 +1111,46 @@ function selVessel(i){
     ${['Outer Bar — 09:30','Entrance Channel — 11:15','Reeve Channel — 12:00','Current position — 13:41'].map((loc,j)=>`<div class="track-point"><div class="tp-dot" style="background:${j===3?'#22c55e':'rgba(0,255,224,.3)'}"></div><div class="tp-info"><div class="tp-loc">${loc.split('—')[0]}</div><div class="tp-time">${loc.split('—')[1]}</div></div></div>`).join('')}
     <div style="margin-top:12px;padding:8px 10px;border:1px solid rgba(239,68,68,.25);border-radius:5px;background:rgba(239,68,68,.06);font-size:9px;color:#fca5a5;">⚠ VMS transponder ping every 2 minutes. Last ping 00:38 ago.</div>`;
 }
+let vmsMap = null;
 function animVMS(){
-  const c=document.getElementById('vmsCanvas');if(!c)return;
-  c.width=c.offsetWidth;c.height=c.offsetHeight;
-  const ct=c.getContext('2d'),W=c.width,H=c.height;
-  function draw(t){
-    if(!document.getElementById('vmsScreen').classList.contains('active')){requestAnimationFrame(draw);return;}
-    ct.clearRect(0,0,W,H);
-    const og=ct.createLinearGradient(0,0,W,H);og.addColorStop(0,'#020d18');og.addColorStop(1,'#041f35');ct.fillStyle=og;ct.fillRect(0,0,W,H);
-    // simplified map
-    ct.beginPath();ct.moveTo(0,.22*H);ct.lineTo(.35*W,.18*H);ct.lineTo(.62*W,.25*H);ct.lineTo(W,.30*H);ct.lineTo(W,0);ct.lineTo(0,0);ct.closePath();ct.fillStyle='#0f1f0f';ct.fill();ct.strokeStyle='rgba(0,255,224,.2)';ct.lineWidth=1;ct.stroke();
-    [[.28,.42,.14,.09],[.42,.36,.07,.07],[.14,.40,.10,.08]].forEach(([ex,ey,rX,rY])=>{ct.beginPath();ct.ellipse(ex*W,ey*H,rX*W,rY*H,-.15,0,Math.PI*2);ct.fillStyle='#031525';ct.fill();ct.strokeStyle='rgba(0,255,224,.1)';ct.lineWidth=1;ct.stroke();});
-    ct.beginPath();ct.moveTo(.10*W,.58*H);ct.bezierCurveTo(.28*W,.55*H,.46*W,.52*H,.58*W,.48*H);ct.bezierCurveTo(.68*W,.45*H,.78*W,.47*H,.90*W,.50*H);ct.lineTo(W,.52*H);ct.lineTo(W,.63*H);ct.lineTo(.10*W,.69*H);ct.closePath();ct.fillStyle='#0f0e07';ct.fill();
-    vmsVessels.forEach((v,i)=>{
-      const vx=v.rx*W,vy=v.ry*H;
-      const oc=v.type==='commercial'?'#f97316':v.type==='charter'?'#a855f7':'#00ffe0';
-      const pulse=Math.sin(t*.003+i)*.5+.5;
-      ct.beginPath();ct.arc(vx,vy,12+pulse*4,0,Math.PI*2);ct.strokeStyle=oc+'33';ct.lineWidth=1;ct.stroke();
-      ct.save();ct.translate(vx,vy);ct.rotate(v.heading*Math.PI/180);ct.beginPath();ct.moveTo(0,-7);ct.lineTo(4,5);ct.lineTo(-4,5);ct.closePath();ct.fillStyle=oc;ct.fill();ct.restore();
-      ct.fillStyle=oc;ct.font='8px JetBrains Mono';ct.textAlign='center';ct.fillText(v.id,vx,vy+20);
+  if (vmsMap) return;
+  setTimeout(() => {
+    const el = document.getElementById('vmsMapbox');
+    if (!el) return;
+    vmsMap = new mapboxgl.Map({
+      container: 'vmsMapbox',
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      center: [147.978, -37.893],
+      zoom: 12,
+      pitch: 30,
     });
-    requestAnimationFrame(draw);
-  }
-  requestAnimationFrame(draw);
+    vmsMap.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    vmsMap.on('load', () => {
+      // Real vessel positions in water
+      const vmsCoords = [
+        {lng:147.9860,lat:-37.8895},
+        {lng:147.9700,lat:-37.8950},
+        {lng:147.9750,lat:-37.8880},
+        {lng:147.9820,lat:-37.8910},
+        {lng:148.0000,lat:-37.9100},
+        {lng:148.0300,lat:-37.8900},
+      ];
+      vmsVessels.forEach((v, i) => {
+        const color = v.type==='commercial'?'#f97316':v.type==='charter'?'#a855f7':'#00ffe0';
+        const coord = vmsCoords[i] || {lng:147.985,lat:-37.889};
+        const el = document.createElement('div');
+        el.style.cssText = `width:12px;height:16px;background:${color};clip-path:polygon(50% 0%,100% 100%,0% 100%);cursor:pointer;filter:drop-shadow(0 0 6px ${color});`;
+        el.addEventListener('click', () => selVessel(i));
+        new mapboxgl.Marker({element: el}).setLngLat([coord.lng, coord.lat]).addTo(vmsMap);
+
+        // Vessel label
+        const label = document.createElement('div');
+        label.style.cssText = `color:${color};font-size:8px;font-family:'JetBrains Mono',monospace;margin-top:18px;white-space:nowrap;text-shadow:0 0 4px #000;`;
+        label.textContent = v.id;
+        new mapboxgl.Marker({element: label}).setLngLat([coord.lng, coord.lat]).addTo(vmsMap);
+      });
+    });
+  }, 200);
 }
 
 // ══ MOBILE MINI MAP ══
@@ -1424,6 +1440,8 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
+
 
 
 
