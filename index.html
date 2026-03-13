@@ -840,13 +840,13 @@ function initMap() {
     box.style.display = 'block';
   });
 
-  map.on('load', () => {
+  map.on('idle', () => {
     // Add hotspot circles
     hotspots.forEach((h, i) => {
       const el = document.createElement('div');
-      const size = 44;
-      el.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;background:rgba(249,115,22,0.35);border:3px solid #f97316;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:pulse-marker 2s infinite ${i*0.4}s;box-shadow:0 0 16px rgba(249,115,22,0.6);`;
-      el.innerHTML = `<span style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;text-shadow:0 0 6px #000;">#${i+1}</span>`;
+      const size = 50;
+      el.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;background:rgba(249,115,22,0.6);border:4px solid #ff6600;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 24px rgba(255,102,0,0.9),0 0 48px rgba(255,102,0,0.4);z-index:999;`;
+      el.innerHTML = `<span style="font-family:'Syne',sans-serif;font-weight:900;font-size:16px;color:#fff;text-shadow:0 0 8px #000;">#${i+1}</span>`;
 
       el.addEventListener('click', () => {
         selHotspot(i, document.querySelectorAll('.hs')[i]);
@@ -1450,6 +1450,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
 
 
 
