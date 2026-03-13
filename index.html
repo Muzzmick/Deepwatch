@@ -422,8 +422,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
         <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#f97316"></div><div class="layer-name">Hotspot Zones</div></div><button class="tog on" id="togHS" onclick="toggleLayer('hotspots',this)"></button></div>
         <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#a855f7"></div><div class="layer-name">Fleet / VMS</div></div><button class="tog on" id="togVMS" onclick="toggleLayer('vms',this)"></button></div>
         <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#22c55e"></div><div class="layer-name">Chlorophyll-a</div></div><button class="tog" id="togCHL" onclick="toggleLayer('chlorophyll',this)"></button></div>
-        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#3b82f6"></div><div class="layer-name">Bathymetry</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div>
-        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#ef4444"></div><div class="layer-name">No-Take Zones</div></div><button class="tog" onclick="this.classList.toggle('on')"></button></div>
+        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#3b82f6"></div><div class="layer-name">Bathymetry</div></div><button class="tog" id="togBathy" onclick="toggleLayer('bathymetry',this)"></button></div>
+        <div class="layer-row"><div class="layer-left"><div class="layer-dot" style="background:#ef4444"></div><div class="layer-name">No-Take Zones</div></div><button class="tog" id="togNoTake" onclick="toggleLayer('notake',this)"></button></div>
       </div>
     </div>
   </div>
@@ -845,7 +845,10 @@ function initMap() {
     box.style.display = 'block';
   });
 
+  let markersAdded = false;
   map.on('idle', () => {
+    if (markersAdded) return;
+    markersAdded = true;
     // Add hotspot circles
     hotspots.forEach((h, i) => {
       const el = document.createElement('div');
@@ -1418,6 +1421,37 @@ function toggleLayer(layer, btn) {
       map.setLayoutProperty('chlorophyll-layer', 'visibility', on ? 'visible' : 'none');
     } else if (on) {
       fetchChlorophyllLayer();
+    }
+  }
+
+  if (layer === 'notake') {
+    // No-take zones would be polygon overlays - placeholder for now
+    console.log('No-take zones toggle:', on);
+  }
+
+  if (layer === 'bathymetry') {
+    if (!map) return;
+    if (on) {
+      if (!map.getSource('bathy-source')) {
+        map.addSource('bathy-source', {
+          type: 'raster',
+          tiles: ['https://tiles.emodnet-bathymetry.eu/2020/baselayer/web_mercator/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: 'EMODnet Bathymetry'
+        });
+        map.addLayer({
+          id: 'bathy-layer',
+          type: 'raster',
+          source: 'bathy-source',
+          paint: { 'raster-opacity': 0.5 }
+        });
+      } else {
+        map.setLayoutProperty('bathy-layer', 'visibility', 'visible');
+      }
+    } else {
+      if (map.getLayer('bathy-layer')) {
+        map.setLayoutProperty('bathy-layer', 'visibility', 'none');
+      }
     }
   }
 
@@ -2026,6 +2060,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
 
 
 
