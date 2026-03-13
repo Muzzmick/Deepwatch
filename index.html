@@ -437,6 +437,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
       <div class="sat-chip" id="satPassChip">PASS · <b>14:32</b></div>
     </div>
     <div class="map-tooltip" id="tooltip"></div>
+    <div id="coordBox" style="display:none;position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(4,31,53,.97);border:1px solid #00ffe0;border-radius:6px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#00ffe0;z-index:100;white-space:nowrap;"></div>
   </div>
 
   <div class="sidebar-right">
@@ -804,18 +805,18 @@ function showScreen(id, tab) {
 mapboxgl.accessToken = 'pk.eyJ1IjoibXV6em1pY2s3NyIsImEiOiJjbW1vZnRjNGIwZDFpMndteXU0b3ZuY2toIn0.Tr-mGo-xQSWC8S8gRisiXA';
 
 const hotspots = [
-  {lng:147.9850,lat:-37.8710,name:"Entrance Channel",score:92,temp:"19.8°C",species:"Snapper · Bream · Whiting",depth:"4–8m",color:"#f97316"},
-  {lng:147.9550,lat:-37.8690,name:"Reeve Channel",score:78,temp:"18.9°C",species:"Flathead · Bream",depth:"3–6m",color:"#f97316"},
-  {lng:147.8600,lat:-37.8850,name:"Lake King Shallows",score:71,temp:"20.1°C",species:"Bream · Mullet",depth:"1–3m",color:"#f97316"},
-  {lng:147.9950,lat:-37.9100,name:"Outer Bar",score:65,temp:"18.2°C",species:"Salmon · Tailor",depth:"6–15m",color:"#f97316"},
-  {lng:148.0500,lat:-37.9000,name:"Sperm Whale Head",score:58,temp:"17.8°C",species:"Snapper",depth:"10–25m",color:"#f97316"},
+  {lng:147.9845,lat:-37.8686,name:"Entrance Channel",score:92,temp:"19.8°C",species:"Snapper · Bream · Whiting",depth:"4–8m",color:"#f97316"},
+  {lng:147.9600,lat:-37.8686,name:"Reeve Channel",score:78,temp:"18.9°C",species:"Flathead · Bream",depth:"3–6m",color:"#f97316"},
+  {lng:147.9200,lat:-37.8686,name:"Lake King Shallows",score:71,temp:"20.1°C",species:"Bream · Mullet",depth:"1–3m",color:"#f97316"},
+  {lng:147.9854,lat:-37.9071,name:"Outer Bar",score:65,temp:"18.2°C",species:"Salmon · Tailor",depth:"6–15m",color:"#f97316"},
+  {lng:148.0400,lat:-37.9071,name:"Sperm Whale Head",score:58,temp:"17.8°C",species:"Snapper",depth:"10–25m",color:"#f97316"},
 ];
 
 const vessels = [
-  {lng:147.9860,lat:-37.8700,name:"MV Seabreeze III",type:"commercial"},
-  {lng:147.9700,lat:-37.8680,name:"Lakes Sport Fishing",type:"charter"},
-  {lng:147.9560,lat:-37.8660,name:"Rec 7R-221",type:"recreational"},
-  {lng:147.9430,lat:-37.8700,name:"MV Gippsland Star",type:"commercial"},
+  {lng:147.9845,lat:-37.8686,name:"MV Seabreeze III",type:"commercial"},
+  {lng:147.9700,lat:-37.8686,name:"Lakes Sport Fishing",type:"charter"},
+  {lng:147.9560,lat:-37.8686,name:"Rec 7R-221",type:"recreational"},
+  {lng:147.9400,lat:-37.8686,name:"MV Gippsland Star",type:"commercial"},
 ];
 
 let map;
@@ -823,13 +824,21 @@ function initMap() {
   map = new mapboxgl.Map({
     container: 'mapbox',
     style: 'mapbox://styles/mapbox/satellite-streets-v12',
-    center: [147.965, -37.871],
+    center: [147.965, -37.8686],
     zoom: 12.5,
     pitch: 0,
     bearing: 0
   });
 
   map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+
+  // Click to show coordinates
+  map.on('click', (e) => {
+    const {lng, lat} = e.lngLat;
+    const box = document.getElementById('coordBox');
+    box.textContent = `📍 lng:${lng.toFixed(4)}, lat:${lat.toFixed(4)} — copy these!`;
+    box.style.display = 'block';
+  });
 
   map.on('load', () => {
     // Add hotspot circles
@@ -1129,12 +1138,12 @@ function animVMS(){
     vmsMap.on('load', () => {
       // Real vessel positions in water
       const vmsCoords = [
-        {lng:147.9860,lat:-37.8700},
-        {lng:147.9430,lat:-37.8700},
-        {lng:147.9700,lat:-37.8680},
-        {lng:147.9560,lat:-37.8660},
-        {lng:147.9950,lat:-37.9100},
-        {lng:148.0500,lat:-37.9000},
+        {lng:147.9845,lat:-37.8686},
+        {lng:147.9400,lat:-37.8686},
+        {lng:147.9700,lat:-37.8686},
+        {lng:147.9560,lat:-37.8686},
+        {lng:147.9854,lat:-37.9071},
+        {lng:148.0400,lat:-37.9071},
       ];
       vmsVessels.forEach((v, i) => {
         const color = v.type==='commercial'?'#f97316':v.type==='charter'?'#a855f7':'#00ffe0';
@@ -1441,6 +1450,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
 
 
 
