@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -870,6 +870,7 @@ function initMap() {
     vessels.forEach(v => {
       const color = v.type==='commercial'?'#f97316':v.type==='charter'?'#a855f7':'#00ffe0';
       const el = document.createElement('div');
+      el.className = 'vms-marker';
       el.style.cssText = `width:10px;height:14px;background:${color};clip-path:polygon(50% 0%,100% 100%,0% 100%);cursor:pointer;filter:drop-shadow(0 0 4px ${color});`;
       el.title = v.name;
       new mapboxgl.Marker({ element: el }).setLngLat([v.lng, v.lat]).addTo(map);
@@ -1396,19 +1397,14 @@ function toggleLayer(layer, btn) {
   const on = btn.classList.contains('on');
 
   if (layer === 'hotspots') {
-    document.querySelectorAll('.mapboxgl-marker').forEach(m => {
-      if (m.querySelector('span')) { // hotspot markers have number spans
-        m.style.display = on ? 'flex' : 'none';
-      }
+    document.querySelectorAll('.hs-marker').forEach(m => {
+      m.style.display = on ? 'flex' : 'none';
     });
   }
 
   if (layer === 'vms') {
-    document.querySelectorAll('.mapboxgl-marker').forEach(m => {
-      // vessel markers use clip-path triangles
-      if (m.querySelector('div') && m.style.cssText && m.style.cssText.includes('clip-path')) {
-        m.style.display = on ? 'block' : 'none';
-      }
+    document.querySelectorAll('.vms-marker').forEach(m => {
+      m.style.display = on ? 'block' : 'none';
     });
   }
 
@@ -1721,6 +1717,7 @@ function animVMS(){
         const color = v.type==='commercial'?'#f97316':v.type==='charter'?'#a855f7':'#00ffe0';
         const coord = vmsCoords[i] || {lng:147.985,lat:-37.889};
         const el = document.createElement('div');
+        el.className = 'vms-marker';
         el.style.cssText = `width:12px;height:16px;background:${color};clip-path:polygon(50% 0%,100% 100%,0% 100%);cursor:pointer;filter:drop-shadow(0 0 6px ${color});`;
         el.addEventListener('click', () => selVessel(i));
         new mapboxgl.Marker({element: el}).setLngLat([coord.lng, coord.lat]).addTo(vmsMap);
@@ -2024,6 +2021,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 </div>
 </body>
 </html>
+
 
 
 
