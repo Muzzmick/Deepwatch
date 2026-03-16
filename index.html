@@ -1303,16 +1303,16 @@ let photoBase64 = null;
 // ══ REAL HOTSPOT DATA ══
 // Coordinates verified from fishing forums and GPS marks
 const hotspots = [
-  // GPS verified: entrance navigation channel to Bass Strait
-  {lng:147.9855, lat:-37.8875, name:'Entrance Channel',   species:'Snapper · Bream · Whiting · Mulloway', depth:'4–8m',  temp:'—'},
-  // Reeve Channel - north of Flannagan Island
-  {lng:147.9520, lat:-37.8780, name:'Reeve Channel',      species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',  temp:'—'},
-  // Cunninghame Arm - town side water
-  {lng:147.9750, lat:-37.8800, name:'Cunninghame Arm',    species:'Trevally · Salmon · Bream · Luderick',  depth:'2–4m',  temp:'—'},
-  // 6 Mile Reef - real GPS mark S38°00.1050' E148°02.2270'
+  // User confirmed water click: lng:147.9726, lat:-37.8897
+  {lng:147.9726, lat:-37.8897, name:'Entrance Channel',   species:'Snapper · Bream · Whiting · Mulloway', depth:'4–8m',  temp:'—'},
+  // User confirmed North Arm water: lng:147.9445, lat:-37.8802
+  {lng:147.9445, lat:-37.8802, name:'Reeve Channel',      species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',  temp:'—'},
+  // Cunninghame Arm water - between Reeve and Entrance
+  {lng:147.9600, lat:-37.8820, name:'Cunninghame Arm',    species:'Trevally · Salmon · Bream · Luderick',  depth:'2–4m',  temp:'—'},
+  // 6 Mile Reef - real GPS S38°00.1050' E148°02.2270'
   {lng:148.0371, lat:-38.0018, name:'Deep Reef (40m)',     species:'Snapper · Gummy Shark · Reef Perch',    depth:'40–45m',temp:'—'},
-  // Nungurner - west along North Arm
-  {lng:147.9200, lat:-37.8760, name:'Nungurner Channel',  species:'Whiting · Flathead · Mullet',            depth:'2–4m',  temp:'—'},
+  // Nungurner - further west confirmed water
+  {lng:147.9100, lat:-37.8760, name:'Nungurner Channel',  species:'Whiting · Flathead · Mullet',            depth:'2–4m',  temp:'—'},
 ];
 
 // ══ AUTH ══
@@ -1674,6 +1674,21 @@ function updateFishingWindows() {
 }
 
 // ══ MAPBOX ══
+function showHotspotPopup(i) {
+  const h = hotspots[i];
+  if (!h || !map) return;
+  new mapboxgl.Popup({ offset: 25, className: 'dw-popup', closeButton: true })
+    .setLngLat([h.lng, h.lat])
+    .setHTML(
+      '<div style="font-family:JetBrains Mono,monospace;min-width:180px;padding:4px;">' +
+      '<div style="font-family:Syne,sans-serif;font-weight:800;color:#00ffe0;font-size:14px;margin-bottom:10px;">' + h.name + '</div>' +
+      '<div style="font-size:10px;color:#e0f4f1;margin-bottom:5px;">📏 Depth: <b>' + h.depth + '</b></div>' +
+      '<div style="font-size:10px;color:#fdba74;margin-bottom:5px;">🐟 ' + h.species + '</div>' +
+      '</div>'
+    )
+    .addTo(map);
+}
+
 function initMap() {
   mapboxgl.accessToken = MAPBOX_TOKEN;
   map = new mapboxgl.Map({
@@ -1703,18 +1718,10 @@ function initMap() {
     hotspots.forEach((h, i) => {
       const el = document.createElement('div');
       el.className = 'hs-marker';
-      el.style.cssText = 'width:48px;height:48px;border-radius:50%;background:rgba(249,115,22,.55);border:3px solid #ff6600;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 22px rgba(255,102,0,.8),0 0 44px rgba(255,102,0,.3);';
+      el.style.cssText = 'width:48px;height:48px;border-radius:50%;background:rgba(249,115,22,.55);border:3px solid #ff6600;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 22px rgba(255,102,0,.8),0 0 44px rgba(255,102,0,.3);position:relative;z-index:10;';
       el.innerHTML = `<span style="font-family:'Syne',sans-serif;font-weight:900;font-size:14px;color:#fff;text-shadow:0 0 6px #000;">#${i+1}</span>`;
-      el.onclick = function() {
-        new mapboxgl.Popup({ offset: 25, className: 'dw-popup', closeButton: true })
-          .setLngLat([h.lng, h.lat])
-          .setHTML('<div style="font-family:JetBrains Mono,monospace;min-width:180px;padding:4px;">' +
-            '<div style="font-family:Syne,sans-serif;font-weight:800;color:#00ffe0;font-size:13px;margin-bottom:8px;">' + h.name + '</div>' +
-            '<div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">📏 Depth: <b>' + h.depth + '</b></div>' +
-            '<div style="font-size:10px;color:#fdba74;">🐟 ' + h.species + '</div>' +
-            '</div>')
-          .addTo(map);
-      };
+      el.dataset.hsIndex = i;
+      el.onclick = function() { showHotspotPopup(parseInt(this.dataset.hsIndex)); };
       new mapboxgl.Marker({ element: el }).setLngLat([h.lng, h.lat]).addTo(map);
       hsMarkers.push(el);
     });
