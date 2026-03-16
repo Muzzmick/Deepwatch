@@ -888,6 +888,11 @@ tr:hover td{background:rgba(6,51,82,.3);}
 
       <div class="sec">
         <div class="sec-label">AI Hotspot Ranking</div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;">
+          <button id="filterAll" onclick="filterHotspots('all',this)" style="flex:1;padding:4px;border:1px solid var(--cglow);border-radius:4px;background:var(--cdim);color:var(--cyan);font-size:8px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">ALL</button>
+          <button id="filterBoat" onclick="filterHotspots('boat',this)" style="flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:8px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🚤 BOAT</button>
+          <button id="filterLand" onclick="filterHotspots('land',this)" style="flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:8px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🚶 LAND</button>
+        </div>
         <div class="hs-list" id="hsList"></div>
       </div>
 
@@ -1195,16 +1200,27 @@ tr:hover td{background:rgba(6,51,82,.3);}
 
     <div class="field-label">Location</div>
     <select class="field-input" id="cf_location">
-      <option>Entrance Channel</option>
-      <option>Reeve Channel</option>
-      <option>Cunninghame Arm</option>
-      <option>North Arm</option>
-      <option>Lake King</option>
-      <option>Lake Victoria</option>
-      <option>Lake Wellington</option>
-      <option>Ninety Mile Beach</option>
-      <option>6 Mile Reef</option>
-      <option>Nungurner Channel</option>
+      <optgroup label="🚤 Boat Spots">
+        <option>Entrance Channel</option>
+        <option>Reeve Channel</option>
+        <option>Cunninghame Arm</option>
+        <option>North Arm</option>
+        <option>Lake King</option>
+        <option>Lake Victoria</option>
+        <option>Lake Wellington</option>
+        <option>6 Mile Reef</option>
+        <option>Nungurner Channel</option>
+      </optgroup>
+      <optgroup label="🚶 Land-Based">
+        <option>Lakes Entrance Jetty</option>
+        <option>Entrance Rock Wall</option>
+        <option>Ninety Mile Beach (surf)</option>
+        <option>Kalimna Jetty</option>
+        <option>Metung Jetty</option>
+        <option>Footbridge</option>
+        <option>Esplanade Banks</option>
+        <option>Nungurner Jetty</option>
+      </optgroup>
       <option>Other</option>
     </select>
 
@@ -1303,16 +1319,18 @@ let photoBase64 = null;
 // ══ REAL HOTSPOT DATA ══
 // Coordinates verified from fishing forums and GPS marks
 const hotspots = [
-  // User confirmed water click: lng:147.9726, lat:-37.8897
-  {lng:147.9726, lat:-37.8897, name:'Entrance Channel',   species:'Snapper · Bream · Whiting · Mulloway', depth:'4–8m',  temp:'—'},
-  // User confirmed North Arm water: lng:147.9445, lat:-37.8802
-  {lng:147.9445, lat:-37.8802, name:'Reeve Channel',      species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',  temp:'—'},
-  // Cunninghame Arm water - between Reeve and Entrance
-  {lng:147.9600, lat:-37.8820, name:'Cunninghame Arm',    species:'Trevally · Salmon · Bream · Luderick',  depth:'2–4m',  temp:'—'},
-  // 6 Mile Reef - real GPS S38°00.1050' E148°02.2270'
-  {lng:148.0371, lat:-38.0018, name:'Deep Reef (40m)',     species:'Snapper · Gummy Shark · Reef Perch',    depth:'40–45m',temp:'—'},
-  // Nungurner - further west confirmed water
-  {lng:147.9100, lat:-37.8760, name:'Nungurner Channel',  species:'Whiting · Flathead · Mullet',            depth:'2–4m',  temp:'—'},
+  // ── BOAT SPOTS ──
+  {lng:147.9726, lat:-37.8897, name:'Entrance Channel',      type:'boat',  species:'Snapper · Bream · Whiting · Mulloway',  depth:'4–8m',   access:'Boat'},
+  {lng:147.9445, lat:-37.8802, name:'Reeve Channel',         type:'boat',  species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',   access:'Boat'},
+  {lng:147.9600, lat:-37.8820, name:'Cunninghame Arm',       type:'boat',  species:'Trevally · Salmon · Bream · Luderick',  depth:'2–4m',   access:'Boat/Kayak'},
+  {lng:148.0371, lat:-38.0018, name:'Deep Reef (40m)',        type:'boat',  species:'Snapper · Gummy Shark · Reef Perch',   depth:'40–45m', access:'Boat'},
+  {lng:147.9100, lat:-37.8760, name:'Nungurner Channel',     type:'boat',  species:'Whiting · Flathead · Mullet',           depth:'2–4m',   access:'Boat/Kayak'},
+  // ── LAND-BASED SPOTS ──
+  {lng:147.9810, lat:-37.8800, name:'Lakes Entrance Jetty',  type:'land',  species:'Bream · Trevally · Luderick · Mullet',  depth:'2–4m',   access:'Walk-up jetty'},
+  {lng:147.9865, lat:-37.8858, name:'Entrance Rock Wall',    type:'land',  species:'Salmon · Tailor · Bream · Whiting',     depth:'2–6m',   access:'Rock wall walk'},
+  {lng:147.9820, lat:-37.8870, name:'Surf Beach Gutters',    type:'land',  species:'Salmon · Tailor · Whiting',             depth:'1–3m',   access:'Ninety Mile Beach'},
+  {lng:147.9500, lat:-37.8790, name:'Kalimna Jetty',         type:'land',  species:'Bream · Flathead · Luderick',           depth:'2–4m',   access:'Public jetty'},
+  {lng:147.9350, lat:-37.8700, name:'Metung Jetty',          type:'land',  species:'Bream · Whiting · Mullet',              depth:'1–3m',   access:'Public jetty'},
 ];
 
 // ══ AUTH ══
@@ -1680,10 +1698,12 @@ function showHotspotPopup(i) {
   new mapboxgl.Popup({ offset: 25, className: 'dw-popup', closeButton: true })
     .setLngLat([h.lng, h.lat])
     .setHTML(
-      '<div style="font-family:JetBrains Mono,monospace;min-width:180px;padding:4px;">' +
-      '<div style="font-family:Syne,sans-serif;font-weight:800;color:#00ffe0;font-size:14px;margin-bottom:10px;">' + h.name + '</div>' +
-      '<div style="font-size:10px;color:#e0f4f1;margin-bottom:5px;">📏 Depth: <b>' + h.depth + '</b></div>' +
-      '<div style="font-size:10px;color:#fdba74;margin-bottom:5px;">🐟 ' + h.species + '</div>' +
+      '<div style="font-family:JetBrains Mono,monospace;min-width:200px;padding:4px;">' +
+      '<div style="font-family:Syne,sans-serif;font-weight:800;color:#00ffe0;font-size:14px;margin-bottom:8px;">' + h.name + '</div>' +
+      '<div style="display:inline-block;padding:2px 8px;border-radius:3px;font-size:8px;letter-spacing:1px;margin-bottom:8px;background:' + (h.type==='land'?'rgba(59,130,246,.2)':'rgba(249,115,22,.2)') + ';color:' + (h.type==='land'?'#3b82f6':'#f97316') + ';">' + (h.type==='land'?'🚶 LAND-BASED':'🚤 BOAT') + '</div>' +
+      '<div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">📍 Access: <b>' + h.access + '</b></div>' +
+      '<div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">📏 Depth: <b>' + h.depth + '</b></div>' +
+      '<div style="font-size:10px;color:#fdba74;">🐟 ' + h.species + '</div>' +
       '</div>'
     )
     .addTo(map);
@@ -1718,7 +1738,12 @@ function initMap() {
     hotspots.forEach((h, i) => {
       const el = document.createElement('div');
       el.className = 'hs-marker';
-      el.style.cssText = 'width:48px;height:48px;border-radius:50%;background:rgba(249,115,22,.55);border:3px solid #ff6600;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 22px rgba(255,102,0,.8),0 0 44px rgba(255,102,0,.3);position:relative;z-index:10;';
+      const isLand = h.type === 'land';
+      const markerBg = isLand ? 'rgba(59,130,246,.55)' : 'rgba(249,115,22,.55)';
+      const markerBorder = isLand ? '#3b82f6' : '#ff6600';
+      const markerGlow = isLand ? 'rgba(59,130,246,.8),0 0 44px rgba(59,130,246,.3)' : 'rgba(255,102,0,.8),0 0 44px rgba(255,102,0,.3)';
+      el.dataset.hsType = h.type;
+      el.style.cssText = `width:44px;height:44px;border-radius:${isLand?'6px':'50%'};background:${markerBg};border:3px solid ${markerBorder};display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 22px ${markerGlow};position:relative;z-index:10;`;
       el.innerHTML = `<span style="font-family:'Syne',sans-serif;font-weight:900;font-size:14px;color:#fff;text-shadow:0 0 6px #000;">#${i+1}</span>`;
       el.dataset.hsIndex = i;
       el.onclick = function() { showHotspotPopup(parseInt(this.dataset.hsIndex)); };
