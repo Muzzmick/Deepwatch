@@ -6,6 +6,131 @@
 <title>DeepWatch — Lakes Entrance Fishing</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+
+
+// ══ SHARE CATCH ══
+let shareSpecies = '', shareWeight = '', shareLocationStr = '';
+
+function shareCatch(species, weight, location) {
+  shareSpecies = species; shareWeight = weight; shareLocationStr = location;
+  const icons = {'Snapper':'🎣','Bream':'🐠','Flathead':'🐟','Whiting':'🐡','Salmon':'🐟','Mulloway':'🎣','Trevally':'🐠','Shark':'🦈'};
+  const icon = Object.entries(icons).find(([k]) => species.includes(k))?.[1] || '🐟';
+  document.getElementById('shareSpeciesIcon').textContent = icon;
+  document.getElementById('shareSpeciesName').textContent = species;
+  document.getElementById('shareDetails').textContent = weight + 'kg · Lakes Entrance';
+  document.getElementById('shareLocation').textContent = '📍 ' + location;
+  document.getElementById('shareScore').textContent = document.getElementById('aiScore').textContent;
+  document.getElementById('shareTemp').textContent = document.getElementById('liveTemp').textContent;
+  document.getElementById('shareWave').textContent = document.getElementById('liveWave').textContent;
+  document.getElementById('shareModal').style.display = 'flex';
+}
+
+function getShareText() {
+  const score = document.getElementById('aiScore').textContent;
+  return `🎣 Just caught ${shareWeight}kg ${shareSpecies} at ${shareLocationStr}, Lakes Entrance!
+
+Conditions today: AI Fishing Score ${score}/100 · ${document.getElementById('liveTemp').textContent} · ${document.getElementById('liveWave').textContent} swell
+
+Track your fishing with DeepWatch 🌊
+https://muzzmick.github.io/Deepwatch`;
+}
+
+function shareToFacebook() {
+  const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://muzzmick.github.io/Deepwatch')}&quote=${encodeURIComponent(getShareText())}`;
+  window.open(url, '_blank');
+}
+
+function shareToWhatsApp() {
+  const url = `https://wa.me/?text=${encodeURIComponent(getShareText())}`;
+  window.open(url, '_blank');
+}
+
+function copyShareText() {
+  navigator.clipboard.writeText(getShareText()).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy Text', 2000);
+  });
+}
+
+function downloadCard() {
+  // Use html2canvas-like approach - just open print dialog for the card
+  const card = document.getElementById('catchCard');
+  const win = window.open('', '_blank');
+  win.document.write('<html><head><style>body{background:#020d18;display:flex;justify-content:center;padding:20px;font-family:monospace;}*{box-sizing:border-box;}</style></head><body>' + card.outerHTML + '</body></html>');
+  win.document.close();
+  win.print();
+}
+
+// ══ 7-DAY FORECAST ══
+async function build7DayForecast() {
+  const el = document.getElementById('sevenDayForecast');
+  if (!el) return;
+
+  try {
+    // Fetch 7-day marine + weather forecast
+    const [weatherRes, marineRes] = await Promise.all([
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.8813&longitude=147.9837&daily=windspeed_10m_max,windgusts_10m_max,precipitation_sum,weathercode&timezone=Australia/Sydney&forecast_days=7'),
+      fetch('https://marine-api.open-meteo.com/v1/marine?latitude=-37.88&longitude=147.98&daily=wave_height_max,swell_wave_height_max&timezone=Australia/Sydney&forecast_days=7')
+    ]);
+
+    const weather = await weatherRes.json();
+    const marine = await marineRes.json();
+
+    const days = weather.daily.time;
+    const windMax = weather.daily.windspeed_10m_max;
+    const waveMax = marine.daily.wave_height_max;
+    const swellMax = marine.daily.swell_wave_height_max;
+    const codes = weather.daily.weathercode;
+
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const weatherIcons = {
+      0:'☀️', 1:'🌤', 2:'⛅', 3:'☁️',
+      45:'🌫', 48:'🌫', 51:'🌧', 53:'🌧', 55:'🌧',
+      61:'🌧', 63:'🌧', 65:'🌧', 71:'❄️', 80:'🌦', 95:'⛈'
+    };
+
+    el.innerHTML = days.map((day, i) => {
+      const date = new Date(day);
+      const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dayNames[date.getDay()];
+      const dateStr = date.toLocaleDateString('en-AU', {day:'numeric',month:'short'});
+      const wind = windMax[i] ? (windMax[i] * 0.539957).toFixed(0) : '—';
+      const wave = waveMax[i] ? waveMax[i].toFixed(1) : '—';
+      const swell = swellMax[i] ? swellMax[i].toFixed(1) : '—';
+      const code = codes[i] || 0;
+      const icon = weatherIcons[code] || weatherIcons[Math.floor(code/10)*10] || '⛅';
+
+      // Calculate fishing score for this day
+      const windKn = parseFloat(wind) || 10;
+      const waveM = parseFloat(wave) || 0.8;
+      const dayScore = Math.round(
+        (windKn < 8 ? 30 : windKn < 15 ? 22 : windKn < 20 ? 12 : 4) +
+        (waveM < 0.5 ? 30 : waveM < 1.0 ? 24 : waveM < 1.5 ? 14 : 5) +
+        getMoonScore() + getTideScore()
+      );
+      const capped = Math.min(95, Math.max(20, dayScore));
+      const scoreColor = capped >= 75 ? 'var(--green)' : capped >= 55 ? 'var(--orange)' : 'var(--red)';
+      const scoreLabel = capped >= 75 ? 'GREAT' : capped >= 55 ? 'GOOD' : capped >= 40 ? 'FAIR' : 'POOR';
+
+      return `<div style="background:rgba(6,51,82,.4);border:1px solid var(--border);border-radius:8px;padding:10px 6px;text-align:center;${i===0?'border-color:var(--cglow);background:rgba(0,255,224,.06);':''}">
+        <div style="font-size:9px;color:${i===0?'var(--cyan)':'var(--muted)'};font-weight:${i===0?'700':'400'};margin-bottom:2px;">${dayName}</div>
+        <div style="font-size:8px;color:var(--muted);margin-bottom:6px;">${dateStr}</div>
+        <div style="font-size:22px;margin-bottom:6px;">${icon}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:${scoreColor};line-height:1;">${capped}</div>
+        <div style="font-size:7px;color:${scoreColor};letter-spacing:1px;margin-bottom:6px;">${scoreLabel}</div>
+        <div style="font-size:8px;color:var(--muted);line-height:1.8;">
+          <div>💨 ${wind}kn</div>
+          <div>🌊 ${wave}m</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.log('Forecast error:', e);
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:9px;padding:20px 0;grid-column:1/-1;">Forecast unavailable — check back shortly</div>';
+  }
+}
+
 // ══ FISH IDENTIFIER ══
 let fishPhotoBase64 = null;
 
@@ -169,6 +294,131 @@ function resetFishId() {
 </script>
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet"/>
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js">
+
+
+// ══ SHARE CATCH ══
+let shareSpecies = '', shareWeight = '', shareLocationStr = '';
+
+function shareCatch(species, weight, location) {
+  shareSpecies = species; shareWeight = weight; shareLocationStr = location;
+  const icons = {'Snapper':'🎣','Bream':'🐠','Flathead':'🐟','Whiting':'🐡','Salmon':'🐟','Mulloway':'🎣','Trevally':'🐠','Shark':'🦈'};
+  const icon = Object.entries(icons).find(([k]) => species.includes(k))?.[1] || '🐟';
+  document.getElementById('shareSpeciesIcon').textContent = icon;
+  document.getElementById('shareSpeciesName').textContent = species;
+  document.getElementById('shareDetails').textContent = weight + 'kg · Lakes Entrance';
+  document.getElementById('shareLocation').textContent = '📍 ' + location;
+  document.getElementById('shareScore').textContent = document.getElementById('aiScore').textContent;
+  document.getElementById('shareTemp').textContent = document.getElementById('liveTemp').textContent;
+  document.getElementById('shareWave').textContent = document.getElementById('liveWave').textContent;
+  document.getElementById('shareModal').style.display = 'flex';
+}
+
+function getShareText() {
+  const score = document.getElementById('aiScore').textContent;
+  return `🎣 Just caught ${shareWeight}kg ${shareSpecies} at ${shareLocationStr}, Lakes Entrance!
+
+Conditions today: AI Fishing Score ${score}/100 · ${document.getElementById('liveTemp').textContent} · ${document.getElementById('liveWave').textContent} swell
+
+Track your fishing with DeepWatch 🌊
+https://muzzmick.github.io/Deepwatch`;
+}
+
+function shareToFacebook() {
+  const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://muzzmick.github.io/Deepwatch')}&quote=${encodeURIComponent(getShareText())}`;
+  window.open(url, '_blank');
+}
+
+function shareToWhatsApp() {
+  const url = `https://wa.me/?text=${encodeURIComponent(getShareText())}`;
+  window.open(url, '_blank');
+}
+
+function copyShareText() {
+  navigator.clipboard.writeText(getShareText()).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy Text', 2000);
+  });
+}
+
+function downloadCard() {
+  // Use html2canvas-like approach - just open print dialog for the card
+  const card = document.getElementById('catchCard');
+  const win = window.open('', '_blank');
+  win.document.write('<html><head><style>body{background:#020d18;display:flex;justify-content:center;padding:20px;font-family:monospace;}*{box-sizing:border-box;}</style></head><body>' + card.outerHTML + '</body></html>');
+  win.document.close();
+  win.print();
+}
+
+// ══ 7-DAY FORECAST ══
+async function build7DayForecast() {
+  const el = document.getElementById('sevenDayForecast');
+  if (!el) return;
+
+  try {
+    // Fetch 7-day marine + weather forecast
+    const [weatherRes, marineRes] = await Promise.all([
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.8813&longitude=147.9837&daily=windspeed_10m_max,windgusts_10m_max,precipitation_sum,weathercode&timezone=Australia/Sydney&forecast_days=7'),
+      fetch('https://marine-api.open-meteo.com/v1/marine?latitude=-37.88&longitude=147.98&daily=wave_height_max,swell_wave_height_max&timezone=Australia/Sydney&forecast_days=7')
+    ]);
+
+    const weather = await weatherRes.json();
+    const marine = await marineRes.json();
+
+    const days = weather.daily.time;
+    const windMax = weather.daily.windspeed_10m_max;
+    const waveMax = marine.daily.wave_height_max;
+    const swellMax = marine.daily.swell_wave_height_max;
+    const codes = weather.daily.weathercode;
+
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const weatherIcons = {
+      0:'☀️', 1:'🌤', 2:'⛅', 3:'☁️',
+      45:'🌫', 48:'🌫', 51:'🌧', 53:'🌧', 55:'🌧',
+      61:'🌧', 63:'🌧', 65:'🌧', 71:'❄️', 80:'🌦', 95:'⛈'
+    };
+
+    el.innerHTML = days.map((day, i) => {
+      const date = new Date(day);
+      const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dayNames[date.getDay()];
+      const dateStr = date.toLocaleDateString('en-AU', {day:'numeric',month:'short'});
+      const wind = windMax[i] ? (windMax[i] * 0.539957).toFixed(0) : '—';
+      const wave = waveMax[i] ? waveMax[i].toFixed(1) : '—';
+      const swell = swellMax[i] ? swellMax[i].toFixed(1) : '—';
+      const code = codes[i] || 0;
+      const icon = weatherIcons[code] || weatherIcons[Math.floor(code/10)*10] || '⛅';
+
+      // Calculate fishing score for this day
+      const windKn = parseFloat(wind) || 10;
+      const waveM = parseFloat(wave) || 0.8;
+      const dayScore = Math.round(
+        (windKn < 8 ? 30 : windKn < 15 ? 22 : windKn < 20 ? 12 : 4) +
+        (waveM < 0.5 ? 30 : waveM < 1.0 ? 24 : waveM < 1.5 ? 14 : 5) +
+        getMoonScore() + getTideScore()
+      );
+      const capped = Math.min(95, Math.max(20, dayScore));
+      const scoreColor = capped >= 75 ? 'var(--green)' : capped >= 55 ? 'var(--orange)' : 'var(--red)';
+      const scoreLabel = capped >= 75 ? 'GREAT' : capped >= 55 ? 'GOOD' : capped >= 40 ? 'FAIR' : 'POOR';
+
+      return `<div style="background:rgba(6,51,82,.4);border:1px solid var(--border);border-radius:8px;padding:10px 6px;text-align:center;${i===0?'border-color:var(--cglow);background:rgba(0,255,224,.06);':''}">
+        <div style="font-size:9px;color:${i===0?'var(--cyan)':'var(--muted)'};font-weight:${i===0?'700':'400'};margin-bottom:2px;">${dayName}</div>
+        <div style="font-size:8px;color:var(--muted);margin-bottom:6px;">${dateStr}</div>
+        <div style="font-size:22px;margin-bottom:6px;">${icon}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:${scoreColor};line-height:1;">${capped}</div>
+        <div style="font-size:7px;color:${scoreColor};letter-spacing:1px;margin-bottom:6px;">${scoreLabel}</div>
+        <div style="font-size:8px;color:var(--muted);line-height:1.8;">
+          <div>💨 ${wind}kn</div>
+          <div>🌊 ${wave}m</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.log('Forecast error:', e);
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:9px;padding:20px 0;grid-column:1/-1;">Forecast unavailable — check back shortly</div>';
+  }
+}
+
 // ══ FISH IDENTIFIER ══
 let fishPhotoBase64 = null;
 
@@ -596,7 +846,7 @@ tr:hover td{background:rgba(6,51,82,.3);}
     <button class="nt active" onclick="showScreen('mapScreen',this)">🗺 Map</button>
     <button class="nt" onclick="showScreen('catchScreen',this)">📋 Catch Log</button>
     <button class="nt" onclick="showScreen('regsScreen',this)">📖 Regulations</button>
-    <button class="nt" onclick="showScreen('tidesScreen',this)">🌊 Tides</button>
+    <button class="nt" onclick="showScreen('tidesScreen',this)">📅 Plan</button>
     <button class="nt" onclick="showScreen('fishIdScreen',this)">🐟 Fish ID</button>
   </div>
   <div class="nav-right">
@@ -727,7 +977,7 @@ tr:hover td{background:rgba(6,51,82,.3);}
       <table>
         <thead>
           <tr>
-            <th>TIME</th><th>ANGLER</th><th>LOCATION</th><th>SPECIES</th><th>QTY</th><th>WEIGHT</th><th>METHOD</th><th>PHOTO</th>
+            <th>TIME</th><th>ANGLER</th><th>LOCATION</th><th>SPECIES</th><th>QTY</th><th>WEIGHT</th><th>METHOD</th><th>PHOTO</th><th>SHARE</th>
           </tr>
         </thead>
         <tbody id="catchTbody">
@@ -829,12 +1079,23 @@ tr:hover td{background:rgba(6,51,82,.3);}
   </div>
 </div>
 
-<!-- ══ TIDES SCREEN ══ -->
+<!-- ══ PLAN / FORECAST SCREEN ══ -->
 <div id="tidesScreen" class="screen">
   <div class="page-wrap">
-    <div class="page-title">Tide Planner</div>
-    <div class="page-sub">LAKES ENTRANCE · TODAY'S CONDITIONS</div>
-    <div class="cards-grid">
+    <div class="page-title">Trip Planner</div>
+    <div class="page-sub">LAKES ENTRANCE · 7-DAY FISHING FORECAST</div>
+
+    <!-- 7-day forecast row -->
+    <div style="margin-bottom:16px;max-width:960px;">
+      <div class="card">
+        <div class="card-title">📅 7-Day Fishing Forecast</div>
+        <div id="sevenDayForecast" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;">
+          <div style="text-align:center;color:var(--muted);font-size:9px;padding:20px 0;grid-column:1/-1;">Loading forecast...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards-grid" style="max-width:960px;">
 
       <div class="card" style="grid-column:1/-1;">
         <div class="card-title">Today's Tide Chart</div>
@@ -1121,7 +1382,7 @@ function showScreen(id, tab) {
   document.querySelectorAll('.nt').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (tab) tab.classList.add('active');
-  if (id === 'tidesScreen') { setTimeout(buildTideChart, 100); setTimeout(updateMoon, 100); setTimeout(updateFishingWindows, 100); }
+  if (id === 'tidesScreen') { setTimeout(buildTideChart, 100); setTimeout(updateMoon, 100); setTimeout(updateFishingWindows, 100); setTimeout(build7DayForecast, 200); }
   if (id === 'catchScreen') loadCatches();
 }
 
@@ -1550,6 +1811,8 @@ async function loadCatches() {
   tb.innerHTML = data.map(r => {
     const t = new Date(r.created_at).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
     const photoCell = r.photo_url ? `<td><img src="${r.photo_url}" style="width:36px;height:28px;object-fit:cover;border-radius:3px;cursor:pointer;" onclick="window.open('${r.photo_url}','_blank')"/></td>` : '<td style="color:var(--muted)">—</td>';
+    const shareData = encodeURIComponent(`🎣 Just caught ${r.quantity} ${r.species} (${r.weight_kg}kg) at ${r.location}, Lakes Entrance! Conditions scored ${document.getElementById('aiScore').textContent}/100 today. Track your fishing with DeepWatch 🌊 https://muzzmick.github.io/Deepwatch`);
+    const shareCell = `<td><button onclick="shareCatch('${r.species}','${r.weight_kg}','${r.location}')" style="padding:3px 8px;background:rgba(0,255,224,.1);border:1px solid var(--border);border-radius:4px;color:var(--cyan);font-size:8px;cursor:pointer;font-family:'JetBrains Mono',monospace;">SHARE</button></td>`;
     return `<tr>
       <td>${t}</td>
       <td>${r.vessel_name || '—'}</td>
@@ -1559,6 +1822,7 @@ async function loadCatches() {
       <td>${r.weight_kg}kg</td>
       <td>${r.method}</td>
       ${photoCell}
+      ${shareCell}
     </tr>`;
   }).join('');
 
@@ -1695,6 +1959,131 @@ async function sendAI() {
     aiHistory.push({ role:'assistant', content:reply });
     if (aiHistory.length > 10) aiHistory = aiHistory.slice(-10);
   } catch(e) { thinking.textContent = 'Connection error.'; thinking.style.color = '#ef4444'; }
+}
+
+
+
+// ══ SHARE CATCH ══
+let shareSpecies = '', shareWeight = '', shareLocationStr = '';
+
+function shareCatch(species, weight, location) {
+  shareSpecies = species; shareWeight = weight; shareLocationStr = location;
+  const icons = {'Snapper':'🎣','Bream':'🐠','Flathead':'🐟','Whiting':'🐡','Salmon':'🐟','Mulloway':'🎣','Trevally':'🐠','Shark':'🦈'};
+  const icon = Object.entries(icons).find(([k]) => species.includes(k))?.[1] || '🐟';
+  document.getElementById('shareSpeciesIcon').textContent = icon;
+  document.getElementById('shareSpeciesName').textContent = species;
+  document.getElementById('shareDetails').textContent = weight + 'kg · Lakes Entrance';
+  document.getElementById('shareLocation').textContent = '📍 ' + location;
+  document.getElementById('shareScore').textContent = document.getElementById('aiScore').textContent;
+  document.getElementById('shareTemp').textContent = document.getElementById('liveTemp').textContent;
+  document.getElementById('shareWave').textContent = document.getElementById('liveWave').textContent;
+  document.getElementById('shareModal').style.display = 'flex';
+}
+
+function getShareText() {
+  const score = document.getElementById('aiScore').textContent;
+  return `🎣 Just caught ${shareWeight}kg ${shareSpecies} at ${shareLocationStr}, Lakes Entrance!
+
+Conditions today: AI Fishing Score ${score}/100 · ${document.getElementById('liveTemp').textContent} · ${document.getElementById('liveWave').textContent} swell
+
+Track your fishing with DeepWatch 🌊
+https://muzzmick.github.io/Deepwatch`;
+}
+
+function shareToFacebook() {
+  const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://muzzmick.github.io/Deepwatch')}&quote=${encodeURIComponent(getShareText())}`;
+  window.open(url, '_blank');
+}
+
+function shareToWhatsApp() {
+  const url = `https://wa.me/?text=${encodeURIComponent(getShareText())}`;
+  window.open(url, '_blank');
+}
+
+function copyShareText() {
+  navigator.clipboard.writeText(getShareText()).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy Text', 2000);
+  });
+}
+
+function downloadCard() {
+  // Use html2canvas-like approach - just open print dialog for the card
+  const card = document.getElementById('catchCard');
+  const win = window.open('', '_blank');
+  win.document.write('<html><head><style>body{background:#020d18;display:flex;justify-content:center;padding:20px;font-family:monospace;}*{box-sizing:border-box;}</style></head><body>' + card.outerHTML + '</body></html>');
+  win.document.close();
+  win.print();
+}
+
+// ══ 7-DAY FORECAST ══
+async function build7DayForecast() {
+  const el = document.getElementById('sevenDayForecast');
+  if (!el) return;
+
+  try {
+    // Fetch 7-day marine + weather forecast
+    const [weatherRes, marineRes] = await Promise.all([
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.8813&longitude=147.9837&daily=windspeed_10m_max,windgusts_10m_max,precipitation_sum,weathercode&timezone=Australia/Sydney&forecast_days=7'),
+      fetch('https://marine-api.open-meteo.com/v1/marine?latitude=-37.88&longitude=147.98&daily=wave_height_max,swell_wave_height_max&timezone=Australia/Sydney&forecast_days=7')
+    ]);
+
+    const weather = await weatherRes.json();
+    const marine = await marineRes.json();
+
+    const days = weather.daily.time;
+    const windMax = weather.daily.windspeed_10m_max;
+    const waveMax = marine.daily.wave_height_max;
+    const swellMax = marine.daily.swell_wave_height_max;
+    const codes = weather.daily.weathercode;
+
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const weatherIcons = {
+      0:'☀️', 1:'🌤', 2:'⛅', 3:'☁️',
+      45:'🌫', 48:'🌫', 51:'🌧', 53:'🌧', 55:'🌧',
+      61:'🌧', 63:'🌧', 65:'🌧', 71:'❄️', 80:'🌦', 95:'⛈'
+    };
+
+    el.innerHTML = days.map((day, i) => {
+      const date = new Date(day);
+      const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dayNames[date.getDay()];
+      const dateStr = date.toLocaleDateString('en-AU', {day:'numeric',month:'short'});
+      const wind = windMax[i] ? (windMax[i] * 0.539957).toFixed(0) : '—';
+      const wave = waveMax[i] ? waveMax[i].toFixed(1) : '—';
+      const swell = swellMax[i] ? swellMax[i].toFixed(1) : '—';
+      const code = codes[i] || 0;
+      const icon = weatherIcons[code] || weatherIcons[Math.floor(code/10)*10] || '⛅';
+
+      // Calculate fishing score for this day
+      const windKn = parseFloat(wind) || 10;
+      const waveM = parseFloat(wave) || 0.8;
+      const dayScore = Math.round(
+        (windKn < 8 ? 30 : windKn < 15 ? 22 : windKn < 20 ? 12 : 4) +
+        (waveM < 0.5 ? 30 : waveM < 1.0 ? 24 : waveM < 1.5 ? 14 : 5) +
+        getMoonScore() + getTideScore()
+      );
+      const capped = Math.min(95, Math.max(20, dayScore));
+      const scoreColor = capped >= 75 ? 'var(--green)' : capped >= 55 ? 'var(--orange)' : 'var(--red)';
+      const scoreLabel = capped >= 75 ? 'GREAT' : capped >= 55 ? 'GOOD' : capped >= 40 ? 'FAIR' : 'POOR';
+
+      return `<div style="background:rgba(6,51,82,.4);border:1px solid var(--border);border-radius:8px;padding:10px 6px;text-align:center;${i===0?'border-color:var(--cglow);background:rgba(0,255,224,.06);':''}">
+        <div style="font-size:9px;color:${i===0?'var(--cyan)':'var(--muted)'};font-weight:${i===0?'700':'400'};margin-bottom:2px;">${dayName}</div>
+        <div style="font-size:8px;color:var(--muted);margin-bottom:6px;">${dateStr}</div>
+        <div style="font-size:22px;margin-bottom:6px;">${icon}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:${scoreColor};line-height:1;">${capped}</div>
+        <div style="font-size:7px;color:${scoreColor};letter-spacing:1px;margin-bottom:6px;">${scoreLabel}</div>
+        <div style="font-size:8px;color:var(--muted);line-height:1.8;">
+          <div>💨 ${wind}kn</div>
+          <div>🌊 ${wave}m</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.log('Forecast error:', e);
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:9px;padding:20px 0;grid-column:1/-1;">Forecast unavailable — check back shortly</div>';
+  }
 }
 
 // ══ FISH IDENTIFIER ══
@@ -1858,5 +2247,48 @@ function resetFishId() {
 }
 
 </script>
+
+<!-- SHARE CATCH MODAL -->
+<div id="shareModal" style="display:none;position:fixed;inset:0;z-index:9997;background:rgba(2,13,24,.88);align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="width:420px;border:1px solid rgba(0,255,224,.2);border-radius:12px;padding:24px;background:rgba(4,31,53,.99);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--cyan);">Share Your Catch 🎣</div>
+      <div onclick="document.getElementById('shareModal').style.display='none'" style="cursor:pointer;color:var(--muted);font-size:18px;">✕</div>
+    </div>
+
+    <!-- Catch Card Preview -->
+    <div id="catchCard" style="background:linear-gradient(135deg,#020d18,#041f35);border:1px solid rgba(0,255,224,.3);border-radius:10px;padding:20px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:10px;letter-spacing:3px;color:rgba(0,255,224,.5);margin-bottom:12px;">DEEPWATCH · LAKES ENTRANCE</div>
+      <div id="shareSpeciesIcon" style="font-size:48px;margin-bottom:8px;">🐟</div>
+      <div id="shareSpeciesName" style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:#00ffe0;"></div>
+      <div id="shareDetails" style="font-size:12px;color:rgba(224,244,241,.7);margin-top:6px;"></div>
+      <div id="shareLocation" style="font-size:10px;color:rgba(224,244,241,.5);margin-top:4px;"></div>
+      <div style="margin-top:14px;display:flex;justify-content:center;gap:20px;">
+        <div style="text-align:center;">
+          <div id="shareScore" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#00ffe0;"></div>
+          <div style="font-size:8px;color:rgba(0,255,224,.5);letter-spacing:2px;">AI SCORE</div>
+        </div>
+        <div style="text-align:center;">
+          <div id="shareTemp" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#f97316;"></div>
+          <div style="font-size:8px;color:rgba(249,115,22,.5);letter-spacing:2px;">SEA TEMP</div>
+        </div>
+        <div style="text-align:center;">
+          <div id="shareWave" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#3b82f6;"></div>
+          <div style="font-size:8px;color:rgba(59,130,246,.5);letter-spacing:2px;">SWELL</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;font-size:9px;color:rgba(0,255,224,.3);letter-spacing:2px;">muzzmick.github.io/Deepwatch</div>
+    </div>
+
+    <!-- Share buttons -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button onclick="shareToFacebook()" style="padding:10px;background:rgba(24,119,242,.15);border:1px solid rgba(24,119,242,.3);border-radius:6px;color:#4f9cf9;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">📘 Facebook</button>
+      <button onclick="shareToWhatsApp()" style="padding:10px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);border-radius:6px;color:#25d366;font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">💬 WhatsApp</button>
+      <button onclick="copyShareText()" style="padding:10px;background:rgba(0,255,224,.1);border:1px solid var(--border);border-radius:6px;color:var(--cyan);font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">📋 Copy Text</button>
+      <button onclick="downloadCard()" style="padding:10px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);border-radius:6px;color:var(--orange);font-size:10px;cursor:pointer;font-family:'JetBrains Mono',monospace;">💾 Save Image</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
