@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -51,9 +51,11 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 /* ── SCREENS ── */
 .screen{display:none;flex:1;overflow:hidden;}
 .screen.active{display:flex;}
+#regsScreen.active,#tideScreen.active{display:block;}
 
 /* ── MAP SCREEN ── */
 #mapScreen{flex-direction:row;}
+#regsScreen,#tideScreen{overflow-y:auto;display:block;}
 .sidebar{width:270px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(12px);}
 .sidebar-scroll{flex:1;overflow-y:auto;}
 .sidebar-scroll::-webkit-scrollbar{width:2px;}
@@ -775,6 +777,114 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
       <div class="perm"><span class="perm-check">✓</span>Regulation alerts</div>
       <div class="perm"><span class="perm-check" style="color:var(--warm)">★</span>AI hotspot predictions</div>
       <div class="perm"><span class="perm-check" style="color:var(--warm)">★</span>Personal catch records</div>
+    </div>
+  </div>
+</div>
+
+<div id="regsScreen" class="screen">
+  <div style="padding:32px;max-width:900px;margin:0 auto;">
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#00ffe0;margin-bottom:4px;">Fishing Regulations</div>
+    <div style="font-size:9px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:32px;">VICTORIA · LAKES ENTRANCE · GIPPSLAND LAKES</div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🐟 Size & Bag Limits</div>
+        <table style="width:100%;border-collapse:collapse;font-size:10px;font-family:'JetBrains Mono',monospace;">
+          <tr style="color:rgba(224,244,241,.5);border-bottom:1px solid rgba(255,255,255,.05);">
+            <td style="padding:6px 0;">Species</td><td style="padding:6px 0;">Min Size</td><td style="padding:6px 0;">Bag Limit</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Snapper</td><td style="color:#22c55e;">27cm</td><td style="color:#f97316;">10/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Bream</td><td style="color:#22c55e;">25cm</td><td style="color:#f97316;">20/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Dusky Flathead</td><td style="color:#22c55e;">30cm</td><td style="color:#f97316;">5/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">KG Whiting</td><td style="color:#22c55e;">27cm</td><td style="color:#f97316;">20/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Mulloway</td><td style="color:#22c55e;">58cm</td><td style="color:#f97316;">3/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Australian Salmon</td><td style="color:#22c55e;">none</td><td style="color:#f97316;">no limit</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Tailor</td><td style="color:#22c55e;">none</td><td style="color:#f97316;">no limit</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Trevally</td><td style="color:#22c55e;">none</td><td style="color:#f97316;">no limit</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Luderick</td><td style="color:#22c55e;">25cm</td><td style="color:#f97316;">20/day</td></tr>
+          <tr><td style="padding:6px 0;color:#e0f4f1;">Gummy Shark</td><td style="color:#22c55e;">45cm</td><td style="color:#f97316;">2/day</td></tr>
+        </table>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">⚠️ Closed Seasons & No-Take Zones</div>
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:1.8;">
+          <div style="margin-bottom:10px;padding:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:6px;">
+            <div style="color:#ef4444;font-weight:700;">🚫 Gippsland Lakes Marine National Park</div>
+            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">No fishing in designated sanctuary zones. Check VFA maps.</div>
+          </div>
+          <div style="margin-bottom:10px;padding:8px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);border-radius:6px;">
+            <div style="color:#f97316;font-weight:700;">📅 Dusky Flathead Closure</div>
+            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">Closed season: check VFA for current year dates.</div>
+          </div>
+          <div style="margin-bottom:10px;padding:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:6px;">
+            <div style="color:#3b82f6;font-weight:700;">🎣 Recreational Fishing Licence</div>
+            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">Required for all anglers 18+. Available at vfa.vic.gov.au</div>
+          </div>
+          <div style="padding:8px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:6px;">
+            <div style="color:#22c55e;font-weight:700;">📞 Report Illegal Fishing</div>
+            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">VFA Hotline: 13 FISH (13 3474)</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🎣 Best Rigs & Baits by Species</div>
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:1.8;">
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Snapper:</span> Whole pilchard, squid, running sinker rig, 4/0-6/0 circle hook</div>
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Bream:</span> Prawns, nippers, soft plastics, light 1-2kg line, size 4-8 hook</div>
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Flathead:</span> Soft plastics (3-4"), minnow lures, slow retrieve along bottom</div>
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Whiting:</span> Nippers, beach worms, running sinker, size 4-6 long shank</div>
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Mulloway:</span> Live bait (mullet/herring), after dark, near channel edges</div>
+          <div><span style="color:#f97316;">Salmon:</span> Metal lures, poppers, cast into surf gutters</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🚤 Bar Crossing Safety</div>
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:1.8;">
+          <div id="barCrossing" style="padding:10px;border-radius:6px;margin-bottom:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);">
+            <div style="color:#22c55e;font-weight:700;margin-bottom:4px;">Loading bar conditions...</div>
+          </div>
+          <div style="color:rgba(224,244,241,.5);font-size:9px;line-height:1.6;">
+            <div>• Cross on incoming tide when possible</div>
+            <div>• Avoid crossing in swell >1.5m</div>
+            <div>• Check BOM marine forecast before departure</div>
+            <div>• File a float plan with someone onshore</div>
+            <div>• Lakes Entrance VMRLA: (03) 5155 1249</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="tideScreen" class="screen">
+  <div style="padding:32px;max-width:900px;margin:0 auto;">
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#00ffe0;margin-bottom:4px;">Tide Planner</div>
+    <div style="font-size:9px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:32px;">LAKES ENTRANCE · 7 DAY FORECAST</div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;grid-column:1/-1;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">Today's Tide Chart</div>
+        <canvas id="tidePlannerChart" style="width:100%;height:180px;"></canvas>
+        <div id="tideTimesTable" style="margin-top:16px;font-size:10px;font-family:'JetBrains Mono',monospace;"></div>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🌙 Moon Phase</div>
+        <div id="moonDisplay" style="text-align:center;padding:20px;font-size:40px;"></div>
+        <div id="moonInfo" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;text-align:center;"></div>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🎣 Best Fishing Windows Today</div>
+        <div id="fishingWindows" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:2;"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -2094,113 +2204,9 @@ function authTab(tab,btn){
 function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.remove('selected'));el.classList.add('selected');}
 
 
-<div id="regsScreen" class="screen">
-  <div style="padding:32px;max-width:900px;margin:0 auto;">
-    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#00ffe0;margin-bottom:4px;">Fishing Regulations</div>
-    <div style="font-size:9px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:32px;">VICTORIA · LAKES ENTRANCE · GIPPSLAND LAKES</div>
-    
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
-      
-      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
-        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🐟 Size & Bag Limits</div>
-        <table style="width:100%;border-collapse:collapse;font-size:10px;font-family:'JetBrains Mono',monospace;">
-          <tr style="color:rgba(224,244,241,.5);border-bottom:1px solid rgba(255,255,255,.05);">
-            <td style="padding:6px 0;">Species</td><td style="padding:6px 0;">Min Size</td><td style="padding:6px 0;">Bag Limit</td>
-          </tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Snapper</td><td style="color:#22c55e;">27cm</td><td style="color:#f97316;">10/day</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Bream</td><td style="color:#22c55e;">25cm</td><td style="color:#f97316;">20/day</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Dusky Flathead</td><td style="color:#22c55e;">30cm</td><td style="color:#f97316;">5/day</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">KG Whiting</td><td style="color:#22c55e;">27cm</td><td style="color:#f97316;">20/day</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Mulloway</td><td style="color:#22c55e;">58cm</td><td style="color:#f97316;">3/day</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Australian Salmon</td><td style="color:#22c55e;">none</td><td style="color:#f97316;">no limit</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Tailor</td><td style="color:#22c55e;">none</td><td style="color:#f97316;">no limit</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Trevally</td><td style="color:#22c55e;">none</td><td style="color:#f97316;">no limit</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Luderick</td><td style="color:#22c55e;">25cm</td><td style="color:#f97316;">20/day</td></tr>
-          <tr><td style="padding:6px 0;color:#e0f4f1;">Gummy Shark</td><td style="color:#22c55e;">45cm</td><td style="color:#f97316;">2/day</td></tr>
-        </table>
-      </div>
 
-      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
-        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">⚠️ Closed Seasons & No-Take Zones</div>
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:1.8;">
-          <div style="margin-bottom:10px;padding:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:6px;">
-            <div style="color:#ef4444;font-weight:700;">🚫 Gippsland Lakes Marine National Park</div>
-            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">No fishing in designated sanctuary zones. Check VFA maps.</div>
-          </div>
-          <div style="margin-bottom:10px;padding:8px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);border-radius:6px;">
-            <div style="color:#f97316;font-weight:700;">📅 Dusky Flathead Closure</div>
-            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">Closed season: check VFA for current year dates.</div>
-          </div>
-          <div style="margin-bottom:10px;padding:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:6px;">
-            <div style="color:#3b82f6;font-weight:700;">🎣 Recreational Fishing Licence</div>
-            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">Required for all anglers 18+. Available at vfa.vic.gov.au</div>
-          </div>
-          <div style="padding:8px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:6px;">
-            <div style="color:#22c55e;font-weight:700;">📞 Report Illegal Fishing</div>
-            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">VFA Hotline: 13 FISH (13 3474)</div>
-          </div>
-        </div>
-      </div>
 
-      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
-        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🎣 Best Rigs & Baits by Species</div>
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:1.8;">
-          <div style="margin-bottom:8px;"><span style="color:#f97316;">Snapper:</span> Whole pilchard, squid, running sinker rig, 4/0-6/0 circle hook</div>
-          <div style="margin-bottom:8px;"><span style="color:#f97316;">Bream:</span> Prawns, nippers, soft plastics, light 1-2kg line, size 4-8 hook</div>
-          <div style="margin-bottom:8px;"><span style="color:#f97316;">Flathead:</span> Soft plastics (3-4"), minnow lures, slow retrieve along bottom</div>
-          <div style="margin-bottom:8px;"><span style="color:#f97316;">Whiting:</span> Nippers, beach worms, running sinker, size 4-6 long shank</div>
-          <div style="margin-bottom:8px;"><span style="color:#f97316;">Mulloway:</span> Live bait (mullet/herring), after dark, near channel edges</div>
-          <div><span style="color:#f97316;">Salmon:</span> Metal lures, poppers, cast into surf gutters</div>
-        </div>
-      </div>
 
-      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
-        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🚤 Bar Crossing Safety</div>
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:1.8;">
-          <div id="barCrossing" style="padding:10px;border-radius:6px;margin-bottom:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);">
-            <div style="color:#22c55e;font-weight:700;margin-bottom:4px;">Loading bar conditions...</div>
-          </div>
-          <div style="color:rgba(224,244,241,.5);font-size:9px;line-height:1.6;">
-            <div>• Cross on incoming tide when possible</div>
-            <div>• Avoid crossing in swell >1.5m</div>
-            <div>• Check BOM marine forecast before departure</div>
-            <div>• File a float plan with someone onshore</div>
-            <div>• Lakes Entrance VMRLA: (03) 5155 1249</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<div id="tideScreen" class="screen">
-  <div style="padding:32px;max-width:900px;margin:0 auto;">
-    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#00ffe0;margin-bottom:4px;">Tide Planner</div>
-    <div style="font-size:9px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:32px;">LAKES ENTRANCE · 7 DAY FORECAST</div>
-    
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
-      
-      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;grid-column:1/-1;">
-        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">Today's Tide Chart</div>
-        <canvas id="tidePlannerChart" style="width:100%;height:180px;"></canvas>
-        <div id="tideTimesTable" style="margin-top:16px;font-size:10px;font-family:'JetBrains Mono',monospace;"></div>
-      </div>
-
-      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
-        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🌙 Moon Phase</div>
-        <div id="moonDisplay" style="text-align:center;padding:20px;font-size:40px;"></div>
-        <div id="moonInfo" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;text-align:center;"></div>
-      </div>
-
-      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
-        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🎣 Best Fishing Windows Today</div>
-        <div id="fishingWindows" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:2;"></div>
-      </div>
-
-    </div>
-  </div>
-</div>
 
 </script>
 </div><!-- end appWrapper -->
@@ -2216,13 +2222,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
     <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">YOUR NAME / BOAT NAME</div>
     <input id="cf_vessel" placeholder="e.g. John Smith or Tinnie Time" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;"/>
 
-    <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">FISHER TYPE</div>
-    <select id="cf_type" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;" hidden><option value="recreational">Recreational</option></select>
-    <input type="hidden" id="cf_type" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;">
-      <option value="recreational">Recreational</option>
-      <option value="commercial">Commercial</option>
-      <option value="charter">Charter</option>
-    </select>
+    <input type="hidden" id="cf_type" value="recreational">
 
     <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">LOCATION</div>
     <select id="cf_location" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;">
@@ -2325,6 +2325,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 
 </body>
 </html>
+
 
 
 
