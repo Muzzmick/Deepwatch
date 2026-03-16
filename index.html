@@ -1326,11 +1326,16 @@ const hotspots = [
   {lng:148.0371, lat:-38.0018, name:'Deep Reef (40m)',        type:'boat',  species:'Snapper · Gummy Shark · Reef Perch',   depth:'40–45m', access:'Boat'},
   {lng:147.9100, lat:-37.8760, name:'Nungurner Channel',     type:'boat',  species:'Whiting · Flathead · Mullet',           depth:'2–4m',   access:'Boat/Kayak'},
   // ── LAND-BASED SPOTS ──
-  {lng:147.9810, lat:-37.8800, name:'Lakes Entrance Jetty',  type:'land',  species:'Bream · Trevally · Luderick · Mullet',  depth:'2–4m',   access:'Walk-up jetty'},
-  {lng:147.9865, lat:-37.8858, name:'Entrance Rock Wall',    type:'land',  species:'Salmon · Tailor · Bream · Whiting',     depth:'2–6m',   access:'Rock wall walk'},
-  {lng:147.9820, lat:-37.8870, name:'Surf Beach Gutters',    type:'land',  species:'Salmon · Tailor · Whiting',             depth:'1–3m',   access:'Ninety Mile Beach'},
-  {lng:147.9500, lat:-37.8790, name:'Kalimna Jetty',         type:'land',  species:'Bream · Flathead · Luderick',           depth:'2–4m',   access:'Public jetty'},
-  {lng:147.9350, lat:-37.8700, name:'Metung Jetty',          type:'land',  species:'Bream · Whiting · Mullet',              depth:'1–3m',   access:'Public jetty'},
+  // Esplanade boat ramp / jetty area - confirmed Lakes Entrance township
+  {lng:147.9812, lat:-37.8782, name:'Lakes Entrance Jetty',  type:'land',  species:'Bream · Trevally · Luderick · Mullet',  depth:'2–4m',   access:'Walk-up jetty'},
+  // Rock wall at the actual entrance channel mouth
+  {lng:147.9860, lat:-37.8835, name:'Entrance Rock Wall',    type:'land',  species:'Salmon · Tailor · Bream · Whiting',     depth:'2–6m',   access:'Rock wall walk'},
+  // Ninety Mile Beach surf gutters east of entrance
+  {lng:147.9920, lat:-37.8910, name:'Surf Beach Gutters',    type:'land',  species:'Salmon · Tailor · Whiting',             depth:'1–3m',   access:'Ninety Mile Beach'},
+  // Kalimna Jetty on north shore of North Arm
+  {lng:147.9480, lat:-37.8720, name:'Kalimna Jetty',         type:'land',  species:'Bream · Flathead · Luderick',           depth:'2–4m',   access:'Public jetty'},
+  // Metung Jetty west along lake
+  {lng:147.8650, lat:-37.8820, name:'Metung Jetty',          type:'land',  species:'Bream · Whiting · Mullet',              depth:'1–3m',   access:'Public jetty'},
 ];
 
 // ══ AUTH ══
@@ -1469,6 +1474,29 @@ function getWindScore() {
   return w < 8 ? 22 : w < 15 ? 16 : w < 20 ? 9 : 3;
 }
 
+let currentFilter = 'all';
+
+function filterHotspots(type, btn) {
+  currentFilter = type;
+  // Update button styles
+  ['filterAll','filterBoat','filterLand'].forEach(id => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.style.background = 'none';
+    b.style.color = 'var(--muted)';
+    b.style.borderColor = 'var(--border)';
+  });
+  btn.style.background = 'var(--cdim)';
+  btn.style.color = 'var(--cyan)';
+  btn.style.borderColor = 'var(--cglow)';
+  // Show/hide map markers
+  document.querySelectorAll('.hs-marker').forEach(m => {
+    const show = type === 'all' || m.dataset.hsType === type;
+    m.style.display = show ? 'flex' : 'none';
+  });
+  updateHotspotScores();
+}
+
 function updateHotspotScores() {
   const sst = getSSTScore(), wave = getWaveScore(), wind = getWindScore(), tide = getTideScore(), moon = getMoonScore();
   // Modifiers per spot: inshore spots get base bonus, offshore needs good conditions
@@ -1480,7 +1508,10 @@ function updateHotspotScores() {
     {s:1.0,wa:0.8,wi:0.8,t:1.2,m:1.0,base:8},  // Nungurner
   ];
   const scores = mods.map(m => Math.min(99, Math.max(28, Math.round(sst*m.s + wave*m.wa + wind*m.wi + tide*m.t + moon*m.m + m.base))));
-  const ranked = scores.map((score,i) => ({score,i})).sort((a,b) => b.score - a.score);
+  const ranked = scores
+    .map((score,i) => ({score,i}))
+    .filter(r => currentFilter === 'all' || hotspots[r.i].type === currentFilter)
+    .sort((a,b) => b.score - a.score);
   const avg = Math.round(scores.reduce((a,b) => a+b,0) / scores.length);
 
   // Update AI score
@@ -1506,10 +1537,17 @@ function updateHotspotScores() {
       <div class="hs-temp">${r.score}</div>
     </div>`).join('');
 
-  // Update map marker numbers
+  // Update map marker numbers based on rank
   hsMarkers.forEach((el, i) => {
     const rank = ranked.findIndex(r => r.i === i);
-    el.querySelector('span').textContent = '#' + (rank+1);
+    const span = el.querySelector('span');
+    if (span) {
+      if (rank === -1) {
+        span.textContent = '';  // filtered out
+      } else {
+        span.textContent = '#' + (rank+1);
+      }
+    }
   });
 
   // Update species forecast
