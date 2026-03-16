@@ -357,17 +357,15 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
     </svg>
     <div>
       <div class="logo-text">DeepWatch</div>
-      <div class="logo-sub">Lakes Entrance · Intelligence</div>
+      <div class="logo-sub">Lakes Entrance · Fishing App</div>
     </div>
   </div>
 
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showScreen('mapScreen',this)">🗺 Map</button>
-    <button class="nav-tab" onclick="showScreen('aiScreen',this)">🤖 AI Model</button>
     <button class="nav-tab" onclick="showScreen('catchScreen',this)">📋 Catch Log</button>
-    <button class="nav-tab" onclick="showScreen('vmsScreen',this)">🚢 Fleet VMS</button>
-    <button class="nav-tab" onclick="showScreen('mobileScreen',this)">📱 Mobile App</button>
-    <button class="nav-tab" onclick="showScreen('archScreen',this)">⚙ Architecture</button>
+    <button class="nav-tab" onclick="showScreen('regsScreen',this)">📋 Regulations</button>
+    <button class="nav-tab" onclick="showScreen('tideScreen',this)">🌊 Tides</button>
     <button class="nav-tab" onclick="showScreen('authScreen',this)">🔐 Auth</button>
   </div>
 
@@ -465,9 +463,9 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
     </div>
     <div class="sec">
       <div class="sec-label">Recent Catches</div>
-      <div class="catch-item" style="border-left-color:var(--warm)"><div class="catch-top"><span class="catch-vessel">MV Seabreeze III</span><span class="catch-time">13:41</span></div><div class="catch-detail">Commercial · 42kg Snapper · Entrance Ch.</div></div>
-      <div class="catch-item" style="border-left-color:var(--biolum)"><div class="catch-top"><span class="catch-vessel">Rec · 7R-221</span><span class="catch-time">12:15</span></div><div class="catch-detail">3× Bream 34–38cm · Lake King</div></div>
-      <div class="catch-item" style="border-left-color:var(--purple)"><div class="catch-top"><span class="catch-vessel">Lakes Sport Fishing</span><span class="catch-time">10:52</span></div><div class="catch-detail">Charter · Mixed bag · Reeve Channel</div></div>
+      <div class="catch-item" style="border-left-color:var(--warm)"><div class="catch-top"><span class="catch-vessel">Mick M</span><span class="catch-time">13:41</span></div><div class="catch-detail">Snapper 42kg · Entrance Channel</div></div>
+      <div class="catch-item" style="border-left-color:var(--biolum)"><div class="catch-top"><span class="catch-vessel">Dave K</span><span class="catch-time">12:15</span></div><div class="catch-detail">3× Bream · Lake King</div></div>
+      <div class="catch-item" style="border-left-color:var(--purple)"><div class="catch-top"><span class="catch-vessel">Sarah T</span><span class="catch-time">10:52</span></div><div class="catch-detail">Mixed bag · Reeve Channel</div></div>
     </div>
     <div class="sec">
       <div class="sec-label">Regulations</div>
@@ -830,8 +828,8 @@ const hotspots = [
 ];
 
 const vessels = [
-  {lng:147.9700,lat:-37.8802,name:"MV Seabreeze III",type:"commercial"},
-  {lng:147.9580,lat:-37.8802,name:"Lakes Sport Fishing",type:"charter"},
+  {lng:147.9700,lat:-37.8802,name:"Mick M",type:"commercial"},
+  {lng:147.9580,lat:-37.8802,name:"Sarah T",type:"charter"},
   {lng:147.9445,lat:-37.8802,name:"Rec 7R-221",type:"recreational"},
   {lng:147.9300,lat:-37.8810,name:"MV Gippsland Star",type:"commercial"},
 ];
@@ -919,9 +917,9 @@ function selHotspot(i, el) {
 
 // ══ CATCH LOG TABLE ══
 const catchData=[
-  {time:'13:41',vessel:'MV Seabreeze III',type:'commercial',location:'Entrance Channel',species:'Red Snapper',qty:'18 fish',weight:'42kg',method:'Line',comp:'✓'},
-  {time:'13:12',vessel:'Rec · 7R-221',type:'recreational',location:'Lake King Shallows',species:'Bream',qty:'3 fish',weight:'1.8kg',method:'Spin',comp:'✓'},
-  {time:'12:58',vessel:'Lakes Sport Fishing Co.',type:'charter',location:'Reeve Channel',species:'Flathead / Bream',qty:'Mixed bag',weight:'8.4kg',method:'Bait',comp:'✓'},
+  {time:'13:41',vessel:'Mick M',type:'commercial',location:'Entrance Channel',species:'Red Snapper',qty:'18 fish',weight:'42kg',method:'Line',comp:'✓'},
+  {time:'13:12',vessel:'Dave K',type:'recreational',location:'Lake King Shallows',species:'Bream',qty:'3 fish',weight:'1.8kg',method:'Spin',comp:'✓'},
+  {time:'12:58',vessel:'Sarah T Co.',type:'charter',location:'Reeve Channel',species:'Flathead / Bream',qty:'Mixed bag',weight:'8.4kg',method:'Bait',comp:'✓'},
   {time:'12:30',vessel:'MV Gippsland Star',type:'commercial',location:'Outer Bar',species:'Snapper',qty:'31 fish',weight:'74kg',method:'Net',comp:'✓'},
   {time:'11:44',vessel:'Rec · 4P-887',type:'recreational',location:'Entrance Channel',species:'KG Whiting',qty:'4 fish',weight:'2.1kg',method:'Bait',comp:'✓'},
   {time:'10:52',vessel:'Blue Water Charters',type:'charter',location:'Reeve Channel',species:'Mixed',qty:'22 fish',weight:'14kg',method:'Lure',comp:'✓'},
@@ -1838,11 +1836,11 @@ async function loadCatches() {
 // ══ VMS ══
 let vmsAnimFrame;
 const vmsVessels=[
-  {id:'V001',name:'MV Seabreeze III',type:'commercial',status:'active',speed:'8.2kn',heading:45,lat:-37.88,lon:147.98,rx:.50,ry:.47,fuel:'74%',quota:'38%',imo:'9234512'},
+  {id:'V001',name:'Mick M',type:'commercial',status:'active',speed:'8.2kn',heading:45,lat:-37.88,lon:147.98,rx:.50,ry:.47,fuel:'74%',quota:'38%',imo:'9234512'},
   {id:'V002',name:'MV Gippsland Star',type:'commercial',status:'active',speed:'6.1kn',heading:200,lat:-37.90,lon:147.94,rx:.44,ry:.50,fuel:'52%',quota:'61%',imo:'9187643'},
-  {id:'V003',name:'Lakes Sport Fishing',type:'charter',status:'active',speed:'3.4kn',heading:280,lat:-37.87,lon:147.96,rx:.38,ry:.44,fuel:'81%',quota:'N/A',imo:'C-4421'},
+  {id:'V003',name:'Sarah T',type:'charter',status:'active',speed:'3.4kn',heading:280,lat:-37.87,lon:147.96,rx:.38,ry:.44,fuel:'81%',quota:'N/A',imo:'C-4421'},
   {id:'V004',name:'Blue Water Charters',type:'charter',status:'moored',speed:'0kn',heading:0,lat:-37.88,lon:147.97,rx:.50,ry:.53,fuel:'93%',quota:'N/A',imo:'C-3318'},
-  {id:'V005',name:'Rec · 7R-221',type:'recreational',status:'active',speed:'12.0kn',heading:120,lat:-37.89,lon:148.00,rx:.62,ry:.49,fuel:'66%',quota:'N/A',imo:'R-7221'},
+  {id:'V005',name:'Dave K',type:'recreational',status:'active',speed:'12.0kn',heading:120,lat:-37.89,lon:148.00,rx:.62,ry:.49,fuel:'66%',quota:'N/A',imo:'R-7221'},
   {id:'V006',name:'MV Ocean Rover',type:'commercial',status:'returning',speed:'14.3kn',heading:315,lat:-37.85,lon:148.02,rx:.68,ry:.38,fuel:'28%',quota:'82%',imo:'9301887'},
 ];
 
@@ -2321,6 +2319,7 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
 
 </body>
 </html>
+
 
 
 
