@@ -408,13 +408,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
     <div class="sidebar-scroll">
       <div class="sec">
         <div class="sec-label">AI Hotspot Ranking</div>
-        <div class="hs-list">
-          <div class="hs active" onclick="selHotspot(0,this)"><div class="hs-rank">#1</div><div class="hs-info"><div class="hs-name">Entrance Channel</div><div class="hs-spp">Snapper · Bream · Whiting · Mulloway</div><div class="hs-bar"><div class="hs-fill" style="width:92%"></div></div></div><div class="hs-temp">19.8°</div></div>
-          <div class="hs" onclick="selHotspot(1,this)"><div class="hs-rank">#2</div><div class="hs-info"><div class="hs-name">Reeve Channel</div><div class="hs-spp">Flathead · Luderick · Whiting · Bream</div><div class="hs-bar"><div class="hs-fill" style="width:78%"></div></div></div><div class="hs-temp">18.9°</div></div>
-          <div class="hs" onclick="selHotspot(2,this)"><div class="hs-rank">#3</div><div class="hs-info"><div class="hs-name">Cunninghame Arm</div><div class="hs-spp">Trevally · Salmon · Bream · Luderick</div><div class="hs-bar"><div class="hs-fill" style="width:71%"></div></div></div><div class="hs-temp">20.1°</div></div>
-          <div class="hs" onclick="selHotspot(3,this)"><div class="hs-rank">#4</div><div class="hs-info"><div class="hs-name">Deep Reef (40m)</div><div class="hs-spp">Snapper · Gummy Shark · Reef Perch</div><div class="hs-bar"><div class="hs-fill" style="width:65%"></div></div></div><div class="hs-temp">18.2°</div></div>
-          <div class="hs" onclick="selHotspot(4,this)"><div class="hs-rank">#5</div><div class="hs-info"><div class="hs-name">Nungurner Channel</div><div class="hs-spp">Whiting · Flathead · Mullet</div><div class="hs-bar"><div class="hs-fill" style="width:58%"></div></div></div><div class="hs-temp">17.8°</div></div>
-        </div>
+        <div class="hs-list" id="hsList"></div>
       </div>
       <div class="sec">
         <div class="sec-label">Satellite Layers</div>
@@ -800,6 +794,24 @@ function showScreen(id, tab) {
   if(id==='vmsScreen') initVMS();
   if(id==='mobileScreen') initMob();
 }
+
+
+// ══ BUILD HOTSPOT PANEL FROM DATA ══
+function buildHotspotPanel() {
+  const list = document.getElementById('hsList');
+  if (!list) return;
+  list.innerHTML = hotspots.map((h, i) => `
+    <div class="hs ${i===0?'active':''}" onclick="selHotspot(${i},this)">
+      <div class="hs-rank">#${i+1}</div>
+      <div class="hs-info">
+        <div class="hs-name">${h.name}</div>
+        <div class="hs-spp">${h.species.split(' · ').slice(0,3).join(' · ')}</div>
+        <div class="hs-bar"><div class="hs-fill" style="width:${h.score}%"></div></div>
+      </div>
+      <div class="hs-temp">${h.temp}</div>
+    </div>`).join('');
+}
+window.addEventListener('load', buildHotspotPanel);
 
 // ══ MAPBOX MAP ══
 mapboxgl.accessToken = 'pk.eyJ1IjoibXV6em1pY2s3NyIsImEiOiJjbW1vZnRjNGIwZDFpMndteXU0b3ZuY2toIn0.Tr-mGo-xQSWC8S8gRisiXA';
@@ -1649,6 +1661,112 @@ async function fetchChlorophyllLayer() {
 // Load chlorophyll after map is ready
 window.addEventListener('load', () => setTimeout(fetchChlorophyllLayer, 4000));
 
+
+// ══ BAR CROSSING & TIDE PLANNER ══
+function updateBarCrossing() {
+  const wave = realWave || 0.8;
+  const wind = parseFloat(document.getElementById('liveWind')?.textContent || '10');
+  const box = document.getElementById('barCrossing');
+  if (!box) return;
+  
+  if (wave < 1.0 && wind < 15) {
+    box.style.background = 'rgba(34,197,94,.1)';
+    box.style.border = '1px solid rgba(34,197,94,.3)';
+    box.innerHTML = '<div style="color:#22c55e;font-weight:700;margin-bottom:4px;">✅ BAR SUITABLE FOR CROSSING</div><div style="color:rgba(224,244,241,.6);font-size:9px;">Wave ' + wave.toFixed(1) + 'm · Wind ' + wind.toFixed(0) + 'kn · Conditions GOOD</div>';
+  } else if (wave < 1.5 && wind < 20) {
+    box.style.background = 'rgba(249,115,22,.1)';
+    box.style.border = '1px solid rgba(249,115,22,.3)';
+    box.innerHTML = '<div style="color:#f97316;font-weight:700;margin-bottom:4px;">⚠️ BAR - EXERCISE CAUTION</div><div style="color:rgba(224,244,241,.6);font-size:9px;">Wave ' + wave.toFixed(1) + 'm · Wind ' + wind.toFixed(0) + 'kn · Experienced skippers only</div>';
+  } else {
+    box.style.background = 'rgba(239,68,68,.1)';
+    box.style.border = '1px solid rgba(239,68,68,.3)';
+    box.innerHTML = '<div style="color:#ef4444;font-weight:700;margin-bottom:4px;">🚫 BAR DANGEROUS - DO NOT CROSS</div><div style="color:rgba(224,244,241,.6);font-size:9px;">Wave ' + wave.toFixed(1) + 'm · Wind ' + wind.toFixed(0) + 'kn · Stay in the lakes</div>';
+  }
+}
+
+function updateTidePlanner() {
+  // Moon phase display
+  const phase = getMoonPhase ? getMoonPhase() : 0.5;
+  const moonEl = document.getElementById('moonDisplay');
+  const moonInfoEl = document.getElementById('moonInfo');
+  if (moonEl) {
+    const moons = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+    const idx = Math.round(phase * 8) % 8;
+    const names = ['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
+    moonEl.textContent = moons[idx];
+    if (moonInfoEl) moonInfoEl.innerHTML = '<div style="color:#00ffe0;font-weight:700;">' + names[idx] + '</div><div style="color:rgba(224,244,241,.5);margin-top:4px;">' + (phase < 0.1 || phase > 0.9 || (phase > 0.45 && phase < 0.55) ? '⭐ Prime fishing — solunar peak' : 'Moderate fishing activity') + '</div>';
+  }
+
+  // Best fishing windows
+  const windowsEl = document.getElementById('fishingWindows');
+  if (windowsEl) {
+    const hour = new Date().getHours();
+    const windows = [];
+    if (hour < 7) windows.push({t:'Dawn (05:30–07:30)', q:'⭐⭐⭐ PRIME', c:'#22c55e'});
+    if (hour < 11) windows.push({t:'Morning (07:30–10:00)', q:'⭐⭐ GOOD', c:'#f97316'});
+    windows.push({t:'Midday (10:00–14:00)', q:'⭐ FAIR', c:'rgba(224,244,241,.5)'});
+    windows.push({t:'Afternoon (14:00–17:00)', q:'⭐⭐ GOOD', c:'#f97316'});
+    windows.push({t:'Dusk (17:00–19:00)', q:'⭐⭐⭐ PRIME', c:'#22c55e'});
+    windows.push({t:'Night (after dark)', q:'🌙 Mulloway active', c:'#a855f7'});
+    windowsEl.innerHTML = windows.map(w => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="color:rgba(224,244,241,.7);">${w.t}</span><span style="color:${w.c};">${w.q}</span></div>`).join('');
+  }
+
+  // Draw tide chart on planner
+  const canvas = document.getElementById('tidePlannerChart');
+  if (canvas) {
+    canvas.width = canvas.offsetWidth || 800;
+    canvas.height = 180;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle = 'rgba(0,255,224,.15)';
+    ctx.lineWidth = 1;
+    for (let i=0;i<24;i++) { const x=i/24*W; ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+    
+    const grad = ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'rgba(0,255,224,.3)');
+    grad.addColorStop(1,'rgba(0,255,224,.02)');
+    ctx.beginPath();
+    for (let h=0;h<=24;h+=0.1) {
+      const t = 0.5 + 0.4*Math.sin((h-3)*Math.PI/6.2) + 0.3*Math.sin((h-9)*Math.PI/6.2);
+      const x = h/24*W;
+      const y = H - (t+0.1)/1.2*H*0.8 - H*0.1;
+      h===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+    ctx.strokeStyle = '#00ffe0'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let h=0;h<=24;h+=0.1) {
+      const t = 0.5 + 0.4*Math.sin((h-3)*Math.PI/6.2) + 0.3*Math.sin((h-9)*Math.PI/6.2);
+      const x = h/24*W;
+      const y = H - (t+0.1)/1.2*H*0.8 - H*0.1;
+      h===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // Hour labels
+    ctx.fillStyle = 'rgba(224,244,241,.4)';
+    ctx.font = '9px JetBrains Mono';
+    for (let h=0;h<=24;h+=3) {
+      ctx.fillText(h+'h', h/24*W+2, H-4);
+    }
+
+    // Current time line
+    const now = new Date();
+    const nowX = (now.getHours() + now.getMinutes()/60)/24*W;
+    ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(nowX,0); ctx.lineTo(nowX,H); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+window.addEventListener('load', () => {
+  setTimeout(updateBarCrossing, 3000);
+  setTimeout(updateTidePlanner, 1000);
+});
+
 // ══ CATCH FORM ══
 async function submitCatch() {
   const msg = document.getElementById('catchFormMsg');
@@ -1987,11 +2105,12 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
       <div onclick="document.getElementById('catchModal').style.display='none'" style="cursor:pointer;color:rgba(224,244,241,.45);font-size:18px;">✕</div>
     </div>
 
-    <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">VESSEL / ANGLER NAME</div>
-    <input id="cf_vessel" placeholder="e.g. MV Seabreeze III or your name" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;"/>
+    <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">YOUR NAME / BOAT NAME</div>
+    <input id="cf_vessel" placeholder="e.g. John Smith or Tinnie Time" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;"/>
 
     <div style="font-size:8px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:6px;">FISHER TYPE</div>
-    <select id="cf_type" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;">
+    <select id="cf_type" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;" hidden><option value="recreational">Recreational</option></select>
+    <input type="hidden" id="cf_type" style="width:100%;background:rgba(6,51,82,.5);border:1px solid rgba(0,255,224,.1);border-radius:6px;padding:10px 14px;color:#e0f4f1;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;outline:none;">
       <option value="recreational">Recreational</option>
       <option value="commercial">Commercial</option>
       <option value="charter">Charter</option>
@@ -2092,8 +2211,117 @@ function selTier(el){document.querySelectorAll('.tier').forEach(t=>t.classList.r
     <button onclick="sendAIMessage()" style="padding:8px 12px;background:rgba(0,255,224,.15);border:1px solid rgba(0,255,224,.25);border-radius:6px;color:#00ffe0;font-size:12px;cursor:pointer;">→</button>
   </div>
 </div>
+<div id="regsScreen" class="screen">
+  <div style="padding:32px;max-width:900px;margin:0 auto;">
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#00ffe0;margin-bottom:4px;">Fishing Regulations</div>
+    <div style="font-size:9px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:32px;">VICTORIA · LAKES ENTRANCE · GIPPSLAND LAKES</div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🐟 Size & Bag Limits</div>
+        <table style="width:100%;border-collapse:collapse;font-size:10px;font-family:'JetBrains Mono',monospace;">
+          <tr style="color:rgba(224,244,241,.5);border-bottom:1px solid rgba(255,255,255,.05);">
+            <td style="padding:6px 0;">Species</td><td style="padding:6px 0;">Min Size</td><td style="padding:6px 0;">Bag Limit</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Snapper</td><td style="color:#22c55e;">27cm</td><td style="color:#f97316;">10/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Bream</td><td style="color:#22c55e;">25cm</td><td style="color:#f97316;">20/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Dusky Flathead</td><td style="color:#22c55e;">30cm</td><td style="color:#f97316;">5/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">KG Whiting</td><td style="color:#22c55e;">27cm</td><td style="color:#f97316;">20/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Mulloway</td><td style="color:#22c55e;">58cm</td><td style="color:#f97316;">3/day</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Australian Salmon</td><td style="color:#22c55e;">none</td><td style="color:#f97316;">no limit</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Tailor</td><td style="color:#22c55e;">none</td><td style="color:#f97316;">no limit</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Trevally</td><td style="color:#22c55e;">none</td><td style="color:#f97316;">no limit</td></tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:6px 0;color:#e0f4f1;">Luderick</td><td style="color:#22c55e;">25cm</td><td style="color:#f97316;">20/day</td></tr>
+          <tr><td style="padding:6px 0;color:#e0f4f1;">Gummy Shark</td><td style="color:#22c55e;">45cm</td><td style="color:#f97316;">2/day</td></tr>
+        </table>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">⚠️ Closed Seasons & No-Take Zones</div>
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:1.8;">
+          <div style="margin-bottom:10px;padding:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:6px;">
+            <div style="color:#ef4444;font-weight:700;">🚫 Gippsland Lakes Marine National Park</div>
+            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">No fishing in designated sanctuary zones. Check VFA maps.</div>
+          </div>
+          <div style="margin-bottom:10px;padding:8px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);border-radius:6px;">
+            <div style="color:#f97316;font-weight:700;">📅 Dusky Flathead Closure</div>
+            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">Closed season: check VFA for current year dates.</div>
+          </div>
+          <div style="margin-bottom:10px;padding:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:6px;">
+            <div style="color:#3b82f6;font-weight:700;">🎣 Recreational Fishing Licence</div>
+            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">Required for all anglers 18+. Available at vfa.vic.gov.au</div>
+          </div>
+          <div style="padding:8px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:6px;">
+            <div style="color:#22c55e;font-weight:700;">📞 Report Illegal Fishing</div>
+            <div style="color:rgba(224,244,241,.6);font-size:9px;margin-top:4px;">VFA Hotline: 13 FISH (13 3474)</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🎣 Best Rigs & Baits by Species</div>
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:1.8;">
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Snapper:</span> Whole pilchard, squid, running sinker rig, 4/0-6/0 circle hook</div>
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Bream:</span> Prawns, nippers, soft plastics, light 1-2kg line, size 4-8 hook</div>
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Flathead:</span> Soft plastics (3-4"), minnow lures, slow retrieve along bottom</div>
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Whiting:</span> Nippers, beach worms, running sinker, size 4-6 long shank</div>
+          <div style="margin-bottom:8px;"><span style="color:#f97316;">Mulloway:</span> Live bait (mullet/herring), after dark, near channel edges</div>
+          <div><span style="color:#f97316;">Salmon:</span> Metal lures, poppers, cast into surf gutters</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🚤 Bar Crossing Safety</div>
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:1.8;">
+          <div id="barCrossing" style="padding:10px;border-radius:6px;margin-bottom:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);">
+            <div style="color:#22c55e;font-weight:700;margin-bottom:4px;">Loading bar conditions...</div>
+          </div>
+          <div style="color:rgba(224,244,241,.5);font-size:9px;line-height:1.6;">
+            <div>• Cross on incoming tide when possible</div>
+            <div>• Avoid crossing in swell >1.5m</div>
+            <div>• Check BOM marine forecast before departure</div>
+            <div>• File a float plan with someone onshore</div>
+            <div>• Lakes Entrance VMRLA: (03) 5155 1249</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="tideScreen" class="screen">
+  <div style="padding:32px;max-width:900px;margin:0 auto;">
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#00ffe0;margin-bottom:4px;">Tide Planner</div>
+    <div style="font-size:9px;letter-spacing:2px;color:rgba(224,244,241,.45);margin-bottom:32px;">LAKES ENTRANCE · 7 DAY FORECAST</div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;grid-column:1/-1;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">Today's Tide Chart</div>
+        <canvas id="tidePlannerChart" style="width:100%;height:180px;"></canvas>
+        <div id="tideTimesTable" style="margin-top:16px;font-size:10px;font-family:'JetBrains Mono',monospace;"></div>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🌙 Moon Phase</div>
+        <div id="moonDisplay" style="text-align:center;padding:20px;font-size:40px;"></div>
+        <div id="moonInfo" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;text-align:center;"></div>
+      </div>
+
+      <div style="background:rgba(6,51,82,.4);border:1px solid rgba(0,255,224,.15);border-radius:10px;padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:16px;">🎣 Best Fishing Windows Today</div>
+        <div id="fishingWindows" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;line-height:2;"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
+
 
 
 
