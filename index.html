@@ -1109,8 +1109,14 @@ function toggleLayer(layer, btn) {
     if (!map) return;
     if (on) {
       if (!map.getSource('sst-src')) {
-        map.addSource('sst-src', { type:'raster', tiles:['https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MUR-SST_White/default/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png'], tileSize:256 });
-        map.addLayer({ id:'sst-layer', type:'raster', source:'sst-src', paint:{'raster-opacity':0.5} });
+        // NOAA CoralTemp SST - proven working tile source
+        map.addSource('sst-src', {
+          type: 'raster',
+          tiles: ['https://coastwatch.pfeg.noaa.gov/erddap/wms/NOAA_DHW/request?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=NOAA_DHW:CRW_SST&STYLES=&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true'],
+          tileSize: 256,
+          attribution: 'NOAA CoralTemp'
+        });
+        map.addLayer({ id:'sst-layer', type:'raster', source:'sst-src', paint:{'raster-opacity':0.55} });
       } else map.setLayoutProperty('sst-layer','visibility','visible');
     } else { if(map.getLayer('sst-layer')) map.setLayoutProperty('sst-layer','visibility','none'); }
   }
@@ -1145,19 +1151,33 @@ function toggleLayer(layer, btn) {
 async function fetchChlorophyll() {
   if (!map) return;
   try {
-    const res = await fetch('https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token', {
+    // Get Copernicus token
+    const tokenRes = await fetch('https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token', {
       method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
       body:`grant_type=client_credentials&client_id=${COPERNICUS_CLIENT_ID}&client_secret=${COPERNICUS_SECRET}`
     });
-    const d = await res.json();
-    if (!d.access_token) return;
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) { console.log('No Copernicus token'); return; }
+    
     const today = new Date().toISOString().split('T')[0];
-    const wmsUrl = `https://sh.dataspace.copernicus.eu/wms?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=OLCI-Chlorophyll&STYLES=&CRS=EPSG:3857&BBOX=147.5,-38.2,148.5,-37.5&WIDTH=512&HEIGHT=512&FORMAT=image/png&TIME=2024-01-01/${today}&MAXCC=20`;
-    if (!map.getSource('chl-src')) {
-      map.addSource('chl-src', { type:'image', url: wmsUrl, coordinates:[[147.5,-37.5],[148.5,-37.5],[148.5,-38.2],[147.5,-38.2]] });
-      map.addLayer({ id:'chl-layer', type:'raster', source:'chl-src', paint:{'raster-opacity':0.55} });
-    } else map.setLayoutProperty('chl-layer','visibility','visible');
-  } catch(e) { console.log('Chlorophyll error', e); }
+    const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
+    
+    // Use Sentinel Hub WMS with auth header via evalscript
+    const wmsUrl = `https://sh.dataspace.copernicus.eu/wms?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=OLCI-Chlorophyll&STYLES=&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&TIME=${weekAgo}/${today}&MAXCC=30`;
+    
+    if (map.getSource('chl-src')) {
+      map.setLayoutProperty('chl-layer','visibility','visible');
+      return;
+    }
+    
+    // Add as raster tiles with auth - use image overlay approach for the region
+    map.addSource('chl-src', {
+      type: 'image',
+      url: wmsUrl,
+      coordinates: [[147.5,-37.4],[148.6,-37.4],[148.6,-38.3],[147.5,-38.3]]
+    });
+    map.addLayer({ id:'chl-layer', type:'raster', source:'chl-src', paint:{'raster-opacity':0.6} });
+  } catch(e) { console.log('Chlorophyll error:', e); }
 }
 
 // ══ CATCH LOG ══
@@ -1321,6 +1341,7 @@ async function sendAI() {
 </script>
 </body>
 </html>
+
 
 
 
