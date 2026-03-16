@@ -660,11 +660,16 @@ let photoBase64 = null;
 // ══ REAL HOTSPOT DATA ══
 // Coordinates verified from fishing forums and GPS marks
 const hotspots = [
-  {lng:147.9840, lat:-37.8810, name:'Entrance Channel',   species:'Snapper · Bream · Whiting · Mulloway', depth:'4–8m',  temp:'—'},
-  {lng:147.9580, lat:-37.8740, name:'Reeve Channel',      species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',  temp:'—'},
-  {lng:147.9810, lat:-37.8770, name:'Cunninghame Arm',    species:'Trevally · Salmon · Bream · Luderick',  depth:'2–4m',  temp:'—'},
+  // GPS verified: entrance navigation channel to Bass Strait
+  {lng:147.9855, lat:-37.8875, name:'Entrance Channel',   species:'Snapper · Bream · Whiting · Mulloway', depth:'4–8m',  temp:'—'},
+  // Reeve Channel - north of Flannagan Island
+  {lng:147.9520, lat:-37.8780, name:'Reeve Channel',      species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',  temp:'—'},
+  // Cunninghame Arm - town side water
+  {lng:147.9750, lat:-37.8800, name:'Cunninghame Arm',    species:'Trevally · Salmon · Bream · Luderick',  depth:'2–4m',  temp:'—'},
+  // 6 Mile Reef - real GPS mark S38°00.1050' E148°02.2270'
   {lng:148.0371, lat:-38.0018, name:'Deep Reef (40m)',     species:'Snapper · Gummy Shark · Reef Perch',    depth:'40–45m',temp:'—'},
-  {lng:147.9340, lat:-37.8700, name:'Nungurner Channel',  species:'Whiting · Flathead · Mullet',            depth:'2–4m',  temp:'—'},
+  // Nungurner - west along North Arm
+  {lng:147.9200, lat:-37.8760, name:'Nungurner Channel',  species:'Whiting · Flathead · Mullet',            depth:'2–4m',  temp:'—'},
 ];
 
 // ══ AUTH ══
@@ -1057,34 +1062,21 @@ function initMap() {
       el.className = 'hs-marker';
       el.style.cssText = 'width:48px;height:48px;border-radius:50%;background:rgba(249,115,22,.55);border:3px solid #ff6600;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 22px rgba(255,102,0,.8),0 0 44px rgba(255,102,0,.3);';
       el.innerHTML = `<span style="font-family:'Syne',sans-serif;font-weight:900;font-size:14px;color:#fff;text-shadow:0 0 6px #000;">#${i+1}</span>`;
-      el.onclick = () => {
-        const score = parseInt(document.querySelector(`.hs:nth-child(${document.querySelector('.hs-list').children.length - i}) .hs-temp`)?.textContent) || 70;
+      el.onclick = function() {
         new mapboxgl.Popup({ offset: 25, className: 'dw-popup', closeButton: true })
           .setLngLat([h.lng, h.lat])
-          .setHTML(`<div style="font-family:'JetBrains Mono',monospace;min-width:180px;">
-            <div style="font-family:'Syne',sans-serif;font-weight:800;color:#00ffe0;font-size:13px;margin-bottom:8px;">${h.name}</div>
-            <div style="font-size:10px;color:#e0f4f1;margin-bottom:3px;">📏 Depth: <b>${h.depth}</b></div>
-            <div style="font-size:10px;color:#fdba74;margin-top:6px;">🐟 ${h.species}</div>
-          </div>`)
+          .setHTML('<div style="font-family:JetBrains Mono,monospace;min-width:180px;padding:4px;">' +
+            '<div style="font-family:Syne,sans-serif;font-weight:800;color:#00ffe0;font-size:13px;margin-bottom:8px;">' + h.name + '</div>' +
+            '<div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">📏 Depth: <b>' + h.depth + '</b></div>' +
+            '<div style="font-size:10px;color:#fdba74;">🐟 ' + h.species + '</div>' +
+            '</div>')
           .addTo(map);
       };
       new mapboxgl.Marker({ element: el }).setLngLat([h.lng, h.lat]).addTo(map);
       hsMarkers.push(el);
     });
 
-    // Add vessel markers (demo)
-    const vessels = [
-      {lng:147.9840, lat:-37.8815, type:'charter'},
-      {lng:147.9700, lat:-37.8760, type:'recreational'},
-      {lng:147.9560, lat:-37.8740, type:'recreational'},
-    ];
-    vessels.forEach(v => {
-      const color = v.type==='charter'?'#a855f7':'#00ffe0';
-      const el = document.createElement('div');
-      el.className = 'vms-marker';
-      el.style.cssText = `width:10px;height:14px;background:${color};clip-path:polygon(50% 0%,100% 100%,0% 100%);filter:drop-shadow(0 0 5px ${color});`;
-      new mapboxgl.Marker({ element: el }).setLngLat([v.lng, v.lat]).addTo(map);
-    });
+    
 
     // Load catch dots
     loadCatchesOnMap();
@@ -1151,31 +1143,15 @@ function toggleLayer(layer, btn) {
 async function fetchChlorophyll() {
   if (!map) return;
   try {
-    // Get Copernicus token
-    const tokenRes = await fetch('https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token', {
-      method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:`grant_type=client_credentials&client_id=${COPERNICUS_CLIENT_ID}&client_secret=${COPERNICUS_SECRET}`
-    });
-    const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) { console.log('No Copernicus token'); return; }
-    
-    const today = new Date().toISOString().split('T')[0];
-    const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
-    
-    // Use Sentinel Hub WMS with auth header via evalscript
-    const wmsUrl = `https://sh.dataspace.copernicus.eu/wms?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=OLCI-Chlorophyll&STYLES=&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&TIME=${weekAgo}/${today}&MAXCC=30`;
-    
     if (map.getSource('chl-src')) {
       map.setLayoutProperty('chl-layer','visibility','visible');
       return;
     }
-    
-    // Add as raster tiles with auth - use image overlay approach for the region
-    map.addSource('chl-src', {
-      type: 'image',
-      url: wmsUrl,
-      coordinates: [[147.5,-37.4],[148.6,-37.4],[148.6,-38.3],[147.5,-38.3]]
-    });
+    // NASA Ocean Color chlorophyll via ERDDAP - no auth needed
+    const today = new Date().toISOString().split('T')[0];
+    const weekAgo = new Date(Date.now()-7*24*60*60*1000).toISOString().split('T')[0];
+    const url = `https://coastwatch.pfeg.noaa.gov/erddap/wms/erdMH1chla1day/request?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=erdMH1chla1day:chlorophyll&STYLES=&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true`;
+    map.addSource('chl-src', { type:'raster', tiles:[url], tileSize:256, attribution:'NASA Ocean Color' });
     map.addLayer({ id:'chl-layer', type:'raster', source:'chl-src', paint:{'raster-opacity':0.6} });
   } catch(e) { console.log('Chlorophyll error:', e); }
 }
@@ -1341,6 +1317,7 @@ async function sendAI() {
 </script>
 </body>
 </html>
+
 
 
 
