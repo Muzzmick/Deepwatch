@@ -1786,11 +1786,15 @@ function initMap() {
       const markerBorder = isLand ? '#3b82f6' : '#ff6600';
       const markerGlow = isLand ? 'rgba(59,130,246,.8),0 0 44px rgba(59,130,246,.3)' : 'rgba(255,102,0,.8),0 0 44px rgba(255,102,0,.3)';
       el.dataset.hsType = h.type;
-      el.style.cssText = `width:44px;height:44px;border-radius:${isLand?'6px':'50%'};background:${markerBg};border:3px solid ${markerBorder};display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 22px ${markerGlow};position:relative;z-index:10;`;
+      el.style.cssText = `width:44px;height:44px;border-radius:${isLand?'6px':'50%'};background:${markerBg};border:3px solid ${markerBorder};display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 22px ${markerGlow};position:relative;z-index:10;pointer-events:auto;`;
       el.innerHTML = `<span style="font-family:'Syne',sans-serif;font-weight:900;font-size:14px;color:#fff;text-shadow:0 0 6px #000;">#${i+1}</span>`;
       el.dataset.hsIndex = i;
-      el.onclick = function() { showHotspotPopup(parseInt(this.dataset.hsIndex)); };
-      new mapboxgl.Marker({ element: el }).setLngLat([h.lng, h.lat]).addTo(map);
+      // Use addEventListener for reliable click on Mapbox markers
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        showHotspotPopup(parseInt(this.dataset.hsIndex));
+      });
+      const marker = new mapboxgl.Marker({ element: el }).setLngLat([h.lng, h.lat]).addTo(map);
       hsMarkers.push(el);
     });
 
