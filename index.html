@@ -1319,23 +1319,28 @@ let photoBase64 = null;
 // ══ REAL HOTSPOT DATA ══
 // Coordinates verified from fishing forums and GPS marks
 const hotspots = [
-  // ── BOAT SPOTS ──
-  {lng:147.9726, lat:-37.8897, name:'Entrance Channel',      type:'boat',  species:'Snapper · Bream · Whiting · Mulloway',  depth:'4–8m',   access:'Boat'},
-  {lng:147.9445, lat:-37.8802, name:'Reeve Channel',         type:'boat',  species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',   access:'Boat'},
-  {lng:147.9600, lat:-37.8820, name:'Cunninghame Arm',       type:'boat',  species:'Trevally · Salmon · Bream · Luderick',  depth:'2–4m',   access:'Boat/Kayak'},
-  {lng:148.0371, lat:-38.0018, name:'Deep Reef (40m)',        type:'boat',  species:'Snapper · Gummy Shark · Reef Perch',   depth:'40–45m', access:'Boat'},
-  {lng:147.9100, lat:-37.8760, name:'Nungurner Channel',     type:'boat',  species:'Whiting · Flathead · Mullet',           depth:'2–4m',   access:'Boat/Kayak'},
-  // ── LAND-BASED SPOTS ──
-  // Esplanade boat ramp / jetty area - confirmed Lakes Entrance township
-  {lng:147.9812, lat:-37.8782, name:'Lakes Entrance Jetty',  type:'land',  species:'Bream · Trevally · Luderick · Mullet',  depth:'2–4m',   access:'Walk-up jetty'},
-  // Rock wall at the actual entrance channel mouth
-  {lng:147.9860, lat:-37.8835, name:'Entrance Rock Wall',    type:'land',  species:'Salmon · Tailor · Bream · Whiting',     depth:'2–6m',   access:'Rock wall walk'},
-  // Ninety Mile Beach surf gutters east of entrance
-  {lng:147.9920, lat:-37.8910, name:'Surf Beach Gutters',    type:'land',  species:'Salmon · Tailor · Whiting',             depth:'1–3m',   access:'Ninety Mile Beach'},
-  // Kalimna Jetty on north shore of North Arm
-  {lng:147.9480, lat:-37.8720, name:'Kalimna Jetty',         type:'land',  species:'Bream · Flathead · Luderick',           depth:'2–4m',   access:'Public jetty'},
-  // Metung Jetty west along lake
-  {lng:147.8650, lat:-37.8820, name:'Metung Jetty',          type:'land',  species:'Bream · Whiting · Mullet',              depth:'1–3m',   access:'Public jetty'},
+  // ── BOAT SPOTS ── (GPS verified from Google Maps)
+  // Image 1: North Arm water channel
+  {lng:147.961716, lat:-37.882274, name:'Reeve Channel',      type:'boat', species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',   access:'Boat'},
+  // Image 2: Bass Strait just off entrance
+  {lng:147.971759, lat:-37.889048, name:'Entrance Channel',   type:'boat', species:'Snapper · Bream · Whiting · Mulloway',  depth:'4–8m',   access:'Boat'},
+  // Image 4 water: Kalimna area lake water
+  {lng:147.954786, lat:-37.878378, name:'Kalimna Water',      type:'boat', species:'Bream · Trevally · Whiting · Mullet',   depth:'2–4m',   access:'Boat/Kayak'},
+  // Deep Reef - real GPS S38°00.1050' E148°02.2270'
+  {lng:148.037120, lat:-38.001750, name:'Deep Reef (40m)',     type:'boat', species:'Snapper · Gummy Shark · Reef Perch',   depth:'40–45m', access:'Boat'},
+  // Image 5: East water Oceania area
+  {lng:148.012378, lat:-37.878319, name:'East Lake Channel',   type:'boat', species:'Whiting · Flathead · Mullet',           depth:'2–4m',   access:'Boat/Kayak'},
+  // ── LAND-BASED SPOTS ── (GPS verified)
+  // Image 3: Cunninghame Arm Foot Bridge area (town side water)
+  {lng:147.993345, lat:-37.880885, name:'Cunninghame Arm',    type:'land', species:'Trevally · Bream · Luderick · Salmon',  depth:'2–4m',   access:'Footbridge & banks'},
+  // Myer Street Jetty - visible in Image 3
+  {lng:147.991500, lat:-37.879500, name:'Myer St Jetty',      type:'land', species:'Bream · Trevally · Luderick',           depth:'2–3m',   access:'Public jetty'},
+  // Kalimna Jetty Walk - Image 4
+  {lng:147.954786, lat:-37.876500, name:'Kalimna Jetty',      type:'land', species:'Bream · Flathead · Whiting',            depth:'2–4m',   access:'Public jetty'},
+  // Entrance rock wall - east of town near Bass Strait
+  {lng:147.975000, lat:-37.885000, name:'Entrance Rock Wall', type:'land', species:'Salmon · Tailor · Bream · Whiting',     depth:'2–6m',   access:'Rock wall walk'},
+  // Ninety Mile Beach surf - Image 5 area
+  {lng:148.012378, lat:-37.884000, name:'Surf Beach Gutters', type:'land', species:'Salmon · Tailor · Whiting',             depth:'1–3m',   access:'Ninety Mile Beach'},
 ];
 
 // ══ AUTH ══
