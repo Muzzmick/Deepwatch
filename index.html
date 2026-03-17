@@ -1794,7 +1794,7 @@ function initMap() {
         e.stopPropagation();
         showHotspotPopup(parseInt(this.dataset.hsIndex));
       });
-      const marker = new mapboxgl.Marker({ element: el }).setLngLat([h.lng, h.lat]).addTo(map);
+      const marker = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat([h.lng, h.lat]).addTo(map);
       hsMarkers.push(el);
     });
 
@@ -1934,7 +1934,7 @@ async function loadCatchesOnMap() {
     const el = document.createElement('div');
     el.style.cssText = 'width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #fff;cursor:pointer;box-shadow:0 0 8px rgba(34,197,94,.7);';
     el.onclick = () => new mapboxgl.Popup({offset:15,className:'dw-popup'}).setLngLat([r.lng,r.lat]).setHTML(`<div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#e0f4f1;"><b style="color:#22c55e;">${r.species}</b><br>${r.quantity} fish · ${r.weight_kg}kg<br>${r.location}</div>`).addTo(map);
-    new mapboxgl.Marker({element:el}).setLngLat([r.lng,r.lat]).addTo(map);
+    new mapboxgl.Marker({element:el, anchor:'center'}).setLngLat([r.lng,r.lat]).addTo(map);
   });
 }
 
