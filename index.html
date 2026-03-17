@@ -1485,11 +1485,17 @@ function filterHotspots(type, btn) {
   btn.style.background = 'var(--cdim)';
   btn.style.color = 'var(--cyan)';
   btn.style.borderColor = 'var(--cglow)';
-  // Show/hide map markers
-  document.querySelectorAll('.hs-marker').forEach(m => {
-    const show = type === 'all' || m.dataset.hsType === type;
-    m.style.display = show ? 'flex' : 'none';
-  });
+  // Show/hide map layers
+  if (map) {
+    const showBoat = type === 'all' || type === 'boat';
+    const showLand = type === 'all' || type === 'land';
+    ['boat-circles','boat-labels','boat-glow'].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showBoat ? 'visible' : 'none');
+    });
+    ['land-circles','land-labels'].forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showLand ? 'visible' : 'none');
+    });
+  }
   updateHotspotScores();
 }
 
@@ -1533,18 +1539,24 @@ function updateHotspotScores() {
       <div class="hs-temp">${r.score}</div>
     </div>`).join('');
 
-  // Update map marker numbers based on rank
-  hsMarkers.forEach((el, i) => {
-    const rank = ranked.findIndex(r => r.i === i);
-    const span = el.querySelector('span');
-    if (span) {
-      if (rank === -1) {
-        span.textContent = '';  // filtered out
-      } else {
-        span.textContent = '#' + (rank+1);
-      }
+  // Update GeoJSON source with ranked numbers
+  if (map && map.getSource('boat-spots')) {
+    const boatFeatures = hotspots
+      .filter(h => h.type === 'boat')
+      .map((h) => {
+        const rank = ranked.findIndex(r => r.i === hotspots.indexOf(h));
+        return {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [h.lng, h.lat] },
+          properties: { name: h.name, species: h.species, depth: h.depth, access: h.access, index: hotspots.indexOf(h), rank: rank === -1 ? 99 : rank + 1 }
+        };
+      });
+    map.getSource('boat-spots').setData({ type: 'FeatureCollection', features: boatFeatures });
+    // Update label to show rank
+    if (map.getLayer('boat-labels')) {
+      map.setLayoutProperty('boat-labels', 'text-field', ['concat', '#', ['to-string', ['get', 'rank']]]);
     }
-  });
+  }
 
   // Update species forecast
   updateSpeciesForecast();
@@ -1763,33 +1775,136 @@ function initMap() {
     setTimeout(() => box.style.display = 'none', 4000);
   });
 
-  let markersAdded = false;
-  map.on('idle', () => {
-    if (markersAdded) return;
-    markersAdded = true;
+  map.on('load', () => {
 
-    // Add hotspot markers
-    hotspots.forEach((h, i) => {
-      const el = document.createElement('div');
-      el.className = 'hs-marker';
-      const isLand = h.type === 'land';
-      const markerBg = isLand ? 'rgba(59,130,246,.55)' : 'rgba(249,115,22,.55)';
-      const markerBorder = isLand ? '#3b82f6' : '#ff6600';
-      const markerGlow = isLand ? 'rgba(59,130,246,.8),0 0 44px rgba(59,130,246,.3)' : 'rgba(255,102,0,.8),0 0 44px rgba(255,102,0,.3)';
-      el.dataset.hsType = h.type;
-      el.style.cssText = `width:44px;height:44px;border-radius:${isLand?'6px':'50%'};background:${markerBg};border:3px solid ${markerBorder};display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 22px ${markerGlow};position:relative;z-index:10;pointer-events:auto;`;
-      el.innerHTML = `<span style="font-family:'Syne',sans-serif;font-weight:900;font-size:14px;color:#fff;text-shadow:0 0 6px #000;">#${i+1}</span>`;
-      el.dataset.hsIndex = i;
-      // Use addEventListener for reliable click on Mapbox markers
-      el.addEventListener('click', function(e) {
-        e.stopPropagation();
-        showHotspotPopup(parseInt(this.dataset.hsIndex));
-      });
-      const marker = new mapboxgl.Marker({ element: el, anchor: 'center', offset: [0, 0] }).setLngLat([h.lng, h.lat]).addTo(map);
-      hsMarkers.push(el);
+    // ── HOTSPOT MARKERS via GeoJSON (never drift on zoom) ──
+    const boatFeatures = hotspots
+      .filter(h => h.type === 'boat')
+      .map((h, i) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [h.lng, h.lat] },
+        properties: { name: h.name, species: h.species, depth: h.depth, access: h.access, index: hotspots.indexOf(h) }
+      }));
+
+    const landFeatures = hotspots
+      .filter(h => h.type === 'land')
+      .map((h, i) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [h.lng, h.lat] },
+        properties: { name: h.name, species: h.species, depth: h.depth, access: h.access, index: hotspots.indexOf(h) }
+      }));
+
+    map.addSource('boat-spots', { type: 'geojson', data: { type: 'FeatureCollection', features: boatFeatures } });
+    map.addSource('land-spots', { type: 'geojson', data: { type: 'FeatureCollection', features: landFeatures } });
+
+    // Boat spots - orange circles
+    map.addLayer({
+      id: 'boat-circles',
+      type: 'circle',
+      source: 'boat-spots',
+      paint: {
+        'circle-radius': 22,
+        'circle-color': 'rgba(249,115,22,0.55)',
+        'circle-stroke-width': 3,
+        'circle-stroke-color': '#ff6600',
+        'circle-blur': 0
+      }
     });
 
-    
+    // Land spots - blue squares via circle layer
+    map.addLayer({
+      id: 'land-circles',
+      type: 'circle',
+      source: 'land-spots',
+      paint: {
+        'circle-radius': 18,
+        'circle-color': 'rgba(59,130,246,0.55)',
+        'circle-stroke-width': 3,
+        'circle-stroke-color': '#3b82f6'
+      }
+    });
+
+    // Labels on boat spots
+    map.addLayer({
+      id: 'boat-labels',
+      type: 'symbol',
+      source: 'boat-spots',
+      layout: {
+        'text-field': ['concat', '#', ['to-string', ['+', ['get', 'index'], 1]]],
+        'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
+        'text-size': 13,
+        'text-allow-overlap': true,
+        'text-ignore-placement': true
+      },
+      paint: { 'text-color': '#ffffff', 'text-halo-color': '#000000', 'text-halo-width': 1 }
+    });
+
+    // Labels on land spots
+    map.addLayer({
+      id: 'land-labels',
+      type: 'symbol',
+      source: 'land-spots',
+      layout: {
+        'text-field': ['get', 'name'],
+        'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
+        'text-size': 10,
+        'text-offset': [0, 2.2],
+        'text-anchor': 'top',
+        'text-allow-overlap': false
+      },
+      paint: { 'text-color': '#3b82f6', 'text-halo-color': '#000000', 'text-halo-width': 1.5 }
+    });
+
+    // Glow effect for boat spots
+    map.addLayer({
+      id: 'boat-glow',
+      type: 'circle',
+      source: 'boat-spots',
+      paint: {
+        'circle-radius': 30,
+        'circle-color': 'rgba(249,115,22,0)',
+        'circle-stroke-width': 0,
+        'circle-blur': 1,
+        'circle-opacity': 0.4,
+        'circle-color': 'rgba(255,100,0,0.3)'
+      }
+    });
+
+    // Click handlers
+    map.on('click', 'boat-circles', (e) => {
+      const props = e.features[0].properties;
+      new mapboxgl.Popup({ offset: 25, className: 'dw-popup', closeButton: true })
+        .setLngLat(e.features[0].geometry.coordinates)
+        .setHTML(
+          '<div style="font-family:JetBrains Mono,monospace;min-width:200px;padding:4px;">' +
+          '<div style="font-family:Syne,sans-serif;font-weight:800;color:#00ffe0;font-size:14px;margin-bottom:8px;">🚤 ' + props.name + '</div>' +
+          '<div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">📏 Depth: <b>' + props.depth + '</b></div>' +
+          '<div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">⚓ Access: <b>' + props.access + '</b></div>' +
+          '<div style="font-size:10px;color:#fdba74;">🐟 ' + props.species + '</div>' +
+          '</div>')
+        .addTo(map);
+    });
+
+    map.on('click', 'land-circles', (e) => {
+      const props = e.features[0].properties;
+      new mapboxgl.Popup({ offset: 25, className: 'dw-popup', closeButton: true })
+        .setLngLat(e.features[0].geometry.coordinates)
+        .setHTML(
+          '<div style="font-family:JetBrains Mono,monospace;min-width:200px;padding:4px;">' +
+          '<div style="font-family:Syne,sans-serif;font-weight:800;color:#3b82f6;font-size:14px;margin-bottom:8px;">🚶 ' + props.name + '</div>' +
+          '<div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">📍 Access: <b>' + props.access + '</b></div>' +
+          '<div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">📏 Depth: <b>' + props.depth + '</b></div>' +
+          '<div style="font-size:10px;color:#fdba74;">🐟 ' + props.species + '</div>' +
+          '</div>')
+        .addTo(map);
+    });
+
+    map.on('mouseenter', 'boat-circles', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'boat-circles', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'land-circles', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'land-circles', () => map.getCanvas().style.cursor = '');
+
+    updateHotspotScores();
 
     // Load catch dots
     loadCatchesOnMap();
@@ -1801,6 +1916,8 @@ function flyToHotspot(i, el) {
   document.querySelectorAll('.hs').forEach(h => h.classList.remove('active'));
   if(el) el.classList.add('active');
   if(map) map.flyTo({ center: [hotspots[i].lng, hotspots[i].lat], zoom: 14, duration: 1200 });
+  // Show popup
+  if(map) showHotspotPopup(i);
 }
 
 // ══ LAYER TOGGLES ══
