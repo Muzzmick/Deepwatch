@@ -1320,11 +1320,11 @@ let photoBase64 = null;
 // Coordinates verified from fishing forums and GPS marks
 const hotspots = [
   // ── BOAT SPOTS ── (all GPS verified by user Google Maps clicks)
-  {lng:147.972038, lat:-37.889158, name:'Entrance Channel',   type:'boat', species:'Snapper · Bream · Whiting · Mulloway',  depth:'4–8m',   access:'Boat'},
-  {lng:147.986629, lat:-37.881537, name:'Cunninghame Arm',    type:'boat', species:'Trevally · Bream · Luderick · Salmon',  depth:'2–4m',   access:'Boat/Kayak'},
-  {lng:147.961716, lat:-37.882274, name:'Reeve Channel',      type:'boat', species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',   access:'Boat'},
-  {lng:147.954786, lat:-37.878378, name:'Kalimna Water',      type:'boat', species:'Bream · Trevally · Whiting · Mullet',   depth:'2–4m',   access:'Boat/Kayak'},
-  {lng:148.037120, lat:-38.001750, name:'Deep Reef (40m)',    type:'boat', species:'Snapper · Gummy Shark · Reef Perch',    depth:'40–45m', access:'Boat'},
+  {lng:147.9718, lat:-37.8862, name:'Entrance Channel',   type:'boat', species:'Snapper · Bream · Whiting · Mulloway',  depth:'4–8m',   access:'Boat'},
+  {lng:147.9866, lat:-37.8793, name:'Cunninghame Arm',    type:'boat', species:'Trevally · Bream · Luderick · Salmon',  depth:'2–4m',   access:'Boat/Kayak'},
+  {lng:147.9617, lat:-37.8810, name:'Reeve Channel',      type:'boat', species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',   access:'Boat'},
+  {lng:147.9548, lat:-37.8770, name:'Kalimna Water',      type:'boat', species:'Bream · Trevally · Whiting · Mullet',   depth:'2–4m',   access:'Boat/Kayak'},
+  {lng:148.0371, lat:-38.0018, name:'Deep Reef (40m)',    type:'boat', species:'Snapper · Gummy Shark · Reef Perch',    depth:'40–45m', access:'Boat'},
   // ── LAND-BASED SPOTS ── (GPS verified)
   // Land spots - positioned at actual jetties/access points (north of beach strip)
   {lng:147.9933, lat:-37.8785, name:'Cunninghame Arm Footbridge', type:'land', species:'Trevally · Bream · Luderick',   depth:'2–4m',   access:'Footbridge & banks'},
@@ -1528,16 +1528,20 @@ function updateHotspotScores() {
 
   // Rebuild hotspot list
   const list = document.getElementById('hsList');
-  list.innerHTML = ranked.map((r, rank) => `
-    <div class="hs ${rank===0?'active':''}" onclick="flyToHotspot(${r.i},this)">
-      <div class="hs-rank">#${rank+1}</div>
+  list.innerHTML = ranked.map((r, rank) => {
+    const h = hotspots[r.i];
+    const typeIcon = h.type === 'land' ? '🚶' : '🚤';
+    const typeColor = h.type === 'land' ? '#3b82f6' : '#00ffe0';
+    return `<div class="hs ${rank===0?'active':''}" onclick="flyToHotspot(${r.i},this)">
+      <div class="hs-rank" style="color:${typeColor}">#${rank+1}</div>
       <div class="hs-info">
-        <div class="hs-name">${hotspots[r.i].name}</div>
-        <div class="hs-spp">${hotspots[r.i].species.split(' · ').slice(0,3).join(' · ')}</div>
-        <div class="hs-bar"><div class="hs-fill" style="width:${r.score}%"></div></div>
+        <div class="hs-name">${typeIcon} ${h.name}</div>
+        <div class="hs-spp">${h.species.split(' · ').slice(0,3).join(' · ')}</div>
+        <div class="hs-bar"><div class="hs-fill" style="width:${r.score}%;background:${h.type==='land'?'linear-gradient(90deg,#3b82f6,#60a5fa)':'linear-gradient(90deg,var(--cyan),#00c4ff)'}"></div></div>
       </div>
-      <div class="hs-temp">${r.score}</div>
-    </div>`).join('');
+      <div class="hs-temp" style="color:${h.type==='land'?'#3b82f6':'var(--orange)'}">${r.score}</div>
+    </div>`;
+  }).join('');
 
   // Update GeoJSON source with ranked numbers
   if (map && map.getSource('boat-spots')) {
