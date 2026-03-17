@@ -888,10 +888,22 @@ tr:hover td{background:rgba(6,51,82,.3);}
 
       <div class="sec">
         <div class="sec-label">AI Hotspot Ranking</div>
-        <div style="display:flex;gap:4px;margin-bottom:8px;">
-          <button id="filterAll" onclick="filterHotspots('all',this)" style="flex:1;padding:4px;border:1px solid var(--cglow);border-radius:4px;background:var(--cdim);color:var(--cyan);font-size:8px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">ALL</button>
-          <button id="filterBoat" onclick="filterHotspots('boat',this)" style="flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:8px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🚤 BOAT</button>
-          <button id="filterLand" onclick="filterHotspots('land',this)" style="flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:8px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🚶 LAND</button>
+        <div style="display:flex;gap:3px;margin-bottom:4px;">
+          <button id="filterAll" onclick="filterHotspots('all',this)" style="flex:1;padding:4px;border:1px solid var(--cglow);border-radius:4px;background:var(--cdim);color:var(--cyan);font-size:7px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">ALL</button>
+          <button id="filterBoat" onclick="filterHotspots('boat',this)" style="flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🚤 BOAT</button>
+          <button id="filterLand" onclick="filterHotspots('land',this)" style="flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🚶 LAND</button>
+        </div>
+        <div style="display:flex;gap:3px;margin-bottom:8px;flex-wrap:wrap;">
+          <button onclick="filterArea('Lakes Entrance',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Lakes Ent.</button>
+          <button onclick="filterArea('Metung',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Metung</button>
+          <button onclick="filterArea('Paynesville',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Paynesville</button>
+          <button onclick="filterArea('Bairnsdale',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Bairnsdale</button>
+          <button onclick="filterArea('Lake Tyers',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">L.Tyers</button>
+          <button onclick="filterArea('Ninety Mile Beach',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">90mi Beach</button>
+          <button onclick="filterArea('Tambo River',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Tambo R.</button>
+          <button onclick="filterArea('Nicholson River',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Nicholson R.</button>
+          <button onclick="filterArea('Lake Wellington',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">L.Wellington</button>
+          <button onclick="filterArea('Lake Victoria',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">L.Victoria</button>
         </div>
         <div class="hs-list" id="hsList"></div>
       </div>
@@ -1200,26 +1212,63 @@ tr:hover td{background:rgba(6,51,82,.3);}
 
     <div class="field-label">Location</div>
     <select class="field-input" id="cf_location">
-      <optgroup label="🚤 Boat Spots">
+      <optgroup label="🏘 Lakes Entrance">
         <option>Entrance Channel</option>
-        <option>Reeve Channel</option>
         <option>Cunninghame Arm</option>
-        <option>North Arm</option>
-        <option>Lake King</option>
-        <option>Lake Victoria</option>
-        <option>Lake Wellington</option>
-        <option>6 Mile Reef</option>
-        <option>Nungurner Channel</option>
-      </optgroup>
-      <optgroup label="🚶 Land-Based">
-        <option>Lakes Entrance Jetty</option>
+        <option>Reeve Channel</option>
+        <option>Kalimna Water</option>
+        <option>Deep Reef (40m)</option>
+        <option>Myer St Jetty</option>
+        <option>Cunninghame Arm Footbridge</option>
         <option>Entrance Rock Wall</option>
-        <option>Ninety Mile Beach (surf)</option>
         <option>Kalimna Jetty</option>
+        <option>Ninety Mile Beach</option>
+      </optgroup>
+      <optgroup label="🏘 Metung">
+        <option>Metung Channel</option>
         <option>Metung Jetty</option>
-        <option>Footbridge</option>
-        <option>Esplanade Banks</option>
-        <option>Nungurner Jetty</option>
+        <option>Lake King — Metung Flats</option>
+      </optgroup>
+      <optgroup label="🏘 Paynesville">
+        <option>McMillan Strait</option>
+        <option>Paynesville Jetty</option>
+        <option>Lake Victoria Shallows</option>
+        <option>Paynesville Foreshore</option>
+      </optgroup>
+      <optgroup label="🏘 Bairnsdale">
+        <option>Mitchell River Mouth</option>
+        <option>Mitchell River Bank</option>
+        <option>Lake Wellington Entry</option>
+        <option>Bairnsdale Boat Ramp</option>
+      </optgroup>
+      <optgroup label="🏘 Lake Tyers">
+        <option>Lake Tyers Channel</option>
+        <option>Lake Tyers Shallows</option>
+        <option>Lake Tyers Boat Ramp</option>
+        <option>Lake Tyers Beach</option>
+      </optgroup>
+      <optgroup label="🏖 Ninety Mile Beach">
+        <option>Seaspray Beach</option>
+        <option>Golden Beach</option>
+        <option>Nungurner Beach</option>
+      </optgroup>
+      <optgroup label="🌊 Tambo River">
+        <option>Tambo River Lower</option>
+        <option>Tambo River Mid</option>
+        <option>Tambo Lower Bank</option>
+        <option>Nicholson River Junction</option>
+        <option>Bairnsdale Tambo Bridge</option>
+        <option>Nicholson River</option>
+      </optgroup>
+      <optgroup label="🌊 Lake Wellington">
+        <option>Lake Wellington Centre</option>
+        <option>Lake Wellington West</option>
+        <option>Sale Jetty</option>
+        <option>Wellington River Mouth</option>
+      </optgroup>
+      <optgroup label="🌊 Lake Victoria">
+        <option>Lake Victoria Centre</option>
+        <option>Raymond Island Ferry</option>
       </optgroup>
       <option>Other</option>
     </select>
@@ -1319,19 +1368,78 @@ let photoBase64 = null;
 // ══ REAL HOTSPOT DATA ══
 // Coordinates verified from fishing forums and GPS marks
 const hotspots = [
-  // ── BOAT SPOTS ── (all GPS verified by user Google Maps clicks)
-  {lng:147.9718, lat:-37.8862, name:'Entrance Channel',   type:'boat', species:'Snapper · Bream · Whiting · Mulloway',  depth:'4–8m',   access:'Boat'},
-  {lng:147.9866, lat:-37.8793, name:'Cunninghame Arm',    type:'boat', species:'Trevally · Bream · Luderick · Salmon',  depth:'2–4m',   access:'Boat/Kayak'},
-  {lng:147.9617, lat:-37.8810, name:'Reeve Channel',      type:'boat', species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',   access:'Boat'},
-  {lng:147.9548, lat:-37.8770, name:'Kalimna Water',      type:'boat', species:'Bream · Trevally · Whiting · Mullet',   depth:'2–4m',   access:'Boat/Kayak'},
-  {lng:148.0371, lat:-38.0018, name:'Deep Reef (40m)',    type:'boat', species:'Snapper · Gummy Shark · Reef Perch',    depth:'40–45m', access:'Boat'},
-  // ── LAND-BASED SPOTS ── (GPS verified)
-  // Land spots - positioned at actual jetties/access points (north of beach strip)
-  {lng:147.9933, lat:-37.8785, name:'Cunninghame Arm Footbridge', type:'land', species:'Trevally · Bream · Luderick',   depth:'2–4m',   access:'Footbridge & banks'},
-  {lng:147.9908, lat:-37.8775, name:'Myer St Jetty',      type:'land', species:'Bream · Trevally · Luderick · Mullet',  depth:'2–3m',   access:'Public jetty'},
-  {lng:147.9780, lat:-37.8810, name:'Entrance Rock Wall', type:'land', species:'Salmon · Tailor · Bream · Whiting',     depth:'2–6m',   access:'Rock wall walk'},
-  {lng:147.9548, lat:-37.8750, name:'Kalimna Jetty',      type:'land', species:'Bream · Flathead · Whiting',            depth:'2–4m',   access:'Public jetty'},
-  {lng:148.0124, lat:-37.8783, name:'Surf Beach Access',  type:'land', species:'Salmon · Tailor · Whiting',             depth:'1–3m',   access:'Ninety Mile Beach'},
+  // ── LAKES ENTRANCE — BOAT ──
+  {lng:147.9718, lat:-37.8862, name:'Entrance Channel',        area:'Lakes Entrance', type:'boat', species:'Snapper · Bream · Whiting · Mulloway',  depth:'4–8m',   access:'Boat'},
+  {lng:147.9866, lat:-37.8793, name:'Cunninghame Arm',         area:'Lakes Entrance', type:'boat', species:'Trevally · Bream · Luderick · Salmon',  depth:'2–4m',   access:'Boat/Kayak'},
+  {lng:147.9617, lat:-37.8810, name:'Reeve Channel',           area:'Lakes Entrance', type:'boat', species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m',   access:'Boat'},
+  {lng:147.9548, lat:-37.8770, name:'Kalimna Water',           area:'Lakes Entrance', type:'boat', species:'Bream · Trevally · Whiting · Mullet',   depth:'2–4m',   access:'Boat/Kayak'},
+  {lng:148.0371, lat:-38.0018, name:'Deep Reef (40m)',         area:'Lakes Entrance', type:'boat', species:'Snapper · Gummy Shark · Reef Perch',    depth:'40–45m', access:'Boat'},
+  // ── LAKES ENTRANCE — LAND ──
+  {lng:147.9933, lat:-37.8785, name:'Cunninghame Arm Footbridge', area:'Lakes Entrance', type:'land', species:'Trevally · Bream · Luderick',        depth:'2–4m',   access:'Footbridge'},
+  {lng:147.9908, lat:-37.8775, name:'Myer St Jetty',           area:'Lakes Entrance', type:'land', species:'Bream · Trevally · Luderick · Mullet',  depth:'2–3m',   access:'Public jetty'},
+  {lng:147.9780, lat:-37.8810, name:'Entrance Rock Wall',      area:'Lakes Entrance', type:'land', species:'Salmon · Tailor · Bream · Whiting',     depth:'2–6m',   access:'Rock wall'},
+  {lng:147.9548, lat:-37.8750, name:'Kalimna Jetty',           area:'Lakes Entrance', type:'land', species:'Bream · Flathead · Whiting',            depth:'2–4m',   access:'Public jetty'},
+  {lng:148.0124, lat:-37.8783, name:'Surf Beach Access',       area:'Lakes Entrance', type:'land', species:'Salmon · Tailor · Whiting',             depth:'1–3m',   access:'Ninety Mile Beach'},
+
+  // ── METUNG — BOAT ──
+  {lng:147.8557, lat:-37.8973, name:'Metung Channel',          area:'Metung', type:'boat', species:'Bream · Flathead · Whiting · Mullet',    depth:'2–5m',   access:'Boat'},
+  {lng:147.8400, lat:-37.9050, name:'Lake King — Metung Flats',area:'Metung', type:'boat', species:'Bream · Whiting · Flathead',             depth:'1–3m',   access:'Boat/Kayak'},
+  // ── METUNG — LAND ──
+  {lng:147.8557, lat:-37.8960, name:'Metung Jetty',            area:'Metung', type:'land', species:'Bream · Whiting · Trevally · Mullet',    depth:'2–4m',   access:'Public jetty'},
+  {lng:147.8500, lat:-37.8970, name:'Metung Boat Ramp',        area:'Metung', type:'land', species:'Bream · Flathead · Luderick',            depth:'1–3m',   access:'Boat ramp banks'},
+
+  // ── PAYNESVILLE — BOAT ──
+  {lng:147.7193, lat:-37.9177, name:'McMillan Strait',         area:'Paynesville', type:'boat', species:'Bream · Flathead · Trevally · Mulloway', depth:'3–6m', access:'Boat'},
+  {lng:147.7050, lat:-37.9250, name:'Lake Victoria Shallows',  area:'Paynesville', type:'boat', species:'Bream · Whiting · Flathead',         depth:'1–3m',   access:'Boat/Kayak'},
+  // ── PAYNESVILLE — LAND ──
+  {lng:147.7193, lat:-37.9160, name:'Paynesville Jetty',       area:'Paynesville', type:'land', species:'Bream · Trevally · Luderick · Mullet', depth:'2–4m', access:'Public jetty'},
+  {lng:147.7150, lat:-37.9170, name:'Paynesville Foreshore',   area:'Paynesville', type:'land', species:'Bream · Flathead · Whiting',          depth:'1–3m', access:'Foreshore banks'},
+
+  // ── BAIRNSDALE / MITCHELL RIVER — BOAT ──
+  {lng:147.6350, lat:-37.8950, name:'Mitchell River Mouth',    area:'Bairnsdale', type:'boat', species:'Mulloway · Bream · Flathead · Perch', depth:'3–8m',   access:'Boat'},
+  {lng:147.6100, lat:-37.8800, name:'Lake Wellington Entry',   area:'Bairnsdale', type:'boat', species:'Bream · Trevally · Flathead',         depth:'2–5m',   access:'Boat'},
+  // ── BAIRNSDALE — LAND ──
+  {lng:147.6350, lat:-37.8940, name:'Mitchell River Bank',     area:'Bairnsdale', type:'land', species:'Mulloway · Bream · Perch · Catfish',  depth:'2–6m',   access:'River bank'},
+  {lng:147.6180, lat:-37.8830, name:'Bairnsdale Boat Ramp',    area:'Bairnsdale', type:'land', species:'Bream · Flathead · Trevally',         depth:'2–4m',   access:'Boat ramp banks'},
+
+  // ── NINETY MILE BEACH — LAND ──
+  {lng:147.8000, lat:-37.9200, name:'Seaspray Beach',          area:'Ninety Mile Beach', type:'land', species:'Salmon · Tailor · Whiting · Dart', depth:'1–4m', access:'Beach surf'},
+  {lng:147.6500, lat:-37.9400, name:'Golden Beach',            area:'Ninety Mile Beach', type:'land', species:'Salmon · Tailor · Whiting',         depth:'1–3m', access:'Beach surf'},
+  {lng:148.0500, lat:-37.8900, name:'Nungurner Beach',         area:'Ninety Mile Beach', type:'land', species:'Salmon · Tailor · Bream',           depth:'1–3m', access:'Beach surf'},
+
+  // ── LAKE TYERS — BOAT ──
+  {lng:148.0900, lat:-37.8600, name:'Lake Tyers Channel',      area:'Lake Tyers', type:'boat', species:'Bream · Flathead · Whiting · Mullet', depth:'2–5m',   access:'Boat'},
+  {lng:148.0750, lat:-37.8500, name:'Lake Tyers Shallows',     area:'Lake Tyers', type:'boat', species:'Bream · Whiting · Trevally',          depth:'1–3m',   access:'Boat/Kayak'},
+  // ── LAKE TYERS — LAND ──
+  {lng:148.0900, lat:-37.8580, name:'Lake Tyers Boat Ramp',    area:'Lake Tyers',  type:'land', species:'Bream · Flathead · Whiting',         depth:'2–4m',   access:'Boat ramp banks'},
+  {lng:148.1050, lat:-37.8650, name:'Lake Tyers Beach',        area:'Lake Tyers',  type:'land', species:'Salmon · Tailor · Whiting',          depth:'1–3m',   access:'Beach surf'},
+
+  // ── TAMBO RIVER — BOAT ──
+  {lng:147.7950, lat:-37.8300, name:'Tambo River Lower',       area:'Tambo River', type:'boat', species:'Mulloway · Bream · Flathead · Perch', depth:'3–8m',   access:'Boat'},
+  {lng:147.7800, lat:-37.8100, name:'Tambo River Mid',         area:'Tambo River', type:'boat', species:'Bream · Perch · Catfish · Flathead',  depth:'2–6m',   access:'Boat/Kayak'},
+  {lng:147.7600, lat:-37.7800, name:'Tambo River Upper',       area:'Tambo River', type:'boat', species:'Perch · Catfish · Bream',             depth:'1–4m',   access:'Kayak'},
+  // ── TAMBO RIVER — LAND ──
+  {lng:147.7950, lat:-37.8290, name:'Tambo Lower Bank',        area:'Tambo River', type:'land', species:'Mulloway · Bream · Flathead',         depth:'3–8m',   access:'River bank'},
+  {lng:147.7800, lat:-37.8090, name:'Nicholson River Junction',area:'Tambo River', type:'land', species:'Bream · Perch · Mulloway',            depth:'2–5m',   access:'River bank'},
+  {lng:147.6730, lat:-37.8230, name:'Bairnsdale Tambo Bridge', area:'Tambo River', type:'land', species:'Bream · Perch · Catfish · Eel',       depth:'2–5m',   access:'Bridge & bank'},
+
+  // ── NICHOLSON RIVER — BOAT & LAND ──
+  {lng:147.7300, lat:-37.8100, name:'Nicholson River',         area:'Nicholson River', type:'boat', species:'Bream · Perch · Flathead · Mullet', depth:'2–5m', access:'Boat/Kayak'},
+  {lng:147.7290, lat:-37.8090, name:'Nicholson River Bank',    area:'Nicholson River', type:'land', species:'Bream · Perch · Eel · Catfish',   depth:'1–4m',   access:'River bank'},
+
+  // ── LAKE WELLINGTON — BOAT ──
+  {lng:147.3500, lat:-38.0800, name:'Lake Wellington Centre',  area:'Lake Wellington', type:'boat', species:'Bream · Trevally · Flathead · Mullet', depth:'2–5m', access:'Boat'},
+  {lng:147.2800, lat:-38.0600, name:'Lake Wellington West',    area:'Lake Wellington', type:'boat', species:'Bream · Whiting · Mullet',           depth:'1–3m',   access:'Boat/Kayak'},
+  {lng:147.4200, lat:-38.0900, name:'Lake Wellington East',    area:'Lake Wellington', type:'boat', species:'Bream · Trevally · Flathead',        depth:'2–4m',   access:'Boat'},
+  // ── LAKE WELLINGTON — LAND ──
+  {lng:147.3800, lat:-38.0750, name:'Sale Jetty',              area:'Lake Wellington', type:'land', species:'Bream · Trevally · Mullet · Luderick', depth:'2–4m', access:'Public jetty'},
+  {lng:147.3500, lat:-38.0820, name:'Wellington River Mouth',  area:'Lake Wellington', type:'land', species:'Mulloway · Bream · Flathead',         depth:'3–6m', access:'River mouth bank'},
+
+  // ── LAKE VICTORIA — BOAT ──
+  {lng:147.6000, lat:-37.9600, name:'Lake Victoria Centre',    area:'Lake Victoria', type:'boat', species:'Bream · Flathead · Whiting · Trevally', depth:'2–5m', access:'Boat'},
+  {lng:147.5500, lat:-37.9400, name:'Lake Victoria West',      area:'Lake Victoria', type:'boat', species:'Bream · Whiting · Mullet',              depth:'1–3m', access:'Boat/Kayak'},
+  // ── LAKE VICTORIA — LAND ──
+  {lng:147.6200, lat:-37.9500, name:'Raymond Island Ferry',    area:'Lake Victoria', type:'land', species:'Bream · Trevally · Luderick',           depth:'2–4m', access:'Ferry dock banks'},
 ];
 
 // ══ AUTH ══
@@ -1471,6 +1579,32 @@ function getWindScore() {
 }
 
 let currentFilter = 'all';
+let currentArea = 'all';
+
+function filterArea(area, btn) {
+  currentArea = area;
+  document.querySelectorAll('[onclick^="filterArea"]').forEach(b => {
+    b.style.background = 'none'; b.style.color = 'var(--muted)'; b.style.borderColor = 'var(--border)';
+  });
+  btn.style.background = 'var(--cdim)'; btn.style.color = 'var(--cyan)'; btn.style.borderColor = 'var(--cglow)';
+  // Fly to area
+  const areaCenters = {
+    'Lakes Entrance':   {center:[147.968,-37.876], zoom:13},
+    'Metung':           {center:[147.855,-37.898], zoom:13},
+    'Paynesville':      {center:[147.719,-37.917], zoom:13},
+    'Bairnsdale':       {center:[147.635,-37.893], zoom:13},
+    'Lake Tyers':       {center:[148.090,-37.860], zoom:13},
+    'Ninety Mile Beach':{center:[147.800,-37.920], zoom:12},
+    'Tambo River':      {center:[147.795,-37.820], zoom:12},
+    'Nicholson River':  {center:[147.730,-37.810], zoom:13},
+    'Lake Wellington':  {center:[147.350,-38.080], zoom:12},
+    'Lake Victoria':    {center:[147.600,-37.960], zoom:12},
+  };
+  if (map && areaCenters[area]) {
+    map.flyTo({ center: areaCenters[area].center, zoom: areaCenters[area].zoom, duration: 1500 });
+  }
+  updateHotspotScores();
+}
 
 function filterHotspots(type, btn) {
   currentFilter = type;
@@ -1512,7 +1646,8 @@ function updateHotspotScores() {
   const scores = mods.map(m => Math.min(99, Math.max(28, Math.round(sst*m.s + wave*m.wa + wind*m.wi + tide*m.t + moon*m.m + m.base))));
   const ranked = scores
     .map((score,i) => ({score,i}))
-    .filter(r => currentFilter === 'all' || hotspots[r.i].type === currentFilter)
+    .filter(r => (currentFilter === 'all' || hotspots[r.i].type === currentFilter) &&
+                 (currentArea === 'all' || hotspots[r.i].area === currentArea))
     .sort((a,b) => b.score - a.score);
   const avg = Math.round(scores.reduce((a,b) => a+b,0) / scores.length);
 
@@ -1764,8 +1899,8 @@ function initMap() {
   map = new mapboxgl.Map({
     container: 'mapbox',
     style: 'mapbox://styles/mapbox/satellite-streets-v12',
-    center: [147.968, -37.876],
-    zoom: 13,
+    center: [147.850, -37.890],
+    zoom: 11,
     pitch: 0,
   });
   map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
