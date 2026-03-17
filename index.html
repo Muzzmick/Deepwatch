@@ -1326,11 +1326,12 @@ const hotspots = [
   {lng:147.954786, lat:-37.878378, name:'Kalimna Water',      type:'boat', species:'Bream · Trevally · Whiting · Mullet',   depth:'2–4m',   access:'Boat/Kayak'},
   {lng:148.037120, lat:-38.001750, name:'Deep Reef (40m)',    type:'boat', species:'Snapper · Gummy Shark · Reef Perch',    depth:'40–45m', access:'Boat'},
   // ── LAND-BASED SPOTS ── (GPS verified)
-  {lng:147.993345, lat:-37.880885, name:'Cunninghame Arm Footbridge', type:'land', species:'Trevally · Bream · Luderick',   depth:'2–4m',   access:'Footbridge & banks'},
-  {lng:147.990800, lat:-37.879200, name:'Myer St Jetty',      type:'land', species:'Bream · Trevally · Luderick · Mullet',  depth:'2–3m',   access:'Public jetty'},
-  {lng:147.975500, lat:-37.884500, name:'Entrance Rock Wall', type:'land', species:'Salmon · Tailor · Bream · Whiting',     depth:'2–6m',   access:'Rock wall walk'},
-  {lng:147.954786, lat:-37.877000, name:'Kalimna Jetty',      type:'land', species:'Bream · Flathead · Whiting',            depth:'2–4m',   access:'Public jetty'},
-  {lng:148.012378, lat:-37.882000, name:'Surf Beach Gutters', type:'land', species:'Salmon · Tailor · Whiting',             depth:'1–3m',   access:'Ninety Mile Beach'},
+  // Land spots - positioned at actual jetties/access points (north of beach strip)
+  {lng:147.9933, lat:-37.8785, name:'Cunninghame Arm Footbridge', type:'land', species:'Trevally · Bream · Luderick',   depth:'2–4m',   access:'Footbridge & banks'},
+  {lng:147.9908, lat:-37.8775, name:'Myer St Jetty',      type:'land', species:'Bream · Trevally · Luderick · Mullet',  depth:'2–3m',   access:'Public jetty'},
+  {lng:147.9780, lat:-37.8810, name:'Entrance Rock Wall', type:'land', species:'Salmon · Tailor · Bream · Whiting',     depth:'2–6m',   access:'Rock wall walk'},
+  {lng:147.9548, lat:-37.8750, name:'Kalimna Jetty',      type:'land', species:'Bream · Flathead · Whiting',            depth:'2–4m',   access:'Public jetty'},
+  {lng:148.0124, lat:-37.8783, name:'Surf Beach Access',  type:'land', species:'Salmon · Tailor · Whiting',             depth:'1–3m',   access:'Ninety Mile Beach'},
 ];
 
 // ══ AUTH ══
@@ -1784,7 +1785,7 @@ function initMap() {
         e.stopPropagation();
         showHotspotPopup(parseInt(this.dataset.hsIndex));
       });
-      const marker = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat([h.lng, h.lat]).addTo(map);
+      const marker = new mapboxgl.Marker({ element: el, anchor: 'center', offset: [0, 0] }).setLngLat([h.lng, h.lat]).addTo(map);
       hsMarkers.push(el);
     });
 
