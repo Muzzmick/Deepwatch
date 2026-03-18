@@ -2195,6 +2195,10 @@ function showApp(user) {
   const initials = email.slice(0,2).toUpperCase();
   document.getElementById('userAvatar').textContent = initials;
   document.getElementById('userName').textContent = email.split('@')[0];
+  // Show immediate defaults
+  document.getElementById('aiScore').textContent = '—';
+  document.getElementById('aiCond').textContent = 'Loading conditions...';
+  document.getElementById('aiInsight').textContent = 'Fetching live data from NOAA & Open-Meteo...';
   // Init everything
   setTimeout(initMap, 100);
   fetchWeather();
@@ -2203,8 +2207,11 @@ function showApp(user) {
   buildTideChart();
   updateMoon();
   updateFishingWindows();
+  updateHotspotScores();
+  showCalculatedTides();
   setInterval(fetchWeather, 600000);
   setInterval(fetchOceanData, 1800000);
+  setInterval(updateHotspotScores, 300000);
 }
 
 // Check if already logged in
