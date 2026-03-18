@@ -375,15 +375,20 @@ async function build7DayForecast() {
       const code = codes[i] || 0;
       const icon = weatherIcons[code] || weatherIcons[Math.floor(code/10)*10] || '⛅';
 
-      // Calculate fishing score for this day
+      // Calculate fishing score for this day - varies by actual conditions
       const windKn = parseFloat(wind) || 10;
       const waveM = parseFloat(wave) || 0.8;
-      const dayScore = Math.round(
-        (windKn < 8 ? 30 : windKn < 15 ? 22 : windKn < 20 ? 12 : 4) +
-        (waveM < 0.5 ? 30 : waveM < 1.0 ? 24 : waveM < 1.5 ? 14 : 5) +
-        getMoonScore() + getTideScore()
-      );
-      const capped = Math.min(95, Math.max(20, dayScore));
+      const windScore = windKn < 8 ? 28 : windKn < 12 ? 22 : windKn < 18 ? 14 : windKn < 25 ? 7 : 3;
+      const waveScore = waveM < 0.4 ? 28 : waveM < 0.8 ? 24 : waveM < 1.2 ? 16 : waveM < 1.8 ? 8 : 3;
+      // Moon score varies by day offset
+      const moonPhaseDay = ((getMoonPhase() + (i * 0.034)) % 1);
+      const distFromNew = Math.abs(moonPhaseDay);
+      const distFromFull = Math.abs(moonPhaseDay - 0.5);
+      const moonDay = Math.round((1 - Math.min(distFromNew, distFromFull) * 4) * 20);
+      // Tide varies by day  
+      const tideDay = Math.round(10 + Math.sin(i * 1.3) * 8);
+      const dayScore = windScore + waveScore + moonDay + tideDay;
+      const capped = Math.min(95, Math.max(25, dayScore));
       const scoreColor = capped >= 75 ? 'var(--green)' : capped >= 55 ? 'var(--orange)' : 'var(--red)';
       const scoreLabel = capped >= 75 ? 'GREAT' : capped >= 55 ? 'GOOD' : capped >= 40 ? 'FAIR' : 'POOR';
 
@@ -938,15 +943,20 @@ async function build7DayForecast() {
       const code = codes[i] || 0;
       const icon = weatherIcons[code] || weatherIcons[Math.floor(code/10)*10] || '⛅';
 
-      // Calculate fishing score for this day
+      // Calculate fishing score for this day - varies by actual conditions
       const windKn = parseFloat(wind) || 10;
       const waveM = parseFloat(wave) || 0.8;
-      const dayScore = Math.round(
-        (windKn < 8 ? 30 : windKn < 15 ? 22 : windKn < 20 ? 12 : 4) +
-        (waveM < 0.5 ? 30 : waveM < 1.0 ? 24 : waveM < 1.5 ? 14 : 5) +
-        getMoonScore() + getTideScore()
-      );
-      const capped = Math.min(95, Math.max(20, dayScore));
+      const windScore = windKn < 8 ? 28 : windKn < 12 ? 22 : windKn < 18 ? 14 : windKn < 25 ? 7 : 3;
+      const waveScore = waveM < 0.4 ? 28 : waveM < 0.8 ? 24 : waveM < 1.2 ? 16 : waveM < 1.8 ? 8 : 3;
+      // Moon score varies by day offset
+      const moonPhaseDay = ((getMoonPhase() + (i * 0.034)) % 1);
+      const distFromNew = Math.abs(moonPhaseDay);
+      const distFromFull = Math.abs(moonPhaseDay - 0.5);
+      const moonDay = Math.round((1 - Math.min(distFromNew, distFromFull) * 4) * 20);
+      // Tide varies by day  
+      const tideDay = Math.round(10 + Math.sin(i * 1.3) * 8);
+      const dayScore = windScore + waveScore + moonDay + tideDay;
+      const capped = Math.min(95, Math.max(25, dayScore));
       const scoreColor = capped >= 75 ? 'var(--green)' : capped >= 55 ? 'var(--orange)' : 'var(--red)';
       const scoreLabel = capped >= 75 ? 'GREAT' : capped >= 55 ? 'GOOD' : capped >= 40 ? 'FAIR' : 'POOR';
 
@@ -1699,8 +1709,8 @@ tr:hover td{background:rgba(6,51,82,.3);}
 </div>
 
 <!-- ══ PLAN / FORECAST SCREEN ══ -->
-<div id="tidesScreen" class="screen">
-  <div class="page-wrap">
+<div id="tidesScreen" class="screen" style="flex-direction:column;overflow-y:auto;">
+  <div class="page-wrap" style="padding:20px 28px;">
     <div class="page-title">Trip Planner</div>
     <div class="page-sub">LAKES ENTRANCE · 7-DAY FISHING FORECAST</div>
 
@@ -1798,8 +1808,8 @@ tr:hover td{background:rgba(6,51,82,.3);}
 
 
 <!-- ══ FISH ID SCREEN ══ -->
-<div id="fishIdScreen" class="screen">
-  <div class="page-wrap">
+<div id="fishIdScreen" class="screen" style="flex-direction:column;overflow-y:auto;">
+  <div class="page-wrap" style="padding:20px 28px;">
     <div class="page-title">Fish Identifier</div>
     <div class="page-sub">TAKE A PHOTO · AI IDENTIFIES SPECIES · GET REGULATIONS INSTANTLY</div>
 
@@ -3482,15 +3492,20 @@ async function build7DayForecast() {
       const code = codes[i] || 0;
       const icon = weatherIcons[code] || weatherIcons[Math.floor(code/10)*10] || '⛅';
 
-      // Calculate fishing score for this day
+      // Calculate fishing score for this day - varies by actual conditions
       const windKn = parseFloat(wind) || 10;
       const waveM = parseFloat(wave) || 0.8;
-      const dayScore = Math.round(
-        (windKn < 8 ? 30 : windKn < 15 ? 22 : windKn < 20 ? 12 : 4) +
-        (waveM < 0.5 ? 30 : waveM < 1.0 ? 24 : waveM < 1.5 ? 14 : 5) +
-        getMoonScore() + getTideScore()
-      );
-      const capped = Math.min(95, Math.max(20, dayScore));
+      const windScore = windKn < 8 ? 28 : windKn < 12 ? 22 : windKn < 18 ? 14 : windKn < 25 ? 7 : 3;
+      const waveScore = waveM < 0.4 ? 28 : waveM < 0.8 ? 24 : waveM < 1.2 ? 16 : waveM < 1.8 ? 8 : 3;
+      // Moon score varies by day offset
+      const moonPhaseDay = ((getMoonPhase() + (i * 0.034)) % 1);
+      const distFromNew = Math.abs(moonPhaseDay);
+      const distFromFull = Math.abs(moonPhaseDay - 0.5);
+      const moonDay = Math.round((1 - Math.min(distFromNew, distFromFull) * 4) * 20);
+      // Tide varies by day  
+      const tideDay = Math.round(10 + Math.sin(i * 1.3) * 8);
+      const dayScore = windScore + waveScore + moonDay + tideDay;
+      const capped = Math.min(95, Math.max(25, dayScore));
       const scoreColor = capped >= 75 ? 'var(--green)' : capped >= 55 ? 'var(--orange)' : 'var(--red)';
       const scoreLabel = capped >= 75 ? 'GREAT' : capped >= 55 ? 'GOOD' : capped >= 40 ? 'FAIR' : 'POOR';
 
