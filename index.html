@@ -1449,6 +1449,7 @@ tr:hover td{background:rgba(6,51,82,.3);}
           <button onclick="filterArea('Paynesville',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Paynesville</button>
           <button onclick="filterArea('Bairnsdale',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Bairnsdale</button>
           <button onclick="filterArea('Lake Tyers',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">L.Tyers</button>
+          <button onclick="filterArea('Game Fishing',this)" style="padding:3px 6px;border:1px solid rgba(168,85,247,.4);border-radius:4px;background:rgba(168,85,247,.1);color:#a855f7;font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🎣 Game</button>
           <button onclick="filterArea('Ninety Mile Beach',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">90mi Beach</button>
           <button onclick="filterArea('Tambo River',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Tambo R.</button>
           <button onclick="filterArea('Nicholson River',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Nicholson R.</button>
@@ -1595,6 +1596,11 @@ tr:hover td{background:rgba(6,51,82,.3);}
             <tr><td>Trevally</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
             <tr><td>Luderick</td><td style="color:var(--green)">25cm</td><td style="color:var(--orange)">20/day</td></tr>
             <tr><td>Gummy Shark</td><td style="color:var(--green)">45cm</td><td style="color:var(--orange)">2/day</td></tr>
+            <tr><td>Yellowfin Tuna</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+            <tr><td>Bluefin Tuna</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+            <tr><td>Striped Marlin</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">tag & release</td></tr>
+            <tr><td>Sailfish</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">tag & release</td></tr>
+            <tr><td>Mahi Mahi</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
           </tbody>
         </table>
       </div>
@@ -1878,6 +1884,14 @@ tr:hover td{background:rgba(6,51,82,.3);}
         <option>Lake Victoria Centre</option>
         <option>Raymond Island Ferry</option>
       </optgroup>
+      <optgroup label="🎣 Game Fishing (Offshore)">
+        <option>6 Mile Reef</option>
+        <option>Snapper Grounds (8nm)</option>
+        <option>Tuna Grounds (10nm)</option>
+        <option>Continental Shelf Edge (15nm)</option>
+        <option>Bass Strait 20nm</option>
+        <option>Bass Strait 30nm</option>
+      </optgroup>
       <option>Other</option>
     </select>
 
@@ -2046,6 +2060,14 @@ const hotspots = [
   // ── LAKE TYERS — LAND ──
   {lng:148.0850, lat:-37.8400, name:'Lake Tyers Boat Ramp',    area:'Lake Tyers', type:'land', species:'Bream · Flathead · Whiting',          depth:'2–4m',   access:'Boat ramp banks'},
   {lng:148.0900, lat:-37.8600, name:'Lake Tyers Beach',        area:'Lake Tyers', type:'land', species:'Salmon · Tailor · Whiting',           depth:'1–3m',   access:'Beach surf'},
+
+  // ── GAME FISHING — OFFSHORE BASS STRAIT ──
+  {lng:148.1500, lat:-38.1000, name:'Bass Strait 20nm',        area:'Game Fishing', type:'boat', species:'Yellowfin Tuna · Sailfish · Marlin · Mahi Mahi · Wahoo',    depth:'200–400m', access:'Offshore boat 20+ nm'},
+  {lng:148.2000, lat:-38.2000, name:'Bass Strait 30nm',        area:'Game Fishing', type:'boat', species:'Striped Marlin · Sailfish · Bluefin Tuna · Swordfish',      depth:'400–600m', access:'Offshore boat 30+ nm'},
+  {lng:148.0800, lat:-38.0500, name:'Continental Shelf Edge',  area:'Game Fishing', type:'boat', species:'Yellowfin Tuna · Sailfish · Marlin · Dolphinfish · Wahoo',  depth:'100–200m', access:'Offshore boat 15+ nm'},
+  {lng:148.0500, lat:-37.9500, name:'Tuna Grounds (10nm)',     area:'Game Fishing', type:'boat', species:'Yellowfin Tuna · Bluefin Tuna · Albacore',       depth:'50–100m',  access:'Offshore boat 10+ nm'},
+  {lng:147.9500, lat:-37.9800, name:'Snapper Grounds (8nm)',   area:'Game Fishing', type:'boat', species:'Snapper · Morwong · Blue Eye Trevalla · Perch',  depth:'60–80m',   access:'Offshore boat 8+ nm'},
+  {lng:148.0371, lat:-38.0018, name:'6 Mile Reef',             area:'Game Fishing', type:'boat', species:'Snapper · Gummy Shark · Reef Perch · Gurnard',  depth:'37–40m',   access:'Offshore boat 6nm'},
 ];
 
 // ══ AUTH ══
@@ -2200,6 +2222,7 @@ function filterArea(area, btn) {
     'Paynesville':      {center:[147.719,-37.917], zoom:13},
     'Bairnsdale':       {center:[147.635,-37.893], zoom:13},
     'Lake Tyers':       {center:[148.090,-37.860], zoom:13},
+    'Game Fishing':     {center:[148.100,-38.050], zoom:10},
     'Ninety Mile Beach':{center:[147.800,-37.920], zoom:12},
     'Tambo River':      {center:[147.795,-37.820], zoom:12},
     'Nicholson River':  {center:[147.730,-37.810], zoom:13},
@@ -2523,8 +2546,41 @@ function initMap() {
   map.on('load', () => {
 
     // ── HOTSPOT MARKERS via GeoJSON (never drift on zoom) ──
+    // Separate game fishing spots
+    const gameFeatures = hotspots
+      .filter(h => h.area === 'Game Fishing')
+      .map((h) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [h.lng, h.lat] },
+        properties: { name: h.name, species: h.species, depth: h.depth, access: h.access, index: hotspots.indexOf(h) }
+      }));
+
+    map.addSource('game-spots', { type: 'geojson', data: { type: 'FeatureCollection', features: gameFeatures } });
+    map.addLayer({
+      id: 'game-circles',
+      type: 'circle',
+      source: 'game-spots',
+      paint: { 'circle-radius': 20, 'circle-color': 'rgba(168,85,247,0.55)', 'circle-stroke-width': 3, 'circle-stroke-color': '#a855f7' }
+    });
+    map.addLayer({
+      id: 'game-labels',
+      type: 'symbol',
+      source: 'game-spots',
+      layout: { 'text-field': ['get', 'name'], 'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'], 'text-size': 9, 'text-offset': [0, 2.2], 'text-anchor': 'top', 'text-allow-overlap': false },
+      paint: { 'text-color': '#a855f7', 'text-halo-color': '#000', 'text-halo-width': 1.5 }
+    });
+    map.on('click', 'game-circles', (e) => {
+      const props = e.features[0].properties;
+      new mapboxgl.Popup({ offset: 25, className: 'dw-popup', closeButton: true })
+        .setLngLat(e.features[0].geometry.coordinates)
+        .setHTML('<div style="font-family:JetBrains Mono,monospace;min-width:200px;padding:4px;"><div style="font-family:Syne,sans-serif;font-weight:800;color:#a855f7;font-size:14px;margin-bottom:8px;">🎣 ' + props.name + '</div><div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">📏 Depth: <b>' + props.depth + '</b></div><div style="font-size:10px;color:#e0f4f1;margin-bottom:4px;">⚓ ' + props.access + '</div><div style="font-size:10px;color:#fdba74;">🐟 ' + props.species + '</div></div>')
+        .addTo(map);
+    });
+    map.on('mouseenter', 'game-circles', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'game-circles', () => map.getCanvas().style.cursor = '');
+
     const boatFeatures = hotspots
-      .filter(h => h.type === 'boat')
+      .filter(h => h.type === 'boat' && h.area !== 'Game Fishing')
       .map((h, i) => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [h.lng, h.lat] },
