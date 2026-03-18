@@ -1175,6 +1175,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 18px
 /* SCREENS */
 .screen{display:none;flex:1;overflow:hidden;}
 .screen.active{display:flex;}
+#tidesScreen.active,#fishIdScreen.active,#regsScreen.active,#catchScreen.active{flex-direction:column;overflow-y:auto;}
 
 /* ── LOGIN WALL ── */
 #loginWall{position:fixed;inset:0;z-index:9999;background:var(--deep);display:flex;align-items:center;justify-content:center;}
@@ -1292,7 +1293,7 @@ tr:hover td{background:rgba(6,51,82,.3);}
 
 /* ── REGULATIONS SCREEN ── */
 #regsScreen{flex-direction:column;}
-.page-wrap{flex:1;overflow-y:auto;padding:28px;}
+.page-wrap{flex:1;overflow-y:auto;padding:28px;align-self:flex-start;width:100%;}
 .page-wrap::-webkit-scrollbar{width:3px;}
 .page-wrap::-webkit-scrollbar-thumb{background:var(--border);}
 .page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:var(--cyan);margin-bottom:4px;}
@@ -1709,8 +1710,8 @@ tr:hover td{background:rgba(6,51,82,.3);}
 </div>
 
 <!-- ══ PLAN / FORECAST SCREEN ══ -->
-<div id="tidesScreen" class="screen" style="flex-direction:column;overflow-y:auto;">
-  <div class="page-wrap" style="padding:20px 28px;">
+<div id="tidesScreen" class="screen">
+  <div class="page-wrap">
     <div class="page-title">Trip Planner</div>
     <div class="page-sub">LAKES ENTRANCE · 7-DAY FISHING FORECAST</div>
 
@@ -1808,8 +1809,8 @@ tr:hover td{background:rgba(6,51,82,.3);}
 
 
 <!-- ══ FISH ID SCREEN ══ -->
-<div id="fishIdScreen" class="screen" style="flex-direction:column;overflow-y:auto;">
-  <div class="page-wrap" style="padding:20px 28px;">
+<div id="fishIdScreen" class="screen">
+  <div class="page-wrap">
     <div class="page-title">Fish Identifier</div>
     <div class="page-sub">TAKE A PHOTO · AI IDENTIFIES SPECIES · GET REGULATIONS INSTANTLY</div>
 
@@ -2282,6 +2283,7 @@ async function fetchOceanData() {
 
   updateHotspotScores();
   updateSpeciesForecast();
+  updateInsightText();
 }
 
 // ══ HOTSPOT SCORES ══
