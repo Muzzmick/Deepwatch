@@ -1450,6 +1450,7 @@ tr:hover td{background:rgba(6,51,82,.3);}
           <button onclick="filterArea('Bairnsdale',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Bairnsdale</button>
           <button onclick="filterArea('Lake Tyers',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">L.Tyers</button>
           <button onclick="filterArea('Game Fishing',this)" style="padding:3px 6px;border:1px solid rgba(168,85,247,.4);border-radius:4px;background:rgba(168,85,247,.1);color:#a855f7;font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🎣 Game</button>
+          <button onclick="filterArea('Prawning & Crabbing',this)" style="padding:3px 6px;border:1px solid rgba(234,179,8,.4);border-radius:4px;background:rgba(234,179,8,.1);color:#eab308;font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">🦐 Prawns/Crabs</button>
           <button onclick="filterArea('Ninety Mile Beach',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">90mi Beach</button>
           <button onclick="filterArea('Tambo River',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Tambo R.</button>
           <button onclick="filterArea('Nicholson River',this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:7px;cursor:pointer;font-family:'JetBrains Mono',monospace;">Nicholson R.</button>
@@ -1523,6 +1524,7 @@ tr:hover td{background:rgba(6,51,82,.3);}
       <div class="reg-row"><span class="reg-species">Flathead</span><span class="reg-size">30cm min</span><span class="reg-bag">5/day</span></div>
       <div class="reg-row"><span class="reg-species">Whiting</span><span class="reg-size">27cm min</span><span class="reg-bag">20/day</span></div>
       <div class="reg-row"><span class="reg-species">Mulloway</span><span class="reg-size">58cm min</span><span class="reg-bag">3/day</span></div>
+      <div class="reg-row"><span class="reg-species">Flathead</span><span class="reg-size">30–55cm slot</span><span class="reg-bag">5/day</span></div>
     </div>
 
     <div class="sec">
@@ -1581,29 +1583,70 @@ tr:hover td{background:rgba(6,51,82,.3);}
     <div class="page-sub">VICTORIA · LAKES ENTRANCE · GIPPSLAND LAKES · 2024–25</div>
     <div class="cards-grid">
 
-      <div class="card">
-        <div class="card-title">🐟 Size & Bag Limits</div>
-        <table class="reg-table">
-          <thead><tr><th>Species</th><th>Min Size</th><th>Bag Limit</th></tr></thead>
-          <tbody>
-            <tr><td>Snapper</td><td style="color:var(--green)">27cm</td><td style="color:var(--orange)">10/day</td></tr>
-            <tr><td>Bream</td><td style="color:var(--green)">25cm</td><td style="color:var(--orange)">20/day</td></tr>
-            <tr><td>Dusky Flathead</td><td style="color:var(--green)">30cm</td><td style="color:var(--orange)">5/day</td></tr>
-            <tr><td>KG Whiting</td><td style="color:var(--green)">27cm</td><td style="color:var(--orange)">20/day</td></tr>
-            <tr><td>Mulloway</td><td style="color:var(--green)">58cm</td><td style="color:var(--orange)">3/day</td></tr>
-            <tr><td>Australian Salmon</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
-            <tr><td>Tailor</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
-            <tr><td>Trevally</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
-            <tr><td>Luderick</td><td style="color:var(--green)">25cm</td><td style="color:var(--orange)">20/day</td></tr>
-            <tr><td>Gummy Shark</td><td style="color:var(--green)">45cm</td><td style="color:var(--orange)">2/day</td></tr>
-            <tr><td>Yellowfin Tuna</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
-            <tr><td>Bluefin Tuna</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
-            <tr><td>Striped Marlin</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">tag & release</td></tr>
-            <tr><td>Sailfish</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">tag & release</td></tr>
-            <tr><td>Mahi Mahi</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <div class="card" style="grid-column:1/-1;">
+        <div class="card-title">🐟 Size & Bag Limits — Gippsland Region</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;">
+
+          <div>
+            <div style="font-size:8px;letter-spacing:2px;color:var(--cyan);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:4px;">ESTUARY & LAKES</div>
+            <table class="reg-table">
+              <thead><tr><th>Species</th><th>Min Size</th><th>Bag</th></tr></thead>
+              <tbody>
+                <tr><td>Bream</td><td style="color:var(--green)">25cm</td><td style="color:var(--orange)">20/day</td></tr>
+                <tr><td>Dusky Flathead</td><td style="color:var(--green)">30–55cm slot</td><td style="color:var(--orange)">5/day</td></tr>
+                <tr><td>KG Whiting</td><td style="color:var(--green)">27cm</td><td style="color:var(--orange)">20/day</td></tr>
+                <tr><td>Mulloway</td><td style="color:var(--green)">58cm</td><td style="color:var(--orange)">3/day</td></tr>
+                <tr><td>Trevally</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+                <tr><td>Luderick</td><td style="color:var(--green)">25cm</td><td style="color:var(--orange)">20/day</td></tr>
+                <tr><td>Mullet</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+                <tr><td>Garfish</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+                <tr><td>Golden Perch</td><td style="color:var(--green)">30cm</td><td style="color:var(--orange)">10/day</td></tr>
+                <tr><td>Estuary Perch</td><td style="color:var(--green)">30cm</td><td style="color:var(--orange)">5/day</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div style="font-size:8px;letter-spacing:2px;color:var(--orange);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:4px;">COASTAL & OFFSHORE</div>
+            <table class="reg-table">
+              <thead><tr><th>Species</th><th>Min Size</th><th>Bag</th></tr></thead>
+              <tbody>
+                <tr><td>Snapper</td><td style="color:var(--green)">27cm</td><td style="color:var(--orange)">10/day</td></tr>
+                <tr><td>Australian Salmon</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+                <tr><td>Tailor</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+                <tr><td>Gummy Shark</td><td style="color:var(--green)">45cm</td><td style="color:var(--orange)">2/day</td></tr>
+                <tr><td>School Shark</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">1/day</td></tr>
+                <tr><td>Reef Perch</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">20/day</td></tr>
+                <tr><td>Blue Eye Trevalla</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">5/day</td></tr>
+                <tr><td>Morwong</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">10/day</td></tr>
+                <tr><td>Yellowfin Tuna</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+                <tr><td>Bluefin Tuna</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div style="font-size:8px;letter-spacing:2px;color:var(--purple);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:4px;">GAME FISH & PRAWNS/CRABS</div>
+            <table class="reg-table">
+              <thead><tr><th>Species</th><th>Min Size</th><th>Bag</th></tr></thead>
+              <tbody>
+                <tr><td>Striped Marlin</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">tag & release</td></tr>
+                <tr><td>Sailfish</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">tag & release</td></tr>
+                <tr><td>Mahi Mahi</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+                <tr><td>Wahoo</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">no limit</td></tr>
+                <tr><td>School Prawns</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">10L bucket/day</td></tr>
+                <tr><td>Endeavour Prawns</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">10L bucket/day</td></tr>
+                <tr><td>Blue Swimmer Crab</td><td style="color:var(--green)">none</td><td style="color:var(--orange)">10 crabs/day</td></tr>
+              </tbody>
+            </table>
+            <div style="margin-top:10px;padding:8px;background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);border-radius:6px;">
+              <div style="font-size:9px;color:var(--orange);font-weight:700;margin-bottom:3px;">⚠️ Prawning Rules</div>
+              <div style="font-size:9px;color:rgba(224,244,241,.6);line-height:1.6;">Night only with dip nets. No trawling. Max 2 nets per person. Check VFA for seasonal closures.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>      </div>
 
       <div class="card">
         <div class="card-title">⚠️ Closed Seasons & Rules</div>
@@ -1884,6 +1927,16 @@ tr:hover td{background:rgba(6,51,82,.3);}
         <option>Lake Victoria Centre</option>
         <option>Raymond Island Ferry</option>
       </optgroup>
+      <optgroup label="🦐 Prawning & Crabbing">
+        <option>North Arm Prawning</option>
+        <option>Reeve Channel Prawning</option>
+        <option>Cunninghame Arm Crabbing</option>
+        <option>Myer St Jetty Crabbing</option>
+        <option>Kalimna Jetty Crabbing</option>
+        <option>Bancroft Bay Prawning</option>
+        <option>Paynesville Prawning</option>
+        <option>Metung Prawning</option>
+      </optgroup>
       <optgroup label="🎣 Game Fishing (Offshore)">
         <option>6 Mile Reef</option>
         <option>Snapper Grounds (8nm)</option>
@@ -1908,6 +1961,15 @@ tr:hover td{background:rgba(6,51,82,.3);}
       <option>Luderick</option>
       <option>Gummy Shark</option>
       <option>Yellow-Eye Mullet</option>
+      <option>School Prawns</option>
+      <option>Endeavour Prawns</option>
+      <option>Blue Swimmer Crab</option>
+      <option>Yellowfin Tuna</option>
+      <option>Bluefin Tuna</option>
+      <option>Striped Marlin</option>
+      <option>Sailfish</option>
+      <option>Mahi Mahi</option>
+      <option>Wahoo</option>
       <option>Other</option>
     </select>
 
@@ -2060,6 +2122,26 @@ const hotspots = [
   // ── LAKE TYERS — LAND ──
   {lng:148.0850, lat:-37.8400, name:'Lake Tyers Boat Ramp',    area:'Lake Tyers', type:'land', species:'Bream · Flathead · Whiting',          depth:'2–4m',   access:'Boat ramp banks'},
   {lng:148.0900, lat:-37.8600, name:'Lake Tyers Beach',        area:'Lake Tyers', type:'land', species:'Salmon · Tailor · Whiting',           depth:'1–3m',   access:'Beach surf'},
+
+  // ── PRAWNING & CRABBING ──
+  {lng:147.9617, lat:-37.8790, name:'North Arm Prawning',      area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Endeavour Prawns',       depth:'1–3m',   access:'Boat/Kayak — net at night'},
+  {lng:147.9445, lat:-37.8802, name:'Reeve Channel Prawning',  area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Blue Swimmer Crab',      depth:'1–3m',   access:'Boat — net/trap'},
+  {lng:147.8590, lat:-37.8900, name:'Bancroft Bay Prawning',   area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Endeavour Prawns',       depth:'1–3m',   access:'Boat — dip net at night'},
+  {lng:147.7193, lat:-37.9180, name:'Paynesville Prawning',    area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Blue Swimmer Crab',      depth:'1–3m',   access:'Boat/Kayak — net'},
+  {lng:147.9933, lat:-37.8785, name:'Cunninghame Arm Crabbing',area:'Prawning & Crabbing', type:'land', species:'Blue Swimmer Crab · School Prawns',           depth:'1–3m',   access:'Drop nets from footbridge'},
+  {lng:147.9908, lat:-37.8775, name:'Myer St Jetty Crabbing',  area:'Prawning & Crabbing', type:'land', species:'Blue Swimmer Crab · School Prawns',      depth:'2–3m',   access:'Drop nets from jetty'},
+  {lng:147.9548, lat:-37.8730, name:'Kalimna Jetty Crabbing',  area:'Prawning & Crabbing', type:'land', species:'Blue Swimmer Crab · School Prawns',      depth:'2–3m',   access:'Drop nets from jetty'},
+  {lng:147.8520, lat:-37.8850, name:'Metung Prawning',         area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Blue Swimmer Crab',      depth:'1–2m',   access:'Boat — dip net at night'},
+
+  // ── PRAWNING & CRABBING ──
+  {lng:147.9617, lat:-37.8790, name:'North Arm Prawning',      area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Endeavour Prawns',       depth:'1–3m',   access:'Boat/Kayak — net at night'},
+  {lng:147.9445, lat:-37.8802, name:'Reeve Channel Prawning',  area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Blue Swimmer Crab',      depth:'1–3m',   access:'Boat — net/trap'},
+  {lng:147.8590, lat:-37.8900, name:'Bancroft Bay Prawning',   area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Endeavour Prawns',       depth:'1–3m',   access:'Boat — dip net at night'},
+  {lng:147.7193, lat:-37.9180, name:'Paynesville Prawning',    area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Blue Swimmer Crab',      depth:'1–3m',   access:'Boat/Kayak — net'},
+  {lng:147.9933, lat:-37.8785, name:'Cunninghame Arm Crabbing',area:'Prawning & Crabbing', type:'land', species:'Blue Swimmer Crab · School Prawns',           depth:'1–3m',   access:'Drop nets from footbridge'},
+  {lng:147.9908, lat:-37.8775, name:'Myer St Jetty Crabbing',  area:'Prawning & Crabbing', type:'land', species:'Blue Swimmer Crab · School Prawns',      depth:'2–3m',   access:'Drop nets from jetty'},
+  {lng:147.9548, lat:-37.8730, name:'Kalimna Jetty Crabbing',  area:'Prawning & Crabbing', type:'land', species:'Blue Swimmer Crab · School Prawns',      depth:'2–3m',   access:'Drop nets from jetty'},
+  {lng:147.8520, lat:-37.8850, name:'Metung Prawning',         area:'Prawning & Crabbing', type:'boat', species:'School Prawns · Blue Swimmer Crab',      depth:'1–2m',   access:'Boat — dip net at night'},
 
   // ── GAME FISHING — OFFSHORE BASS STRAIT ──
   {lng:148.1500, lat:-38.1000, name:'Bass Strait 20nm',        area:'Game Fishing', type:'boat', species:'Yellowfin Tuna · Sailfish · Marlin · Mahi Mahi · Wahoo',    depth:'200–400m', access:'Offshore boat 20+ nm'},
@@ -2222,7 +2304,8 @@ function filterArea(area, btn) {
     'Paynesville':      {center:[147.719,-37.917], zoom:13},
     'Bairnsdale':       {center:[147.635,-37.893], zoom:13},
     'Lake Tyers':       {center:[148.090,-37.860], zoom:13},
-    'Game Fishing':     {center:[148.100,-38.050], zoom:10},
+    'Game Fishing':       {center:[148.100,-38.050], zoom:10},
+    'Prawning & Crabbing':{center:[147.970,-37.879], zoom:12},
     'Ninety Mile Beach':{center:[147.800,-37.920], zoom:12},
     'Tambo River':      {center:[147.795,-37.820], zoom:12},
     'Nicholson River':  {center:[147.730,-37.810], zoom:13},
@@ -2262,23 +2345,90 @@ function filterHotspots(type, btn) {
   updateHotspotScores();
 }
 
+function getSpotScore(h) {
+  // Get raw condition values
+  const sstVal = realSST || 18;
+  const waveVal = realWave || 0.8;
+  const windVal = parseFloat(document.getElementById('liveWind')?.textContent || '10');
+  const hour = new Date().getHours();
+  const month = new Date().getMonth() + 1; // 1-12
+  const solunar = getSolunarData();
+  const solunarNow = solunar.hourlyActivity[hour] / 100;
+  const tide = getTideScore() / 22; // normalise 0-1
+
+  let score = 0;
+
+  if (h.area === 'Game Fishing') {
+    // Game fish need warm water, calm seas, right season
+    const sstOk = sstVal >= 20 && sstVal <= 28 ? 30 : sstVal >= 18 ? 15 : 5;
+    const waveOk = waveVal < 1.0 ? 25 : waveVal < 1.5 ? 18 : waveVal < 2.0 ? 10 : 3;
+    const windOk = windVal < 10 ? 20 : windVal < 15 ? 14 : windVal < 20 ? 7 : 2;
+    // Seasonal: marlin/sailfish Oct-Apr
+    const seasonal = (month >= 10 || month <= 4) ? 15 : 5;
+    const solunarBonus = Math.round(solunarNow * 10);
+    score = sstOk + waveOk + windOk + seasonal + solunarBonus;
+
+  } else if (h.area === 'Prawning & Crabbing') {
+    // Prawns: best at night, new/full moon, warm water, calm
+    const isNight = hour >= 20 || hour <= 5;
+    const nightBonus = isNight ? 30 : 5;
+    const moonBonus = getMoonScore();
+    const sstOk = sstVal >= 18 ? 20 : sstVal >= 15 ? 12 : 5;
+    const waveOk = waveVal < 0.5 ? 15 : waveVal < 1.0 ? 10 : 3;
+    const windOk = windVal < 10 ? 10 : windVal < 15 ? 6 : 2;
+    score = nightBonus + moonBonus + sstOk + waveOk + windOk;
+
+  } else if (h.type === 'land' && (h.species.includes('Salmon') || h.species.includes('Tailor'))) {
+    // Surf beach: likes moderate swell and wind
+    const swellOk = waveVal >= 0.5 && waveVal <= 2.0 ? 25 : waveVal < 0.5 ? 10 : 5;
+    const windOk = windVal >= 5 && windVal <= 20 ? 20 : 5;
+    const sstOk = sstVal >= 14 && sstVal <= 20 ? 20 : 10;
+    const solunarBonus = Math.round(solunarNow * 15);
+    const dawnDusk = (hour >= 5 && hour <= 8) || (hour >= 17 && hour <= 20) ? 15 : 5;
+    score = swellOk + windOk + sstOk + solunarBonus + dawnDusk;
+
+  } else if (h.species.includes('Mulloway')) {
+    // Mulloway: night fishing, moving tide, moon
+    const nightBonus = hour >= 19 || hour <= 6 ? 25 : 8;
+    const tideBonus = Math.round(tide * 20);
+    const moonBonus = getMoonScore();
+    const waveOk = waveVal < 1.0 ? 15 : waveVal < 1.5 ? 10 : 4;
+    const windOk = windVal < 15 ? 12 : 5;
+    score = nightBonus + tideBonus + moonBonus + waveOk + windOk;
+
+  } else if (h.area === 'Tambo River' || h.area === 'Nicholson River') {
+    // River fishing: solunar, moon, dawn/dusk, not affected by ocean swell
+    const solunarBonus = Math.round(solunarNow * 25);
+    const moonBonus = getMoonScore();
+    const dawnDusk = (hour >= 5 && hour <= 9) || (hour >= 16 && hour <= 20) ? 20 : 8;
+    const windOk = windVal < 20 ? 15 : 8; // wind less relevant in rivers
+    score = solunarBonus + moonBonus + dawnDusk + windOk + 10;
+
+  } else {
+    // Standard inshore estuary/lake fishing
+    const sstOk = sstVal >= 16 && sstVal <= 22 ? 22 : sstVal >= 14 ? 14 : 7;
+    const waveOk = waveVal < 0.5 ? 22 : waveVal < 1.0 ? 18 : waveVal < 1.5 ? 11 : 5;
+    const windOk = windVal < 8 ? 22 : windVal < 15 ? 16 : windVal < 20 ? 9 : 3;
+    const tideBonus = Math.round(tide * 18);
+    const moonBonus = Math.round(getMoonScore() * 0.7);
+    const solunarBonus = Math.round(solunarNow * 14);
+    const dawnDusk = (hour >= 5 && hour <= 8) || (hour >= 17 && hour <= 19) ? 8 : 0;
+    score = sstOk + waveOk + windOk + tideBonus + moonBonus + solunarBonus + dawnDusk;
+  }
+
+  return Math.min(99, Math.max(20, Math.round(score)));
+}
+
 function updateHotspotScores() {
-  const sst = getSSTScore(), wave = getWaveScore(), wind = getWindScore(), tide = getTideScore(), moon = getMoonScore();
-  // Modifiers per spot: inshore spots get base bonus, offshore needs good conditions
-  const mods = [
-    {s:1.2,wa:0.9,wi:1.0,t:1.4,m:0.9,base:14}, // Entrance Channel
-    {s:1.0,wa:0.8,wi:0.9,t:1.4,m:1.0,base:12}, // Reeve Channel
-    {s:1.1,wa:0.7,wi:0.8,t:1.3,m:1.1,base:10}, // Cunninghame Arm
-    {s:1.4,wa:1.5,wi:1.3,t:0.5,m:0.8,base:0},  // Deep Reef - offshore
-    {s:1.0,wa:0.8,wi:0.8,t:1.2,m:1.0,base:8},  // Nungurner
-  ];
-  const scores = mods.map(m => Math.min(99, Math.max(28, Math.round(sst*m.s + wave*m.wa + wind*m.wi + tide*m.t + moon*m.m + m.base))));
+  const scores = hotspots.map(h => getSpotScore(h));
   const ranked = scores
     .map((score,i) => ({score,i}))
     .filter(r => (currentFilter === 'all' || hotspots[r.i].type === currentFilter) &&
                  (currentArea === 'all' || hotspots[r.i].area === currentArea))
     .sort((a,b) => b.score - a.score);
-  const avg = Math.round(scores.reduce((a,b) => a+b,0) / scores.length);
+  // Overall score uses only visible/filtered spots
+  const visibleScores = ranked.map(r => r.score);
+  const avg = visibleScores.length > 0 ? Math.round(visibleScores.reduce((a,b)=>a+b,0)/visibleScores.length) : 50;
 
   // Update AI score
   document.getElementById('aiScore').textContent = avg;
