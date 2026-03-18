@@ -1173,9 +1173,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 18px
 .btn-logout{padding:5px 10px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--muted);font-size:9px;letter-spacing:1px;cursor:pointer;font-family:'JetBrains Mono',monospace;}
 
 /* SCREENS */
-.screen{display:none;flex:1;overflow:hidden;}
-.screen.active{display:flex;}
-#tidesScreen.active,#fishIdScreen.active,#regsScreen.active,#catchScreen.active{flex-direction:column;overflow-y:auto;}
+.screen{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.screen.active{display:flex;flex-direction:column;}
 
 /* ── LOGIN WALL ── */
 #loginWall{position:fixed;inset:0;z-index:9999;background:var(--deep);display:flex;align-items:center;justify-content:center;}
@@ -1293,7 +1292,7 @@ tr:hover td{background:rgba(6,51,82,.3);}
 
 /* ── REGULATIONS SCREEN ── */
 #regsScreen{flex-direction:column;}
-.page-wrap{flex:1;overflow-y:auto;padding:28px;align-self:flex-start;width:100%;}
+.page-wrap{overflow-y:auto;padding:28px;width:100%;}
 .page-wrap::-webkit-scrollbar{width:3px;}
 .page-wrap::-webkit-scrollbar-thumb{background:var(--border);}
 .page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:var(--cyan);margin-bottom:4px;}
@@ -2209,7 +2208,11 @@ function showApp(user) {
   // Show immediate defaults
   document.getElementById('aiScore').textContent = '—';
   document.getElementById('aiCond').textContent = 'Loading conditions...';
-  document.getElementById('aiInsight').textContent = 'Fetching live data from NOAA & Open-Meteo...';
+  // Show immediate insight with calculated values (no API needed)
+  const immediateHour = new Date().getHours();
+  const immediateSolunar = getSolunarData ? getSolunarData().hourlyActivity[immediateHour] : 50;
+  const immediateLabel = immediateSolunar >= 80 ? '🔴 Major feeding' : immediateSolunar >= 60 ? '🟡 Minor feeding' : '⚪ Low activity';
+  document.getElementById('aiInsight').textContent = `Tide ${getTideScore()}/22 · Moon ${getMoonScore()}/25 · ${immediateLabel} · Wind & SST loading...`;
   // Init everything
   setTimeout(initMap, 100);
   fetchWeather();
