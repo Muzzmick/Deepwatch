@@ -2792,6 +2792,12 @@ window.addEventListener('load', async () => {
 });
 
 // ══ SCREEN MANAGEMENT ══
+function setMobTab(id) {
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
 function showScreen(id, tab) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(t => t.classList.remove('active'));
@@ -2799,6 +2805,9 @@ function showScreen(id, tab) {
   if (tab) tab.classList.add('active');
   if (id === 'tidesScreen') { setTimeout(buildTideChart, 100); setTimeout(updateMoon, 100); setTimeout(updateFishingWindows, 100); setTimeout(build7DayForecast, 200); setTimeout(buildSolunarChart, 300); setTimeout(showCalculatedTides, 400); }
   if (id === 'catchScreen') loadCatches();
+  // Update mobile nav
+  const mobMap = {'mapScreen':'mob-map','catchScreen':'mob-catch','tidesScreen':'mob-plan','regsScreen':'mob-more','fishIdScreen':'mob-more'};
+  if (mobMap[id]) setMobTab(mobMap[id]);
 }
 
 // ══ LIVE WEATHER ══
