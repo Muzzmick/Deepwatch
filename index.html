@@ -772,26 +772,11 @@ canvas { display: block; }
             <div id="fishWindows" style="font-size:13px;line-height:2;color:var(--text2);"></div>
           </div>
 
-          <!-- Compass & GPS -->
+          <!-- Save Location -->
           <div class="card">
-            <div class="card-title">🧭 Compass & GPS</div>
-            <div style="display:flex;gap:16px;align-items:center;">
-              <div onclick="initCompass()" style="cursor:pointer;position:relative;width:90px;height:90px;flex-shrink:0;">
-                <svg viewBox="0 0 90 90" width="90" height="90">
-                  <circle cx="45" cy="45" r="43" fill="var(--bg2)" stroke="var(--border)" stroke-width="1.5"/>
-                  <text x="45" y="16" fill="var(--red)" font-size="11" font-weight="700" text-anchor="middle" font-family="Inter">N</text>
-                  <text x="45" y="80" fill="var(--text3)" font-size="11" text-anchor="middle" font-family="Inter">S</text>
-                  <text x="80" y="49" fill="var(--text3)" font-size="11" text-anchor="middle" font-family="Inter">E</text>
-                  <text x="10" y="49" fill="var(--text3)" font-size="11" text-anchor="middle" font-family="Inter">W</text>
-                  <line id="compassNeedle2" x1="45" y1="45" x2="45" y2="14" stroke="var(--red)" stroke-width="3" stroke-linecap="round" style="transform-origin:45px 45px;"/>
-                  <circle cx="45" cy="45" r="4" fill="var(--accent)"/>
-                </svg>
-              </div>
-              <div style="flex:1;">
-                <div id="compassReadout" style="font-size:13px;color:var(--text3);margin-bottom:12px;">Tap compass to activate</div>
-                <button onclick="saveCurrentLocation()" style="width:100%;padding:10px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📍 Save Current Location</button>
-              </div>
-            </div>
+            <div class="card-title">📍 Save Location</div>
+            <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Use the compass and GPS save button on the <strong>Map screen</strong>. Your saved spots appear as green dots on the map.</p>
+            <button onclick="showScreen('mapScreen',null);setMobActive('mob-map');" style="width:100%;padding:10px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗺 Go to Map</button>
           </div>
 
         </div>
@@ -974,11 +959,28 @@ canvas { display: block; }
 
 <!-- ══ CATCH MODAL ══ -->
 <div class="modal-overlay" id="catchModal">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:600px;">
     <div class="modal-title">
-      Log a Catch
+      <span id="catchModalTitle">🐟 Log a Catch</span>
       <button class="modal-close" onclick="closeCatchModal()">✕</button>
     </div>
+
+    <!-- Photo capture -->
+    <div class="form-group">
+      <label class="form-label">Photo</label>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div id="catchPhotoPreview" onclick="document.getElementById('cf_photo').click()" style="width:100px;height:75px;border-radius:8px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;background:var(--bg2);flex-shrink:0;">
+          <span id="catchPhotoIcon" style="font-size:28px;">📷</span>
+          <img id="catchPhotoImg" style="display:none;width:100%;height:100%;object-fit:cover;">
+        </div>
+        <div style="flex:1;">
+          <button onclick="document.getElementById('cf_photo').click()" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;">📷 Take / Upload Photo</button>
+          <button onclick="identifyFromCatch()" id="fishIdFromCatch" style="width:100%;padding:9px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(0,102,204,.06);color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🔍 Identify with AI Fish ID</button>
+        </div>
+      </div>
+      <input type="file" id="cf_photo" accept="image/*" capture="environment" style="display:none" onchange="catchPhotoSelected(this)">
+    </div>
+
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Species</label>
@@ -996,6 +998,18 @@ canvas { display: block; }
         <input class="form-input" id="cf_weight" type="number" step="0.1" placeholder="0.0">
       </div>
     </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Length (cm)</label>
+        <input class="form-input" id="cf_length" type="number" step="1" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bait / Lure Used</label>
+        <input class="form-input" id="cf_bait" placeholder="e.g. Live yabby, SP">
+      </div>
+    </div>
+
     <div class="form-group">
       <label class="form-label">Location</label>
       <select class="form-input" id="cf_location">
@@ -1004,37 +1018,60 @@ canvas { display: block; }
           <option>Reeve Channel</option><option>Kalimna Water</option>
           <option>Myer St Jetty</option><option>Cunninghame Arm Footbridge</option>
           <option>Entrance Rock Wall</option><option>Kalimna Jetty</option>
+          <option>Nungurner Channel</option>
         </optgroup>
         <optgroup label="🎣 Offshore">
           <option>6 Mile Reef</option><option>Snapper Grounds (8nm)</option>
           <option>Tuna Grounds (10nm)</option><option>Bass Strait (20nm+)</option>
         </optgroup>
-        <optgroup label="🏘 Metung"><option>Metung Channel</option><option>Metung Marina</option></optgroup>
-        <optgroup label="🏘 Paynesville"><option>McMillan Strait</option><option>Paynesville Jetty</option><option>Eagle Point</option></optgroup>
+        <optgroup label="🏘 Metung"><option>Metung Channel</option><option>Metung Marina</option><option>Bancroft Bay</option></optgroup>
+        <optgroup label="🏘 Paynesville"><option>McMillan Strait</option><option>Paynesville Wharf</option><option>Eagle Point</option><option>Raymond Island Jetty</option></optgroup>
         <optgroup label="🌊 Rivers"><option>Tambo River</option><option>Mitchell River</option><option>Nicholson River</option></optgroup>
-        <optgroup label="🦐 Prawning"><option>North Arm Prawning</option><option>Reeve Channel Prawning</option><option>Cunninghame Arm Crabbing</option></optgroup>
+        <optgroup label="🏖 Beaches"><option>Seaspray Beach</option><option>Golden Beach</option><option>Paradise Beach</option></optgroup>
+        <optgroup label="🦐 Prawning/Crabbing"><option>North Arm Prawning</option><option>Cunninghame Arm Crabbing</option><option>Myer St Jetty Crabbing</option><option>Kalimna Jetty Crabbing</option></optgroup>
         <option>Other</option>
       </select>
     </div>
+
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Method</label>
         <select class="form-input" id="cf_method">
-          <option>Bait fishing</option><option>Lure fishing</option><option>Fly fishing</option>
-          <option>Trolling</option><option>Jigging</option><option>Netting (prawns)</option>
-          <option>Drop net (crabs)</option><option>Other</option>
+          <option>Bait fishing</option><option>Lure fishing</option><option>Soft plastic</option>
+          <option>Fly fishing</option><option>Trolling</option><option>Jigging</option>
+          <option>Netting (prawns)</option><option>Drop net (crabs)</option><option>Other</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Vessel</label>
+        <label class="form-label">Vessel / Access</label>
         <input class="form-input" id="cf_vessel" placeholder="Boat name or 'Land'">
       </div>
     </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Keep or Release?</label>
+        <select class="form-input" id="cf_keeprelease">
+          <option>Kept</option><option>Released</option><option>Under size — released</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Conditions</label>
+        <select class="form-input" id="cf_conditions">
+          <option>Calm</option><option>Light breeze</option><option>Moderate wind</option>
+          <option>Rough</option><option>Overcast</option><option>Sunny</option>
+        </select>
+      </div>
+    </div>
+
     <div class="form-group">
       <label class="form-label">Notes</label>
-      <textarea class="form-input" id="cf_notes" rows="2" placeholder="Bait used, conditions, tips..."></textarea>
+      <textarea class="form-input" id="cf_notes" rows="2" placeholder="Depth, time of day, tide, any tips..."></textarea>
     </div>
-    <button class="submit-btn" onclick="submitCatch()">🐟 Save Catch</button>
+
+    <div style="display:flex;gap:10px;">
+      <button class="submit-btn" onclick="submitCatch()" style="flex:1;">🐟 Save Catch</button>
+    </div>
   </div>
 </div>
 
@@ -1269,7 +1306,7 @@ function showScreen(id, btn) {
   document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (id === 'planScreen') { setTimeout(() => { buildSolunar(); buildTides(); updateMoon(); buildForecastStrip(); }, 100); }
+  if (id === 'planScreen') { setTimeout(() => { buildSolunar(); buildTides(); updateMoon(); buildForecastStrip(); initSolunarDrag(); }, 100); }
   if (id === 'catchScreen') loadCatches();
 }
 
@@ -1761,10 +1798,11 @@ function getSpotScore(h) {
 
 function updateScores() {
   const scores = hotspots.map(h => getSpotScore(h));
-  const visible = hotspots.map((h,i) => ({h,i,score:scores[i]}))
-    .filter(({h}) => (currentTypeFilter==='all'||h.type===currentTypeFilter) && (currentAreaFilter==='all'||h.area===currentAreaFilter))
-    .sort((a,b) => b.score-a.score);
+  const areaFiltered = hotspots.map((h,i) => ({h,i,score:scores[i]}))
+    .filter(({h}) => currentAreaFilter==='all'||h.area===currentAreaFilter);
 
+  // Overall score from all visible spots
+  const visible = areaFiltered.filter(({h}) => currentTypeFilter==='all'||h.type===currentTypeFilter);
   const avg = visible.length ? Math.round(visible.reduce((s,{score})=>s+score,0)/visible.length) : 50;
   document.getElementById('aiScore').textContent = avg;
   const cond = avg >= 75 ? 'Excellent Conditions!' : avg >= 60 ? 'Good Conditions' : avg >= 45 ? 'Fair Conditions' : 'Poor Conditions';
@@ -1776,26 +1814,69 @@ function updateScores() {
   const sst = realSST ? realSST.toFixed(1)+'°C' : '—';
   const wave = realWave ? realWave.toFixed(1)+'m' : '—';
   const pressTrend = getPressureTrend();
-  const pressLabel = pressTrend > 0.3 ? '📈 Pressure rising' : pressTrend < -0.3 ? '📉 Pressure falling — fish going off' : '';
+  const pressLabel = pressTrend > 0.3 ? '📈 Rising' : pressTrend < -0.3 ? '📉 Falling — fish going off' : '';
   const parts = [`SST ${sst}`, `Swell ${wave}`, `Wind ${wind}`, solLabel];
   if (pressLabel) parts.push(pressLabel);
   document.getElementById('aiDetail').textContent = parts.join(' · ');
 
-  // Update spots list
+  // Build category sections
   const list = document.getElementById('spotsList');
-  list.innerHTML = visible.slice(0,8).map(({h,i,score}, rank) => {
-    const typeEmoji = {boat:'🚤',land:'🚶',game:'🎣',prawn:'🦐'}[h.type]||'📍';
-    const scoreColor = score >= 75 ? 'var(--green)' : score >= 55 ? 'var(--orange)' : 'var(--red)';
-    return `<div class="spot-item ${rank===0?'active':''}" onclick="flyToSpot(${i})">
-      <div class="spot-rank">#${rank+1}</div>
-      <div class="spot-info">
-        <div class="spot-name">${typeEmoji} ${h.name}</div>
-        <div class="spot-spp">${h.species.split(' · ').slice(0,2).join(' · ')}</div>
-        <div class="spot-bar"><div class="spot-fill" style="width:${score}%"></div></div>
-      </div>
-      <div class="spot-score" style="color:${scoreColor}">${score}</div>
-    </div>`;
-  }).join('');
+  const types = currentTypeFilter === 'all'
+    ? ['boat','land','game','prawn']
+    : [currentTypeFilter];
+
+  const typeLabels = {boat:'🚤 Boat Spots', land:'🚶 Land-Based', game:'🎣 Game Fishing', prawn:'🦐 Prawns & Crabs'};
+  const typeColors = {boat:'var(--accent)', land:'var(--green)', game:'var(--purple)', prawn:'var(--yellow)'};
+
+  let html = '';
+  types.forEach(type => {
+    const typeSpots = areaFiltered
+      .filter(({h}) => h.type === type)
+      .sort((a,b) => b.score-a.score);
+    if (!typeSpots.length) return;
+
+    html += `<div style="font-size:10px;font-weight:700;color:${typeColors[type]};letter-spacing:1px;padding:8px 0 4px;border-top:1px solid var(--border);margin-top:4px;">${typeLabels[type]}</div>`;
+    typeSpots.slice(0, currentTypeFilter==='all' ? 3 : 8).forEach(({h,i,score}, rank) => {
+      const scoreColor = score >= 75 ? 'var(--green)' : score >= 55 ? 'var(--orange)' : 'var(--red)';
+      html += `<div class="spot-item ${rank===0?'active':''}" onclick="flyToSpot(${i})">
+        <div class="spot-rank" style="color:${typeColors[type]}">#${rank+1}</div>
+        <div class="spot-info">
+          <div class="spot-name">${h.name}</div>
+          <div class="spot-spp">${h.species.split(' · ').slice(0,2).join(' · ')}</div>
+          <div class="spot-bar"><div class="spot-fill" style="width:${score}%;background:${typeColors[type]}"></div></div>
+        </div>
+        <div class="spot-score" style="color:${scoreColor}">${score}</div>
+      </div>`;
+    });
+  });
+  list.innerHTML = html;
+
+  // Update map labels to show category rank
+  updateMapRankLabels(scores, areaFiltered);
+}
+
+function updateMapRankLabels(scores, areaFiltered) {
+  if (!map) return;
+  const types = ['boat','land','game','prawn'];
+  types.forEach(type => {
+    const typeSpots = areaFiltered
+      .filter(({h}) => h.type === type)
+      .sort((a,b) => b.score-a.score);
+    const features = typeSpots.map(({h,i}, rank) => ({
+      type:'Feature',
+      geometry:{ type:'Point', coordinates:[h.lng, h.lat] },
+      properties:{ ...h, idx:i, rank:rank+1 }
+    }));
+    if (map.getSource(`spots-${type}`)) {
+      map.getSource(`spots-${type}`).setData({ type:'FeatureCollection', features });
+    }
+  });
+  // Update label field to use rank
+  types.forEach(type => {
+    if (map.getLayer(`labels-${type}`)) {
+      map.setLayoutProperty(`labels-${type}`, 'text-field', ['concat','#',['to-string',['get','rank']]]);
+    }
+  });
 }
 
 function flyToSpot(i) {
@@ -1838,18 +1919,43 @@ function updateSpeciesForecast() {
 // ══ MOON ══
 function updateMoon() {
   const phase = getMoonPhase();
-  const emojis = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
-  const names = ['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
-  const idx = Math.round(phase*8)%8;
-  const el = document.getElementById('moonEmoji'); if (el) el.textContent = emojis[idx];
-  const pn = document.getElementById('moonPhaseName'); if (pn) pn.textContent = names[idx];
+  // More precise moon emoji selection
+  const getEmoji = (p) => {
+    if (p < 0.033 || p > 0.967) return '🌑';
+    if (p < 0.133) return '🌒';
+    if (p < 0.233) return '🌓';
+    if (p < 0.367) return '🌔';
+    if (p < 0.533) return '🌕';
+    if (p < 0.633) return '🌖';
+    if (p < 0.733) return '🌗';
+    if (p < 0.867) return '🌘';
+    return '🌑';
+  };
+  const getName = (p) => {
+    if (p < 0.033 || p > 0.967) return 'New Moon';
+    if (p < 0.133) return 'Waxing Crescent';
+    if (p < 0.233) return 'First Quarter';
+    if (p < 0.367) return 'Waxing Gibbous';
+    if (p < 0.533) return 'Full Moon';
+    if (p < 0.633) return 'Waning Gibbous';
+    if (p < 0.733) return 'Last Quarter';
+    if (p < 0.867) return 'Waning Crescent';
+    return 'Waning Crescent';
+  };
+  const emoji = getEmoji(phase);
+  const name = getName(phase);
+  const illum = Math.round(Math.sin(phase*Math.PI)*100);
+  const age = Math.round(phase*29.5);
+  const el = document.getElementById('moonEmoji'); if (el) el.textContent = emoji;
+  const pn = document.getElementById('moonPhaseName'); if (pn) pn.textContent = name;
   const md = document.getElementById('moonDetail');
-  if (md) md.innerHTML = `Illumination: ${Math.round(Math.sin(phase*Math.PI)*100)}%<br>Age: ${Math.round(phase*29.5)} days`;
+  if (md) md.innerHTML = `Illumination: ${illum}%<br>Age: ${age} days`;
   const mf = document.getElementById('moonFishTip');
   if (mf) {
-    const tip = phase < 0.1 || phase > 0.9 ? '🎣 New moon — excellent for night fishing' :
-      Math.abs(phase-0.5) < 0.1 ? '🎣 Full moon — great for mulloway after dark' :
-      '🎣 Moderate moon — fish dawn and dusk windows';
+    const tip = phase < 0.1 || phase > 0.9 ? '🎣 New moon — excellent for mulloway & prawning' :
+      Math.abs(phase-0.5) < 0.1 ? '🎣 Full moon — great for mulloway after dark, prawning excellent' :
+      phase < 0.4 ? '🎣 Waxing moon — feeding activity building' :
+      '🎣 Waning moon — fish dawn and dusk windows';
     mf.textContent = tip;
   }
 }
@@ -2000,15 +2106,46 @@ function buildSolunar() {
   ctx.fillStyle='rgba(22,163,74,.5)'; ctx.font='9px Inter'; ctx.fillText('HIGH',4,H-0.8*H*.85-H*.05-3);
   ctx.fillStyle='rgba(249,115,22,.5)'; ctx.fillText('MED',4,H-0.55*H*.85-H*.05-3);
 
-  // Now line
-  const nowX = (hour/24)*W;
-  ctx.strokeStyle='var(--orange)'; ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
-  ctx.beginPath(); ctx.moveTo(nowX,0); ctx.lineTo(nowX,H); ctx.stroke();
+  // Draggable time line
+  const lineX = (solTimelineHour/24)*W;
+  ctx.strokeStyle='#f97316'; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(lineX,0); ctx.lineTo(lineX,H); ctx.stroke();
   ctx.setLineDash([]);
+  // Time label on line
+  ctx.fillStyle='#f97316'; ctx.font='bold 10px Inter';
+  const lh = Math.floor(solTimelineHour), lm = Math.round((solTimelineHour%1)*60);
+  const lap = lh>=12?'PM':'AM', ld = lh>12?lh-12:lh===0?12:lh;
+  const timeLabel = `${ld}:${String(lm).padStart(2,'0')} ${lap}`;
+  ctx.fillText(timeLabel, Math.min(lineX+4, W-60), 14);
+  // Activity at this time
+  const actAtTime = getSolunarScore(solTimelineHour);
+  const actLabel = actAtTime>=80?'HIGH':actAtTime>=60?'MED':'LOW';
+  ctx.fillText(actLabel, Math.min(lineX+4, W-60), 26);
 
   // Hour labels
   ctx.fillStyle='rgba(100,130,160,.5)'; ctx.font='9px Inter';
   [0,4,8,12,16,20].forEach(h => ctx.fillText(h+'h',(h/24)*W+2,H-2));
+}
+
+// Solunar timeline drag
+let solTimelineHour = new Date().getHours() + new Date().getMinutes()/60;
+let isDraggingSol = false;
+
+function initSolunarDrag() {
+  const canvas = document.getElementById('solunarCanvas');
+  if (!canvas) return;
+  const getH = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    return Math.max(0, Math.min(24, (x/rect.width)*24));
+  };
+  canvas.addEventListener('mousedown', e => { isDraggingSol=true; solTimelineHour=getH(e); buildSolunar(); });
+  canvas.addEventListener('mousemove', e => { if(isDraggingSol){ solTimelineHour=getH(e); buildSolunar(); } });
+  canvas.addEventListener('mouseup', () => isDraggingSol=false);
+  canvas.addEventListener('touchstart', e => { isDraggingSol=true; solTimelineHour=getH(e); buildSolunar(); e.preventDefault(); }, {passive:false});
+  canvas.addEventListener('touchmove', e => { if(isDraggingSol){ solTimelineHour=getH(e); buildSolunar(); } e.preventDefault(); }, {passive:false});
+  canvas.addEventListener('touchend', () => isDraggingSol=false);
+  canvas.style.cursor = 'ew-resize';
 }
 
 // ══ 7-DAY FORECAST ══
@@ -2035,7 +2172,10 @@ async function buildForecastStrip() {
       const distFull = Math.abs(moonPhaseDay-0.5);
       const moonDay = Math.round((1-Math.min(distNew,distFull)*4)*20);
       const windScore = wind<8?28:wind<12?22:wind<18?14:wind<25?7:3;
-      const score = Math.min(95, Math.max(25, windScore + moonDay + Math.round(Math.sin(i*1.3)*8+10)));
+      // Use same SST/wave base as map score for consistency
+      const sstBase = realSST ? (realSST>=16&&realSST<=22?22:realSST>=14?14:6) : 14;
+      const waveBase = realWave ? (realWave<0.5?22:realWave<1.0?18:realWave<1.5?10:4) : 18;
+      const score = Math.min(95, Math.max(25, windScore + moonDay + sstBase*0.4 + waveBase*0.3 + Math.round(Math.sin(i*1.3)*5+5)));
       const sc = score>=75?'score-great':score>=60?'score-good':score>=45?'score-fair':'score-poor';
       const lbl = score>=75?'GREAT':score>=60?'GOOD':score>=45?'FAIR':'POOR';
       return `<div class="forecast-day ${i===0?'today':''}">
@@ -2123,29 +2263,135 @@ async function loadCatches() {
   loadCatchDots();
 }
 
-function openCatchModal() { document.getElementById('catchModal').classList.add('open'); }
-function closeCatchModal() { document.getElementById('catchModal').classList.remove('open'); }
+// Photo capture for catch
+let catchPhotoBase64 = null;
+let editingCatchId = null;
+
+function catchPhotoSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    catchPhotoBase64 = e.target.result;
+    document.getElementById('catchPhotoImg').src = catchPhotoBase64;
+    document.getElementById('catchPhotoImg').style.display = 'block';
+    document.getElementById('catchPhotoIcon').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function identifyFromCatch() {
+  if (!catchPhotoBase64) {
+    alert('Please take or upload a photo first');
+    return;
+  }
+  const btn = document.getElementById('fishIdFromCatch');
+  btn.textContent = '🔍 Identifying...';
+  btn.disabled = true;
+  try {
+    const b64 = catchPhotoBase64.split(',')[1];
+    const mtype = catchPhotoBase64.split(';')[0].split(':')[1];
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01'},
+      body: JSON.stringify({
+        model:'claude-haiku-4-5-20251001', max_tokens:200,
+        messages:[{ role:'user', content:[
+          { type:'image', source:{ type:'base64', media_type:mtype, data:b64 } },
+          { type:'text', text:'What species is this fish? Reply with just the common name, e.g. "Bream" or "Flathead". One word or short phrase only.' }
+        ]}]
+      })
+    });
+    const d = await res.json();
+    const species = d.content[0].text.trim();
+    // Auto-fill species dropdown
+    const sel = document.getElementById('cf_species');
+    for (let i=0; i<sel.options.length; i++) {
+      if (sel.options[i].text.toLowerCase().includes(species.toLowerCase()) ||
+          species.toLowerCase().includes(sel.options[i].text.toLowerCase())) {
+        sel.selectedIndex = i; break;
+      }
+    }
+    btn.textContent = `✅ Identified: ${species}`;
+  } catch(e) {
+    btn.textContent = '❌ Could not identify';
+  }
+  setTimeout(() => { btn.textContent = '🔍 Identify with AI Fish ID'; btn.disabled=false; }, 3000);
+}
+
+function openCatchModal() {
+  editingCatchId = null;
+  catchPhotoBase64 = null;
+  document.getElementById('catchModalTitle').textContent = '🐟 Log a Catch';
+  document.getElementById('catchPhotoImg').style.display = 'none';
+  document.getElementById('catchPhotoIcon').style.display = 'block';
+  document.getElementById('cf_species').selectedIndex = 0;
+  document.getElementById('cf_weight').value = '';
+  document.getElementById('cf_length').value = '';
+  document.getElementById('cf_bait').value = '';
+  document.getElementById('cf_vessel').value = '';
+  document.getElementById('cf_notes').value = '';
+  document.getElementById('catchModal').classList.add('open');
+}
+
+function openEditCatch(id, species, weight, location, method, notes) {
+  editingCatchId = id;
+  document.getElementById('catchModalTitle').textContent = '✏️ Edit Catch';
+  const sel = document.getElementById('cf_species');
+  for (let i=0; i<sel.options.length; i++) {
+    if (sel.options[i].text === species) { sel.selectedIndex = i; break; }
+  }
+  document.getElementById('cf_weight').value = weight || '';
+  const locSel = document.getElementById('cf_location');
+  for (let i=0; i<locSel.options.length; i++) {
+    if (locSel.options[i].text === location) { locSel.selectedIndex = i; break; }
+  }
+  document.getElementById('cf_notes').value = notes || '';
+  document.getElementById('catchModal').classList.add('open');
+}
+
+function closeCatchModal() {
+  document.getElementById('catchModal').classList.remove('open');
+  editingCatchId = null;
+  catchPhotoBase64 = null;
+}
 
 async function submitCatch() {
   const species = document.getElementById('cf_species').value;
   const weight = parseFloat(document.getElementById('cf_weight').value)||0;
+  const length = parseFloat(document.getElementById('cf_length').value)||0;
   const location = document.getElementById('cf_location').value;
   const method = document.getElementById('cf_method').value;
   const vessel = document.getElementById('cf_vessel').value;
+  const bait = document.getElementById('cf_bait').value;
+  const keeprelease = document.getElementById('cf_keeprelease').value;
+  const conditions = document.getElementById('cf_conditions').value;
   const notes = document.getElementById('cf_notes').value;
 
-  const { error } = await _sb.from('catches').insert([{
-    species, weight_kg:weight, location, method, vessel_name:vessel||'Anonymous',
-    notes, fisher_type:'recreational', quantity:1,
-    lat: null, lng: null
-  }]);
+  const notesEnhanced = [
+    bait ? `Bait: ${bait}` : '',
+    length ? `Length: ${length}cm` : '',
+    keeprelease ? keeprelease : '',
+    conditions ? `Conditions: ${conditions}` : '',
+    notes
+  ].filter(Boolean).join(' · ');
 
-  if (!error) {
-    closeCatchModal();
-    loadCatches();
-    alert(`✅ ${species} logged!`);
+  if (editingCatchId) {
+    const { error } = await _sb.from('catches').update({
+      species, weight_kg:weight, location, method,
+      vessel_name:vessel||'Anonymous', notes:notesEnhanced
+    }).eq('id', editingCatchId);
+    if (!error) { closeCatchModal(); loadCatches(); }
+    else alert('Error: ' + error.message);
   } else {
-    alert('Error saving catch: ' + error.message);
+    const { error } = await _sb.from('catches').insert([{
+      species, weight_kg:weight, location, method,
+      vessel_name:vessel||'Anonymous',
+      notes:notesEnhanced, fisher_type:'recreational', quantity:1,
+      lat:null, lng:null
+    }]);
+    if (!error) { closeCatchModal(); loadCatches(); alert(`✅ ${species} logged!`); }
+    else alert('Error saving catch: ' + error.message);
   }
 }
 
