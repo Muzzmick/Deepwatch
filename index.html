@@ -438,6 +438,131 @@ body {
 .mob-tab.active .mob-label { color: var(--accent); }
 .mob-ai { width: 44px; height: 44px; border-radius: 50%; background: var(--accent); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 16px rgba(0,102,204,.4); flex-shrink: 0; }
 
+/* ══ MOBILE PORTRAIT — Primary Layout ══ */
+@media (max-width: 768px) {
+
+  /* Hide desktop nav, show mobile nav */
+  nav { display: none !important; }
+  #mobileNav { display: flex !important; }
+  #app { padding-bottom: 64px; height: 100%; }
+  .screens { height: calc(100vh - 64px); }
+
+  /* MAP SCREEN — full screen map, sidebar slides up from bottom */
+  #mapScreen { flex-direction: column !important; position: relative; }
+  .map-main { flex: 1; min-height: 0; order: 1; }
+  #mapbox { position: absolute; inset: 0; }
+
+  /* Sidebar becomes a bottom sheet */
+  .map-sidebar {
+    width: 100% !important;
+    height: 48vh !important;
+    max-height: 48vh;
+    border-right: none !important;
+    border-top: 2px solid var(--border) !important;
+    order: 2;
+    overflow-y: auto;
+    flex-shrink: 0;
+    background: var(--card);
+  }
+
+  /* Hide right panel on mobile */
+  .map-right { display: none !important; }
+
+  /* Compact score card */
+  .score-card { padding: 10px 14px !important; }
+  .score-num { font-size: 42px !important; }
+  .score-cond { font-size: 13px !important; }
+  .score-detail { font-size: 10px !important; }
+  .bar-badge { font-size: 10px !important; padding: 3px 8px !important; }
+
+  /* Conditions 2x2 grid */
+  .cond-section { padding: 8px 14px !important; }
+  .cond-grid { grid-template-columns: 1fr 1fr !important; gap: 5px !important; }
+  .cond-val { font-size: 16px !important; }
+  .cond-lbl { font-size: 9px !important; }
+
+  /* Spots section compact */
+  .spots-section { padding: 8px 14px !important; }
+  .sec-title { font-size: 9px !important; margin-bottom: 6px !important; }
+  .filter-row { gap: 3px !important; margin-bottom: 6px !important; }
+  .fbtn { padding: 3px 8px !important; font-size: 10px !important; }
+  .area-row { gap: 3px !important; margin-bottom: 6px !important; }
+  .abtn { font-size: 9px !important; padding: 2px 6px !important; }
+  .spot-item { padding: 6px 8px !important; }
+  .spot-name { font-size: 11px !important; }
+  .spot-spp { font-size: 9px !important; }
+  .spot-rank { font-size: 12px !important; width: 22px !important; }
+  .spot-score { font-size: 13px !important; }
+
+  /* Layer toggles hidden on mobile - accessible via map buttons */
+  .layer-toggles { display: none !important; }
+
+  /* Save spot button smaller */
+  .save-spot-btn { font-size: 11px !important; padding: 8px 14px !important; bottom: 8px !important; }
+
+  /* Compass smaller */
+  .compass-widget { width: 52px !important; height: 52px !important; }
+  .compass-bg { width: 52px !important; height: 52px !important; }
+
+  /* CATCH SCREEN */
+  #catchScreen { flex-direction: column !important; overflow-y: auto !important; }
+  #catchScreen > div { padding: 12px !important; }
+
+  /* Stats bar 2+3 on mobile */
+  #catchScreen > div > div:first-child {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* PLAN SCREEN */
+  .page-wrap { padding: 12px !important; }
+  .page-title { font-size: 20px !important; margin-bottom: 2px !important; }
+  .page-sub { font-size: 11px !important; margin-bottom: 14px !important; }
+  .plan-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .card { padding: 14px !important; }
+  .card-title { font-size: 11px !important; margin-bottom: 10px !important; }
+
+  /* 7-day strips scroll horizontally */
+  #weatherStrip, #tideStrip7, #moonStrip7 {
+    grid-template-columns: repeat(7, minmax(100px, 1fr)) !important;
+    overflow-x: auto !important;
+  }
+
+  /* REGS SCREEN */
+  .regs-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .rigs-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+
+  /* FISH ID SCREEN */
+  .fishid-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+
+  /* AI PANEL full width bottom sheet */
+  #aiPanel {
+    width: 100% !important;
+    top: auto !important;
+    bottom: 64px !important;
+    height: 72vh !important;
+    border-radius: 16px 16px 0 0 !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border) !important;
+  }
+
+  /* MODALS full screen on mobile */
+  .modal-overlay { align-items: flex-end !important; padding: 0 !important; }
+  .modal-box {
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 88vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* WELCOME SCREEN */
+  #welcomeScreen { padding: 0 !important; }
+
+  /* Tables scroll horizontally */
+  #fishingActivity7, #overviewTbody7 { display: block; overflow-x: auto; }
+  table { min-width: 500px; }
+}
+
 @media (min-width: 769px) {
   .map-sidebar { overflow-y: auto; }
 }
