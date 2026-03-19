@@ -1155,7 +1155,8 @@ const SUPABASE_KEY = 'sb_publishable_8BaA3wzJYC-OvwVIQZt69A_5q8a9zLJ';
 const CLAUDE_KEY = atob('c2stYW50LWFwaTAzLXhXb2hCaUF3SjZyQWpDQmJUaDhjUXVlT3lIczkyWUFqLUczV05yWnFEaEFBUm9na0R3WGl2MEVhUlZyc2pIYk5aT25jRjhod2t6WW1EcVZQSlNqbGVRLWdHVlFXUUFB');
 const MAPBOX_TOKEN = 'pk.eyJ1IjoibXV6em1pY2s3NyIsImEiOiJjbW1vZnRjNGIwZDFpMndteXU0b3ZuY2toIn0.Tr-mGo-xQSWC8S8gRisiXA';
 
-const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+window._sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const _sb = window._sb;
 
 // ══ STATE ══
 let map, currentUser, editMode = false;
@@ -1291,7 +1292,9 @@ async function doLogin() {
   const pass = document.getElementById('passField').value;
   const err = document.getElementById('loginErr');
   const btn = document.getElementById('loginBtn');
+  err.style.display = 'none';
   if (!email || !pass) { err.textContent = 'Please enter email and password'; err.style.display='block'; return; }
+  if (!window._sb) { err.textContent = 'App not loaded yet — please refresh'; err.style.display='block'; return; }
   btn.textContent = 'Loading...'; btn.disabled = true;
   try {
     let res;
@@ -1302,11 +1305,25 @@ async function doLogin() {
       if (pass !== pass2) { err.textContent = 'Passwords do not match'; err.style.display='block'; btn.textContent='Create Account'; btn.disabled=false; return; }
       res = await _sb.auth.signUp({ email, password: pass });
     }
-    if (res.error) { err.textContent = res.error.message; err.style.display='block'; }
-    else if (res.data?.user) { startApp(res.data.user); }
-    else { err.textContent = 'Check your email to confirm your account'; err.style.display='block'; }
-  } catch(e) { err.textContent = 'Error: ' + e.message; err.style.display='block'; }
-  btn.textContent = loginMode === 'login' ? 'Sign In' : 'Create Account'; btn.disabled = false;
+    if (res.error) { 
+      err.textContent = res.error.message; 
+      err.style.display='block'; 
+    } else if (res.data?.user) { 
+      startApp(res.data.user); 
+    } else if (res.data?.session === null && loginMode === 'signup') {
+      err.textContent = 'Account created! Check your email to confirm, then sign in.';
+      err.style.display='block';
+      err.style.color = 'var(--green)';
+    } else { 
+      err.textContent = 'Something went wrong. Please try again.'; 
+      err.style.display='block'; 
+    }
+  } catch(e) { 
+    err.textContent = 'Connection error: ' + e.message; 
+    err.style.display='block'; 
+  }
+  btn.textContent = loginMode === 'login' ? 'Sign In' : 'Create Account'; 
+  btn.disabled = false;
 }
 
 async function doLogout() {
@@ -2373,7 +2390,7 @@ function viewOnMap(lat, lng) {
   if (map) map.flyTo({ center:[lng, lat], zoom:16, duration:1200 });
 }
 
-async function deleteCatch(id) {
+async async function deleteCatch(id) {
   if (!confirm('Delete this catch?')) return;
   await _sb.from('catches').delete().eq('id', id);
   loadCatches();
