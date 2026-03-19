@@ -2524,23 +2524,22 @@ async function submitCatch() {
     if (!error) { closeCatchModal(); loadCatches(); }
     else alert('Error: ' + error.message);
   } else {
-    // Upload photo if one was taken
+    // Compress and store photo as base64 in DB (no storage bucket needed)
     let photoUrl = null;
     if (catchPhotoBase64) {
       try {
-        const b64 = catchPhotoBase64.split(',')[1];
-        const mtype = catchPhotoBase64.split(';')[0].split(':')[1];
-        const ext = mtype.split('/')[1] || 'jpg';
-        const fileName = `catch_${currentUser.id}_${Date.now()}.${ext}`;
-        const byteArr = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-        const { data: upData, error: upErr } = await _sb.storage
-          .from('catch-photos')
-          .upload(fileName, byteArr, { contentType: mtype, upsert: false });
-        if (!upErr) {
-          const { data: urlData } = _sb.storage.from('catch-photos').getPublicUrl(fileName);
-          photoUrl = urlData.publicUrl;
-        }
-      } catch(e) { console.log('Photo upload failed:', e); }
+        // Compress image to ~200px wide thumbnail using canvas
+        const img = new Image();
+        await new Promise(resolve => { img.onload = resolve; img.src = catchPhotoBase64; });
+        const canvas = document.createElement('canvas');
+        const maxW = 400, maxH = 300;
+        let w = img.width, h = img.height;
+        if (w > maxW) { h = h * maxW / w; w = maxW; }
+        if (h > maxH) { w = w * maxH / h; h = maxH; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        photoUrl = canvas.toDataURL('image/jpeg', 0.7); // compressed jpeg
+      } catch(e) { console.log('Photo compress failed:', e); photoUrl = catchPhotoBase64; }
     }
 
     const { error } = await _sb.from('catches').insert([{
