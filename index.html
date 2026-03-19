@@ -2397,6 +2397,143 @@ async function deleteCatch(id) {
   loadCatches();
 }
 
+// ══ CATCH MODAL FUNCTIONS ══
+let catchPhotoBase64 = null;
+let editingCatchId = null;
+let catchGPSLat = null, catchGPSLng = null;
+
+function catchPhotoSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    catchPhotoBase64 = e.target.result;
+    const img = document.getElementById('catchPhotoImg');
+    const icon = document.getElementById('catchPhotoIcon');
+    if (img) { img.src = catchPhotoBase64; img.style.display = 'block'; }
+    if (icon) icon.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function identifyFromCatch() {
+  if (!catchPhotoBase64) { alert('Please take or upload a photo first'); return; }
+  const btn = document.getElementById('fishIdFromCatch');
+  btn.textContent = '🔍 Identifying...'; btn.disabled = true;
+  try {
+    const b64 = catchPhotoBase64.split(',')[1];
+    const mtype = catchPhotoBase64.split(';')[0].split(':')[1];
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01'},
+      body: JSON.stringify({
+        model:'claude-haiku-4-5-20251001', max_tokens:100,
+        messages:[{ role:'user', content:[
+          { type:'image', source:{ type:'base64', media_type:mtype, data:b64 } },
+          { type:'text', text:'What species is this fish from Gippsland Lakes / Bass Strait, Victoria Australia? Reply with just the common name only, e.g. "Bream" or "Flathead".' }
+        ]}]
+      })
+    });
+    const d = await res.json();
+    const species = d.content[0].text.trim();
+    const sel = document.getElementById('cf_species');
+    for (let i=0; i<sel.options.length; i++) {
+      if (sel.options[i].text.toLowerCase().includes(species.toLowerCase()) || species.toLowerCase().includes(sel.options[i].text.toLowerCase())) {
+        sel.selectedIndex = i; break;
+      }
+    }
+    btn.textContent = '✅ ' + species;
+  } catch(e) { btn.textContent = '❌ Try again'; }
+  setTimeout(() => { btn.textContent = '🔍 Identify with AI Fish ID'; btn.disabled = false; }, 3000);
+}
+
+function openCatchModal() {
+  editingCatchId = null;
+  catchPhotoBase64 = null;
+  catchGPSLat = null;
+  catchGPSLng = null;
+  document.getElementById('catchModalTitle').textContent = '🐟 Log a Catch';
+  const img = document.getElementById('catchPhotoImg');
+  const icon = document.getElementById('catchPhotoIcon');
+  if (img) { img.style.display = 'none'; img.src = ''; }
+  if (icon) icon.style.display = 'block';
+  ['cf_weight','cf_length','cf_bait','cf_vessel','cf_notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const sel = document.getElementById('cf_species');
+  if (sel) sel.selectedIndex = 0;
+  const gpsBtn = document.getElementById('gpsBtn');
+  const gpsStatus = document.getElementById('gpsStatus');
+  if (gpsBtn) { gpsBtn.textContent = '📍 Get GPS Location'; gpsBtn.style.background = ''; gpsBtn.style.borderColor = ''; gpsBtn.style.color = ''; }
+  if (gpsStatus) gpsStatus.innerHTML = '';
+  document.getElementById('catchModal').classList.add('open');
+}
+
+function openEditCatch(id, species, weight, location, method, notes) {
+  editingCatchId = id;
+  document.getElementById('catchModalTitle').textContent = '✏️ Edit Catch';
+  const sel = document.getElementById('cf_species');
+  if (sel) { for (let i=0; i<sel.options.length; i++) { if (sel.options[i].text === species) { sel.selectedIndex = i; break; } } }
+  const wt = document.getElementById('cf_weight'); if (wt) wt.value = weight || '';
+  const locSel = document.getElementById('cf_location');
+  if (locSel) { for (let i=0; i<locSel.options.length; i++) { if (locSel.options[i].text === location) { locSel.selectedIndex = i; break; } } }
+  const mSel = document.getElementById('cf_method');
+  if (mSel) { for (let i=0; i<mSel.options.length; i++) { if (mSel.options[i].text === method) { mSel.selectedIndex = i; break; } } }
+  const nt = document.getElementById('cf_notes'); if (nt) nt.value = notes || '';
+  document.getElementById('catchModal').classList.add('open');
+}
+
+function closeCatchModal() {
+  document.getElementById('catchModal').classList.remove('open');
+  editingCatchId = null;
+  catchPhotoBase64 = null;
+  catchGPSLat = null;
+  catchGPSLng = null;
+}
+
+async function submitCatch() {
+  const species = document.getElementById('cf_species').value;
+  const weight = parseFloat(document.getElementById('cf_weight').value) || 0;
+  const length = parseFloat(document.getElementById('cf_length').value) || 0;
+  const location = document.getElementById('cf_location').value;
+  const method = document.getElementById('cf_method').value;
+  const vessel = document.getElementById('cf_vessel').value;
+  const bait = document.getElementById('cf_bait').value;
+  const keeprelease = document.getElementById('cf_keeprelease').value;
+  const conditions = document.getElementById('cf_conditions').value;
+  const notes = document.getElementById('cf_notes').value;
+
+  const notesEnhanced = [
+    bait ? 'Bait: ' + bait : '',
+    length ? 'Length: ' + length + 'cm' : '',
+    keeprelease || '',
+    conditions ? 'Conditions: ' + conditions : '',
+    notes
+  ].filter(Boolean).join(' · ');
+
+  const btn = document.querySelector('#catchModal .submit-btn');
+  if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+
+  if (editingCatchId) {
+    const { error } = await _sb.from('catches').update({
+      species, weight_kg: weight, location, method,
+      vessel_name: vessel || 'Anonymous', notes: notesEnhanced
+    }).eq('id', editingCatchId);
+    if (!error) { closeCatchModal(); loadCatches(); }
+    else alert('Error: ' + error.message);
+  } else {
+    const { error } = await _sb.from('catches').insert([{
+      species, weight_kg: weight, location, method,
+      vessel_name: vessel || 'Anonymous',
+      notes: notesEnhanced, fisher_type: 'recreational', quantity: 1,
+      lat: catchGPSLat, lng: catchGPSLng
+    }]);
+    if (!error) { closeCatchModal(); loadCatches(); alert('✅ ' + species + ' logged!'); }
+    else alert('Error saving catch: ' + error.message);
+  }
+  if (btn) { btn.textContent = '🐟 Save Catch'; btn.disabled = false; }
+}
+
 async function loadCatches() {
   if (!currentUser) return;
   const { data } = await _sb.from('catches').select('*').order('created_at', { ascending:false });
@@ -2600,8 +2737,6 @@ function updateCompass(e) {
 }
 
 // ══ SAVE LOCATION ══
-// GPS for catch logging
-let catchGPSLat = null, catchGPSLng = null;
 function getCatchGPS() {
   const btn = document.getElementById('gpsBtn');
   const status = document.getElementById('gpsStatus');
