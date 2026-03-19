@@ -2391,7 +2391,7 @@ function viewOnMap(lat, lng) {
   if (map) map.flyTo({ center:[lng, lat], zoom:16, duration:1200 });
 }
 
-async async function deleteCatch(id) {
+async function deleteCatch(id) {
   if (!confirm('Delete this catch?')) return;
   await _sb.from('catches').delete().eq('id', id);
   loadCatches();
