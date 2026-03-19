@@ -740,40 +740,65 @@ canvas { display: block; }
     <div class="screen" id="planScreen">
       <div class="page-wrap">
         <div class="page-title">📅 Trip Planner</div>
-        <div class="page-sub">7-day forecast · Solunar feeding times · Tides</div>
+        <div class="page-sub">7-day forecast · Fishing activity · Tides · Moon · Category breakdown</div>
 
-        <!-- 7-day forecast -->
-        <div class="forecast-strip" id="forecastStrip"></div>
+        <!-- Day selector tabs -->
+        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px;" id="dayTabs"></div>
 
-        <div class="plan-grid">
-          <!-- Solunar -->
-          <div class="card">
-            <div class="card-title">🐟 Fish Activity — Solunar</div>
-            <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
-              <div style="text-align:center;">
-                <div id="solScore" style="font-family:'Syne',sans-serif;font-size:44px;font-weight:900;color:var(--accent);line-height:1;">—</div>
-                <div id="solLabel" style="font-size:11px;color:var(--text3);margin-top:2px;">Loading...</div>
-              </div>
-              <div style="flex:1;">
-                <div class="solunar-times">
-                  <div class="solunar-major">
-                    <div class="sol-label sol-major-label">Major</div>
-                    <div id="majorTimes" class="sol-time">—</div>
-                  </div>
-                  <div class="solunar-minor">
-                    <div class="sol-label sol-minor-label">Minor</div>
-                    <div id="minorTimes" class="sol-time">—</div>
-                  </div>
+        <!-- Selected day detail -->
+        <div id="dayDetail" style="margin-bottom:24px;"></div>
+
+        <!-- 7-day overview table -->
+        <div class="card" style="margin-bottom:20px;overflow-x:auto;">
+          <div class="card-title">📊 7-Day Overview</div>
+          <table style="width:100%;border-collapse:collapse;min-width:600px;" id="weekTable">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border);">
+                <th style="text-align:left;padding:8px;font-size:11px;color:var(--text3);font-weight:600;">DAY</th>
+                <th style="padding:8px;font-size:11px;color:var(--text3);font-weight:600;">WEATHER</th>
+                <th style="padding:8px;font-size:11px;color:var(--text3);font-weight:600;">WIND</th>
+                <th style="padding:8px;font-size:11px;color:var(--text3);font-weight:600;">SWELL</th>
+                <th style="padding:8px;font-size:11px;color:var(--accent);font-weight:600;">🚤 BOAT</th>
+                <th style="padding:8px;font-size:11px;color:var(--green);font-weight:600;">🚶 LAND</th>
+                <th style="padding:8px;font-size:11px;color:var(--purple);font-weight:600;">🎣 GAME</th>
+                <th style="padding:8px;font-size:11px;color:var(--yellow);font-weight:600;">🦐 PRAWNS</th>
+                <th style="padding:8px;font-size:11px;color:var(--text3);font-weight:600;">🌙 MOON</th>
+                <th style="padding:8px;font-size:11px;color:var(--text3);font-weight:600;">TIDES</th>
+              </tr>
+            </thead>
+            <tbody id="weekTbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Solunar this week -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title">🐟 Fish Activity — Solunar Forecast</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+            <div style="text-align:center;">
+              <div id="solScore" style="font-family:'Syne',sans-serif;font-size:44px;font-weight:900;color:var(--accent);line-height:1;">—</div>
+              <div id="solLabel" style="font-size:11px;color:var(--text3);margin-top:2px;">Loading...</div>
+            </div>
+            <div style="flex:1;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="solunar-major">
+                  <div class="sol-label sol-major-label">Major Times</div>
+                  <div id="majorTimes" class="sol-time">—</div>
+                </div>
+                <div class="solunar-minor">
+                  <div class="sol-label sol-minor-label">Minor Times</div>
+                  <div id="minorTimes" class="sol-time">—</div>
                 </div>
               </div>
             </div>
-            <canvas id="solunarCanvas"></canvas>
-            <div style="font-size:10px;color:var(--text3);margin-top:6px;text-align:center;">Based on solunar theory · Major & minor feeding windows</div>
           </div>
+          <canvas id="solunarCanvas"></canvas>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px;text-align:center;">Drag the orange line to see activity at any time · Based on solunar theory</div>
+        </div>
 
+        <div class="plan-grid">
           <!-- Tides -->
           <div class="card">
-            <div class="card-title">🌊 Tides</div>
+            <div class="card-title">🌊 Tides — Today</div>
             <canvas id="tideCanvas"></canvas>
             <div class="tide-stats">
               <div class="tide-stat">
@@ -813,10 +838,9 @@ canvas { display: block; }
           <!-- Save Location -->
           <div class="card">
             <div class="card-title">📍 Save Location</div>
-            <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Use the compass and GPS save button on the <strong>Map screen</strong>. Your saved spots appear as green dots on the map.</p>
+            <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Use the compass and GPS save button on the <strong>Map screen</strong>.</p>
             <button onclick="showScreen('mapScreen',null);setMobActive('mob-map');" style="width:100%;padding:10px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗺 Go to Map</button>
           </div>
-
         </div>
       </div>
     </div>
@@ -1350,7 +1374,7 @@ function startApp(user) {
   fetchConditions();
   updateScores();
   updateMoon();
-  buildForecastStrip();
+  build7DayPlan();
   buildSolunar();
   buildTides();
   loadCatches();
@@ -1365,7 +1389,7 @@ function showScreen(id, btn) {
   document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (id === 'planScreen') { setTimeout(() => { buildSolunar(); buildTides(); updateMoon(); buildForecastStrip(); initSolunarDrag(); }, 100); }
+  if (id === 'planScreen') { setTimeout(() => { build7DayPlan(); buildSolunar(); buildTides(); updateMoon(); initSolunarDrag(); buildFishWindows(); }, 100); }
   if (id === 'catchScreen') loadCatches();
 }
 
@@ -2208,52 +2232,242 @@ function initSolunarDrag() {
 }
 
 // ══ 7-DAY FORECAST ══
+let weekForecastData = null;
+let selectedDay = 0;
+
 async function buildForecastStrip() {
-  const strip = document.getElementById('forecastStrip');
-  if (!strip) return;
-  strip.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:10px;">Loading forecast...</div>';
+  // This is now handled by build7DayPlan
+}
+
+function getDayScore(wind, waveM, moonPhase, type) {
+  const sst = realSST || 18;
+  const moonPhaseVal = moonPhase;
+  const distNew = Math.abs(moonPhaseVal);
+  const distFull = Math.abs(moonPhaseVal - 0.5);
+  const moonDay = Math.round((1 - Math.min(distNew, distFull) * 4) * 20);
+  const month = new Date().getMonth() + 1;
+
+  if (type === 'game') {
+    const sstOk = sst >= 20 ? 30 : sst >= 18 ? 15 : 5;
+    const waveOk = waveM < 1.0 ? 25 : waveM < 1.5 ? 15 : waveM < 2.0 ? 8 : 2;
+    const windOk = wind < 12 ? 20 : wind < 18 ? 12 : wind < 25 ? 6 : 2;
+    const seasonal = (month >= 10 || month <= 4) ? 15 : 5;
+    return Math.min(99, Math.max(15, sstOk + waveOk + windOk + seasonal + moonDay * 0.3));
+  }
+  if (type === 'prawn') {
+    const sstOk = sst >= 18 ? 25 : 10;
+    const waveOk = waveM < 0.5 ? 20 : waveM < 1.0 ? 12 : 4;
+    const windOk = wind < 10 ? 15 : wind < 15 ? 8 : 3;
+    return Math.min(99, Math.max(15, moonDay + sstOk + waveOk + windOk));
+  }
+  if (type === 'land') {
+    // surf beach component
+    const swellOk = waveM >= 0.3 && waveM <= 1.5 ? 25 : 10;
+    const windOk = wind < 15 ? 22 : wind < 20 ? 14 : 6;
+    const sstOk = sst >= 15 ? 18 : 8;
+    return Math.min(99, Math.max(15, swellOk + windOk + sstOk + moonDay * 0.5));
+  }
+  // boat / inshore
+  const waveOk = waveM < 0.5 ? 28 : waveM < 1.0 ? 22 : waveM < 1.5 ? 12 : 4;
+  const windOk = wind < 8 ? 28 : wind < 15 ? 20 : wind < 20 ? 10 : 3;
+  const sstOk = sst >= 16 && sst <= 22 ? 22 : sst >= 14 ? 12 : 5;
+  return Math.min(99, Math.max(15, waveOk + windOk + sstOk + moonDay * 0.6));
+}
+
+function getMoonEmoji(phase) {
+  if (phase < 0.033 || phase > 0.967) return '🌑';
+  if (phase < 0.133) return '🌒';
+  if (phase < 0.233) return '🌓';
+  if (phase < 0.367) return '🌔';
+  if (phase < 0.533) return '🌕';
+  if (phase < 0.633) return '🌖';
+  if (phase < 0.733) return '🌗';
+  return '🌘';
+}
+
+function getTideForDay(dayOffset) {
+  // Tide shifts ~50min per day
+  const baseHW = 17.75; // ~5:45 PM today
+  const baseLW = 11.75; // ~11:45 AM today
+  const shift = dayOffset * 0.83; // hours shift per day
+  const hw = (baseHW + shift) % 24;
+  const lw = (baseLW + shift) % 24;
+  const fmtH = h => {
+    const hh = Math.floor(h) % 24, mm = Math.round((h % 1) * 60);
+    const ap = hh >= 12 ? 'PM' : 'AM', d = hh > 12 ? hh - 12 : hh === 0 ? 12 : hh;
+    return `${d}:${String(mm).padStart(2, '0')} ${ap}`;
+  };
+  return `${fmtH(hw)} / ${fmtH(lw)}`;
+}
+
+async function build7DayPlan() {
+  const tabs = document.getElementById('dayTabs');
+  const tbody = document.getElementById('weekTbody');
+  if (!tabs || !tbody) return;
+
+  tabs.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px;">Loading...</div>';
+  tbody.innerHTML = '<tr><td colspan="10" style="padding:16px;color:var(--text3);text-align:center;">Loading forecast...</td></tr>';
 
   try {
-    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.88&longitude=147.98&daily=weathercode,wind_speed_10m_max&wind_speed_unit=kn&timezone=Australia/Sydney&forecast_days=7');
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.88&longitude=147.98&daily=weathercode,wind_speed_10m_max,wind_direction_10m_dominant,wave_height_max&wind_speed_unit=kn&timezone=Australia/Sydney&forecast_days=7');
     const d = await r.json();
-    const days = d.daily;
-    const icons = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'🌨',80:'🌦',81:'🌧',95:'⛈'};
-    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    // Also fetch wave data
+    let waveData = null;
+    try {
+      const wr = await fetch('https://marine-api.open-meteo.com/v1/marine?latitude=-37.88&longitude=147.98&daily=wave_height_max&timezone=Australia/Sydney&forecast_days=7');
+      const wd = await wr.json();
+      waveData = wd.daily;
+    } catch(e) {}
 
-    strip.innerHTML = days.time.map((date, i) => {
+    const days = d.daily;
+    const icons = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',80:'🌦',81:'🌧',95:'⛈'};
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    weekForecastData = days.time.map((date, i) => {
       const d2 = new Date(date);
       const name = i===0?'Today':i===1?'Tomorrow':dayNames[d2.getDay()];
       const icon = icons[days.weathercode[i]] || '🌤';
-      const wind = Math.round(days.wind_speed_10m_max[i]);
-      // Score varies by day
-      const moonPhaseDay = ((getMoonPhase() + i*0.034)%1);
-      const distNew = Math.abs(moonPhaseDay);
-      const distFull = Math.abs(moonPhaseDay-0.5);
-      const moonDay = Math.round((1-Math.min(distNew,distFull)*4)*20);
-      const windScore = wind<8?28:wind<12?22:wind<18?14:wind<25?7:3;
-      // Use same SST/wave base as map score for consistency
-      const sstBase = realSST ? (realSST>=16&&realSST<=22?22:realSST>=14?14:6) : 14;
-      const waveBase = realWave ? (realWave<0.5?22:realWave<1.0?18:realWave<1.5?10:4) : 18;
-      const score = Math.min(95, Math.max(25, windScore + moonDay + sstBase*0.4 + waveBase*0.3 + Math.round(Math.sin(i*1.3)*5+5)));
-      const sc = score>=75?'score-great':score>=60?'score-good':score>=45?'score-fair':'score-poor';
-      const lbl = score>=75?'GREAT':score>=60?'GOOD':score>=45?'FAIR':'POOR';
-      return `<div class="forecast-day ${i===0?'today':''}">
-        <div class="forecast-day-name">${name}</div>
-        <div class="forecast-day-date">${d2.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d2.getMonth()]}</div>
-        <div class="forecast-day-icon">${icon}</div>
-        <div class="forecast-day-score ${sc}">${score}</div>
-        <div class="forecast-day-lbl ${sc}">${lbl}</div>
-        <div class="forecast-meta">💨 ${wind}kn</div>
+      const wind = Math.round(days.wind_speed_10m_max[i] || 0);
+      const wave = waveData ? parseFloat((waveData.wave_height_max[i] || 0.8).toFixed(1)) : 0.8;
+      const moonPhase = (getMoonPhase() + i * 0.034) % 1;
+      const moonEmoji = getMoonEmoji(moonPhase);
+      const tides = getTideForDay(i);
+      const boatScore = getDayScore(wind, wave, moonPhase, 'boat');
+      const landScore = getDayScore(wind, wave, moonPhase, 'land');
+      const gameScore = getDayScore(wind, wave, moonPhase, 'game');
+      const prawnScore = getDayScore(wind, wave, moonPhase, 'prawn');
+      return { date, name, icon, wind, wave, moonPhase, moonEmoji, tides, boatScore, landScore, gameScore, prawnScore, d2, months };
+    });
+
+    // Build day tabs
+    tabs.innerHTML = weekForecastData.map((day, i) => {
+      const best = Math.max(day.boatScore, day.landScore, day.gameScore, day.prawnScore);
+      const sc = best >= 75 ? '#16a34a' : best >= 60 ? '#f97316' : best >= 45 ? '#d97706' : '#dc2626';
+      return `<div onclick="selectDay(${i})" id="tab-${i}" style="flex-shrink:0;min-width:80px;padding:10px 12px;border-radius:10px;border:1.5px solid ${i===0?'var(--accent)':'var(--border)'};background:${i===0?'rgba(0,102,204,.08)':'var(--card)'};cursor:pointer;text-align:center;transition:all .2s;">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);">${day.name}</div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">${day.d2.getDate()} ${day.months[day.d2.getMonth()]}</div>
+        <div style="font-size:20px;">${day.icon}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;color:${sc};">${best}</div>
+        <div style="font-size:9px;font-weight:700;color:${sc};">${best>=75?'GREAT':best>=60?'GOOD':best>=45?'FAIR':'POOR'}</div>
       </div>`;
     }).join('');
+
+    // Build week table
+    tbody.innerHTML = weekForecastData.map((day, i) => {
+      const scoreCell = (score) => {
+        const sc = score>=75?'#16a34a':score>=60?'#f97316':score>=45?'#d97706':'#dc2626';
+        const lbl = score>=75?'GREAT':score>=60?'GOOD':score>=45?'FAIR':'POOR';
+        return `<td style="padding:10px 8px;text-align:center;"><div style="font-weight:900;font-size:16px;color:${sc};">${score}</div><div style="font-size:9px;color:${sc};font-weight:700;">${lbl}</div></td>`;
+      };
+      return `<tr style="border-bottom:1px solid var(--bg2);cursor:pointer;" onclick="selectDay(${i})">
+        <td style="padding:10px 8px;white-space:nowrap;">
+          <div style="font-weight:700;font-size:13px;color:var(--text);">${day.name}</div>
+          <div style="font-size:11px;color:var(--text3);">${day.d2.getDate()} ${day.months[day.d2.getMonth()]}</div>
+        </td>
+        <td style="padding:10px 8px;text-align:center;font-size:20px;">${day.icon}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:var(--text2);">💨 ${day.wind}kn</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:600;color:var(--text2);">🌊 ${day.wave}m</td>
+        ${scoreCell(day.boatScore)}
+        ${scoreCell(day.landScore)}
+        ${scoreCell(day.gameScore)}
+        ${scoreCell(day.prawnScore)}
+        <td style="padding:10px 8px;text-align:center;font-size:18px;">${day.moonEmoji}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:10px;color:var(--text3);">${day.tides}</td>
+      </tr>`;
+    }).join('');
+
+    // Select today
+    selectDay(0);
+
   } catch(e) {
-    strip.innerHTML = '<div style="color:var(--text3);font-size:13px;">Could not load forecast</div>';
+    console.log('Forecast error:', e);
+    tbody.innerHTML = '<tr><td colspan="10" style="padding:16px;color:var(--text3);text-align:center;">Could not load forecast. Check connection.</td></tr>';
   }
+}
+
+function selectDay(i) {
+  selectedDay = i;
+  if (!weekForecastData) return;
+  const day = weekForecastData[i];
+
+  // Update tab styles
+  weekForecastData.forEach((_, idx) => {
+    const tab = document.getElementById('tab-' + idx);
+    if (!tab) return;
+    tab.style.borderColor = idx === i ? 'var(--accent)' : 'var(--border)';
+    tab.style.background = idx === i ? 'rgba(0,102,204,.08)' : 'var(--card)';
+  });
+
+  // Build day detail
+  const detail = document.getElementById('dayDetail');
+  if (!detail) return;
+
+  const catBlock = (type, emoji, label, score, color, tips) => {
+    const sc = score>=75?'#16a34a':score>=60?'#f97316':score>=45?'#d97706':'#dc2626';
+    const lbl = score>=75?'Excellent':score>=60?'Good':score>=45?'Fair':'Poor';
+    const barW = score;
+    return `<div style="background:var(--card);border:1.5px solid ${color}22;border-radius:10px;padding:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">${emoji} ${label}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:${sc};">${score}</div>
+      </div>
+      <div style="height:6px;background:var(--bg2);border-radius:3px;margin-bottom:8px;">
+        <div style="height:100%;width:${barW}%;background:${sc};border-radius:3px;transition:width .5s;"></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:${sc};margin-bottom:4px;">${lbl} conditions</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.5;">${tips}</div>
+    </div>`;
+  };
+
+  const boatTips = day.boatScore >= 75 ? 'Excellent day on the water. Head out early for best results.' :
+    day.boatScore >= 60 ? 'Good conditions. Dawn and dusk sessions recommended.' :
+    day.boatScore >= 45 ? 'Fair conditions. Sheltered areas like Cunninghame Arm will fish better.' :
+    'Tough conditions. Stay in sheltered spots or consider land-based fishing.';
+
+  const landTips = day.landScore >= 75 ? 'Great day for jetties and rock walls. Bream and trevally should be active.' :
+    day.landScore >= 60 ? 'Good land-based session. Try Myer St Jetty or Cunninghame Arm Footbridge.' :
+    day.landScore >= 45 ? 'Moderate conditions. Early morning on the rock wall worth a shot.' :
+    'Challenging conditions for land-based. Covered jetty spots best option.';
+
+  const gameTips = day.gameScore >= 75 ? 'Offshore conditions look good. Worth the run to the shelf for tuna.' :
+    day.gameScore >= 60 ? 'Passable offshore day. 6 Mile Reef a safer option than the shelf.' :
+    day.gameScore >= 45 ? 'Marginal offshore conditions. Stay close to port.' :
+    'Stay inshore. Offshore conditions not suitable.';
+
+  const prawnTips = day.prawnScore >= 75 ? 'Excellent prawning conditions tonight. Head out after dark with dip nets.' :
+    day.prawnScore >= 60 ? 'Good night for prawns. North Arm and Cunninghame Arm worth trying.' :
+    day.prawnScore >= 45 ? 'Moderate prawning. New/full moon will improve results significantly.' :
+    'Poor prawning conditions. Wait for a better moon phase.';
+
+  // Tide for this day
+  const tideInfo = day.tides;
+
+  detail.innerHTML = `
+    <div style="background:var(--card);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="font-size:40px;">${day.icon}</div>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:var(--text);">${day.name} — ${day.d2.getDate()} ${day.months[day.d2.getMonth()]}</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">💨 ${day.wind}kn · 🌊 ${day.wave}m · ${day.moonEmoji} ${day.tides}</div>
+        </div>
+        <div style="margin-left:auto;text-align:center;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:2px;">BEST ACTIVITY</div>
+          <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:900;color:${Math.max(day.boatScore,day.landScore,day.gameScore,day.prawnScore)>=75?'#16a34a':Math.max(day.boatScore,day.landScore,day.gameScore,day.prawnScore)>=60?'#f97316':'#dc2626'};">${Math.max(day.boatScore, day.landScore, day.gameScore, day.prawnScore)}</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      ${catBlock('boat','🚤','Boat Fishing', day.boatScore, '#0066cc', boatTips)}
+      ${catBlock('land','🚶','Land-Based', day.landScore, '#16a34a', landTips)}
+      ${catBlock('game','🎣','Game Fishing', day.gameScore, '#7c3aed', gameTips)}
+      ${catBlock('prawn','🦐','Prawns & Crabs', day.prawnScore, '#d97706', prawnTips)}
+    </div>`;
 }
 
 // ══ FISH BEST WINDOWS ══
 function updateMoon2() { updateMoon(); }
-window.addEventListener('load', () => {
+function buildFishWindows() {
   const fw = document.getElementById('fishWindows');
   if (fw) {
     const mt = getSolunarHour();
@@ -2267,7 +2481,9 @@ window.addEventListener('load', () => {
       `🌇 <strong>Dusk:</strong> 6:00 PM – 8:00 PM`,
     ].join('<br>');
   }
-});
+}
+
+window.addEventListener('load', () => { buildFishWindows(); });
 
 // ══ CATCHES ══
 let allCatches = [];
