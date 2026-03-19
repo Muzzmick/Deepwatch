@@ -2692,7 +2692,7 @@ async function identifyFromCatch() {
     const mtype = catchPhotoBase64.split(';')[0].split(':')[1];
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01'},
+      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body: JSON.stringify({
         model:'claude-haiku-4-5-20251001', max_tokens:100,
         messages:[{ role:'user', content:[
@@ -2920,7 +2920,7 @@ async function identifyFish(input) {
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
-        headers:{ 'Content-Type':'application/json', 'x-api-key':CLAUDE_KEY, 'anthropic-version':'2023-06-01' },
+        headers:{ 'Content-Type':'application/json', 'x-api-key':CLAUDE_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
         body: JSON.stringify({
           model:'claude-haiku-4-5-20251001', max_tokens:600,
           messages:[{ role:'user', content:[
@@ -2994,7 +2994,7 @@ Be concise, practical, Australian tone. Answer in 3-5 sentences max unless detai
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
-      headers:{ 'Content-Type':'application/json', 'x-api-key':CLAUDE_KEY, 'anthropic-version':'2023-06-01' },
+      headers:{ 'Content-Type':'application/json', 'x-api-key':CLAUDE_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
       body: JSON.stringify({
         model:'claude-haiku-4-5-20251001', max_tokens:400,
         system, messages:[{ role:'user', content:q }]
