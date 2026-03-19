@@ -1002,13 +1002,31 @@ canvas { display: block; }
       <div class="mob-label">Catches</div>
     </div>
     <button class="mob-ai" onclick="toggleAI()">🤖</button>
-    <div class="mob-tab" id="mob-plan" onclick="showScreen('planScreen',null);setMobActive('mob-plan')">
-      <div class="mob-icon">📅</div>
-      <div class="mob-label">Plan</div>
+    <div class="mob-tab" id="mob-fishid" onclick="showScreen('fishIdScreen',null);setMobActive('mob-fishid')">
+      <div class="mob-icon">🐟</div>
+      <div class="mob-label">Fish ID</div>
     </div>
-    <div class="mob-tab" id="mob-regs" onclick="showScreen('regsScreen',null);setMobActive('mob-regs')">
-      <div class="mob-icon">📖</div>
-      <div class="mob-label">Regs</div>
+    <div class="mob-tab" id="mob-more" onclick="toggleMobMore()">
+      <div class="mob-icon">☰</div>
+      <div class="mob-label">More</div>
+    </div>
+  </div>
+
+  <!-- Mobile More Menu -->
+  <div id="mobMoreMenu" style="display:none;position:fixed;bottom:64px;left:0;right:0;background:var(--card);border-top:1px solid var(--border);z-index:99;padding:12px;box-shadow:0 -4px 20px rgba(0,0,0,.15);">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div onclick="showScreen('planScreen',null);setMobActive('mob-more');closeMobMore();" style="background:var(--bg2);border-radius:10px;padding:14px;text-align:center;cursor:pointer;border:1px solid var(--border);">
+        <div style="font-size:24px;">📅</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-top:4px;">Plan</div>
+      </div>
+      <div onclick="showScreen('regsScreen',null);setMobActive('mob-more');closeMobMore();" style="background:var(--bg2);border-radius:10px;padding:14px;text-align:center;cursor:pointer;border:1px solid var(--border);">
+        <div style="font-size:24px;">📖</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-top:4px;">Regs</div>
+      </div>
+      <div onclick="openCatchModal();closeMobMore();" style="background:var(--bg2);border-radius:10px;padding:14px;text-align:center;cursor:pointer;border:1px solid var(--border);">
+        <div style="font-size:24px;">🐠</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-top:4px;">Log Catch</div>
+      </div>
     </div>
   </div>
 
@@ -1415,6 +1433,28 @@ function setMobActive(id) {
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
 }
+
+function toggleMobMore() {
+  const menu = document.getElementById('mobMoreMenu');
+  if (!menu) return;
+  const isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'block';
+  setMobActive(isOpen ? '' : 'mob-more');
+}
+
+function closeMobMore() {
+  const menu = document.getElementById('mobMoreMenu');
+  if (menu) menu.style.display = 'none';
+}
+
+// Close more menu when tapping elsewhere
+document.addEventListener('click', e => {
+  const menu = document.getElementById('mobMoreMenu');
+  const moreBtn = document.getElementById('mob-more');
+  if (menu && menu.style.display !== 'none' && !menu.contains(e.target) && !moreBtn?.contains(e.target)) {
+    closeMobMore();
+  }
+});
 
 // ══ MAP ══
 function initMap() {
