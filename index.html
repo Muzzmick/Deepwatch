@@ -442,6 +442,12 @@ body {
   .map-sidebar { overflow-y: auto; }
 }
 
+/* ══ WELCOME ══ */
+.welcome-step { display: none; }
+.welcome-step.active { display: block; }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all .3s; }
+.step-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+
 /* ══ UTILS ══ */
 .hidden { display: none !important; }
 .loading { opacity: .5; }
@@ -465,6 +471,171 @@ canvas { display: block; }
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
     <div class="login-msg" id="loginMsg"></div>
     <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ══ WELCOME ONBOARDING ══ -->
+<div id="welcomeScreen" style="display:none;position:fixed;inset:0;z-index:900;background:var(--bg);overflow-y:auto;">
+  <div style="max-width:480px;margin:0 auto;padding:0 20px 40px;">
+
+    <!-- Step indicators -->
+    <div style="display:flex;justify-content:center;gap:8px;padding:24px 0 0;">
+      <div class="step-dot active" id="sd0"></div>
+      <div class="step-dot" id="sd1"></div>
+      <div class="step-dot" id="sd2"></div>
+      <div class="step-dot" id="sd3"></div>
+      <div class="step-dot" id="sd4"></div>
+    </div>
+
+    <!-- Step 0: Welcome -->
+    <div class="welcome-step active" id="step0">
+      <div style="text-align:center;padding:40px 0 32px;">
+        <div style="font-size:72px;margin-bottom:16px;">🎣</div>
+        <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:900;color:var(--accent);margin-bottom:8px;">DeepWatch</div>
+        <div style="font-size:16px;color:var(--text2);margin-bottom:4px;">Gippsland Lakes Fishing Intelligence</div>
+        <div style="font-size:13px;color:var(--text3);">The smartest fishing app for East Gippsland</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
+        <div style="display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:12px;padding:14px;">
+          <div style="font-size:28px;flex-shrink:0;">🗺</div>
+          <div><div style="font-weight:700;font-size:14px;color:var(--text);">Live Satellite Map</div><div style="font-size:12px;color:var(--text3);">57 fishing spots across all of Gippsland Lakes</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:12px;padding:14px;">
+          <div style="font-size:28px;flex-shrink:0;">🤖</div>
+          <div><div style="font-weight:700;font-size:14px;color:var(--text);">Real AI Fishing Advice</div><div style="font-size:12px;color:var(--text3);">Ask Claude anything about today's conditions</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:12px;padding:14px;">
+          <div style="font-size:28px;flex-shrink:0;">📊</div>
+          <div><div style="font-weight:700;font-size:14px;color:var(--text);">Smart Fishing Score</div><div style="font-size:12px;color:var(--text3);">Real SST, swell, wind, moon & solunar data</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:12px;padding:14px;">
+          <div style="font-size:28px;flex-shrink:0;">🐟</div>
+          <div><div style="font-weight:700;font-size:14px;color:var(--text);">AI Fish Identifier</div><div style="font-size:12px;color:var(--text3);">Photo → species + regulations instantly</div></div>
+        </div>
+      </div>
+      <button onclick="nextStep()" style="width:100%;padding:16px;background:var(--accent);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">Get Started →</button>
+    </div>
+
+    <!-- Step 1: Map & Spots -->
+    <div class="welcome-step" id="step1">
+      <div style="text-align:center;padding:32px 0 24px;">
+        <div style="font-size:64px;margin-bottom:12px;">🗺</div>
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Find the Best Spots</div>
+        <div style="font-size:14px;color:var(--text3);line-height:1.6;">57 fishing spots across Gippsland Lakes, ranked by AI every 5 minutes based on real conditions.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:32px;">
+        <div style="background:var(--bg2);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#0066cc;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:13px;flex-shrink:0;">#1</div>
+          <div><div style="font-weight:700;font-size:13px;color:var(--text);">🚤 Boat spots</div><div style="font-size:11px;color:var(--text3);">Blue circles — ranked by today's conditions</div></div>
+        </div>
+        <div style="background:var(--bg2);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:13px;flex-shrink:0;">#1</div>
+          <div><div style="font-weight:700;font-size:13px;color:var(--text);">🚶 Land-based spots</div><div style="font-size:11px;color:var(--text3);">Green circles — jetties, rock walls, beaches</div></div>
+        </div>
+        <div style="background:var(--bg2);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#7c3aed;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:13px;flex-shrink:0;">#1</div>
+          <div><div style="font-weight:700;font-size:13px;color:var(--text);">🎣 Game fishing</div><div style="font-size:11px;color:var(--text3);">Purple circles — offshore Bass Strait grounds</div></div>
+        </div>
+        <div style="background:var(--bg2);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#d97706;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:13px;flex-shrink:0;">#1</div>
+          <div><div style="font-weight:700;font-size:13px;color:var(--text);">🦐 Prawning & crabbing</div><div style="font-size:11px;color:var(--text3);">Orange circles — best at night on full moon</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="prevStep()" style="padding:16px 20px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">← Back</button>
+        <button onclick="nextStep()" style="flex:1;padding:16px;background:var(--accent);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: AI & Features -->
+    <div class="welcome-step" id="step2">
+      <div style="text-align:center;padding:32px 0 24px;">
+        <div style="font-size:64px;margin-bottom:12px;">🤖</div>
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Your AI Fishing Guide</div>
+        <div style="font-size:14px;color:var(--text3);line-height:1.6;">Three AI systems working together to help you catch more fish.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:32px;">
+        <div style="background:var(--bg2);border-radius:12px;padding:16px;">
+          <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;">📊 AI Fishing Score (0-100)</div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.6;">Calculates in real-time from NOAA sea temp, live swell, wind, moon phase and solunar data. Each spot type (boat, land, game, prawns) scored differently.</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:12px;padding:16px;">
+          <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;">💬 AI Chat</div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.6;">Ask anything — "what's biting today?", "is the bar safe?", "best spot for mulloway tonight?". Uses today's live conditions in every answer.</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:12px;padding:16px;">
+          <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;">🐟 Fish Identifier</div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.6;">Take a photo of any fish → instant species ID + Victorian size limits and bag limits. Tap Fish ID in the menu.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="prevStep()" style="padding:16px 20px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">← Back</button>
+        <button onclick="nextStep()" style="flex:1;padding:16px;background:var(--accent);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Permissions -->
+    <div class="welcome-step" id="step3">
+      <div style="text-align:center;padding:32px 0 24px;">
+        <div style="font-size:64px;margin-bottom:12px;">📍</div>
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:var(--text);margin-bottom:8px;">Enable Features</div>
+        <div style="font-size:14px;color:var(--text3);line-height:1.6;">DeepWatch works best with these permissions. You can always change them later in your browser settings.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
+        <div style="background:var(--bg2);border-radius:12px;padding:16px;border:1.5px solid var(--border);" id="locPermCard">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="font-size:24px;">📍</div>
+              <div style="font-weight:700;font-size:14px;color:var(--text);">Location</div>
+            </div>
+            <div id="locPermStatus" style="font-size:12px;color:var(--text3);">Not granted</div>
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5;">Used to save your fishing spots on the map, show your position, and log exact GPS catch locations.</div>
+          <button onclick="requestLocation()" id="locPermBtn" style="width:100%;padding:10px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📍 Allow Location</button>
+        </div>
+        <div style="background:var(--bg2);border-radius:12px;padding:16px;border:1.5px solid var(--border);" id="camPermCard">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="font-size:24px;">📷</div>
+              <div style="font-weight:700;font-size:14px;color:var(--text);">Camera</div>
+            </div>
+            <div id="camPermStatus" style="font-size:12px;color:var(--text3);">Not granted</div>
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5;">Used to take photos of fish for AI identification and to attach photos to your catch log.</div>
+          <button onclick="requestCamera()" id="camPermBtn" style="width:100%;padding:10px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📷 Allow Camera</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="prevStep()" style="padding:16px 20px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">← Back</button>
+        <button onclick="nextStep()" style="flex:1;padding:16px;background:var(--accent);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: All done -->
+    <div class="welcome-step" id="step4">
+      <div style="text-align:center;padding:48px 0 32px;">
+        <div style="font-size:72px;margin-bottom:16px;">🎣</div>
+        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:var(--accent);margin-bottom:12px;">You're ready to fish!</div>
+        <div style="font-size:14px;color:var(--text3);line-height:1.8;margin-bottom:32px;">
+          DeepWatch is watching the conditions 24/7.<br>
+          Check the score before you head out.<br>
+          Log your catches to build your history.<br>
+          Ask the AI anything, anytime.
+        </div>
+        <div style="background:rgba(0,102,204,.08);border:1.5px solid var(--accent);border-radius:12px;padding:16px;margin-bottom:32px;text-align:left;">
+          <div style="font-weight:700;font-size:13px;color:var(--accent);margin-bottom:8px;">🚀 Quick tips:</div>
+          <div style="font-size:12px;color:var(--text2);line-height:2;">
+            • Tap any map marker to see species and depth<br>
+            • Filter spots by Boat / Land / Game / Prawns<br>
+            • Drag the solunar chart line to plan your session<br>
+            • Use ✏️ Edit Spot Positions to fix marker locations<br>
+            • Check bar crossing status before heading offshore
+          </div>
+        </div>
+        <button onclick="finishWelcome()" style="width:100%;padding:18px;background:var(--accent);color:white;border:none;border-radius:12px;font-size:18px;font-weight:900;cursor:pointer;font-family:'Syne',sans-serif;">Let's Go Fishing! 🎣</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1358,6 +1529,72 @@ async function doLogout() {
   document.getElementById('loginWall').style.display = 'flex';
 }
 
+// ══ WELCOME ONBOARDING ══
+let currentStep = 0;
+const totalSteps = 5;
+
+function showWelcome() {
+  document.getElementById('welcomeScreen').style.display = 'block';
+  goToStep(0);
+}
+
+function finishWelcome() {
+  document.getElementById('welcomeScreen').style.display = 'none';
+  localStorage.setItem('dw_welcomed', '1');
+}
+
+function goToStep(n) {
+  currentStep = n;
+  document.querySelectorAll('.welcome-step').forEach((s,i) => s.classList.toggle('active', i===n));
+  document.querySelectorAll('.step-dot').forEach((d,i) => d.classList.toggle('active', i===n));
+}
+
+function nextStep() { if (currentStep < totalSteps-1) goToStep(currentStep+1); }
+function prevStep() { if (currentStep > 0) goToStep(currentStep-1); }
+
+async function requestLocation() {
+  const btn = document.getElementById('locPermBtn');
+  const status = document.getElementById('locPermStatus');
+  const card = document.getElementById('locPermCard');
+  btn.textContent = 'Requesting...'; btn.disabled = true;
+  try {
+    await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, {timeout:8000}));
+    status.textContent = '✅ Granted';
+    status.style.color = 'var(--green)';
+    btn.textContent = '✅ Location allowed';
+    btn.style.background = 'var(--green)';
+    card.style.borderColor = 'var(--green)';
+  } catch(e) {
+    status.textContent = '❌ Denied';
+    btn.textContent = 'Enable in browser settings';
+    btn.disabled = false;
+    btn.style.background = 'var(--bg3)';
+    btn.style.color = 'var(--text3)';
+  }
+}
+
+async function requestCamera() {
+  const btn = document.getElementById('camPermBtn');
+  const status = document.getElementById('camPermStatus');
+  const card = document.getElementById('camPermCard');
+  btn.textContent = 'Requesting...'; btn.disabled = true;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    stream.getTracks().forEach(t => t.stop());
+    status.textContent = '✅ Granted';
+    status.style.color = 'var(--green)';
+    btn.textContent = '✅ Camera allowed';
+    btn.style.background = 'var(--green)';
+    card.style.borderColor = 'var(--green)';
+  } catch(e) {
+    status.textContent = '❌ Denied';
+    btn.textContent = 'Enable in browser settings';
+    btn.disabled = false;
+    btn.style.background = 'var(--bg3)';
+    btn.style.color = 'var(--text3)';
+  }
+}
+
 window.addEventListener('load', async () => {
   const { data: { session } } = await _sb.auth.getSession();
   if (session?.user) startApp(session.user);
@@ -1370,6 +1607,10 @@ function startApp(user) {
   document.getElementById('app').style.display = 'flex';
   const name = user.email.split('@')[0];
   document.getElementById('userPill').textContent = name;
+  // Show welcome for first-time users
+  if (!localStorage.getItem('dw_welcomed')) {
+    setTimeout(() => showWelcome(), 500);
+  }
   // Init
   setTimeout(initMap, 100);
   buildAreaButtons();
