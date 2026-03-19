@@ -291,9 +291,31 @@ body {
 .card-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
 
 /* ══ CATCH SCREEN ══ */
-#catchScreen { flex-direction: row !important; overflow: hidden; }
-.catch-left { width: 300px; flex-shrink: 0; border-right: 1px solid var(--border); overflow-y: auto; padding: 20px; background: var(--card); display: flex; flex-direction: column; gap: 12px; }
-.catch-right { flex: 1; overflow-y: auto; padding: 20px; }
+#catchScreen { flex-direction: column !important; overflow-y: auto; }
+.catch-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.catch-card-item { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); transition: transform .2s; }
+.catch-card-item:hover { transform: translateY(-2px); box-shadow: var(--shadow2); }
+.catch-card-photo { height: 140px; background: var(--bg2); display: flex; align-items: center; justify-content: center; font-size: 48px; overflow: hidden; position: relative; }
+.catch-card-photo img { width: 100%; height: 100%; object-fit: cover; }
+.catch-card-body { padding: 14px; }
+.catch-card-species { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.catch-card-meta { font-size: 12px; color: var(--text3); margin-bottom: 10px; }
+.catch-card-detail { font-size: 12px; color: var(--text2); display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 10px; }
+.catch-card-actions { display: flex; gap: 6px; }
+.daily-group { margin-bottom: 16px; }
+.daily-header { background: var(--bg2); border-radius: 8px; padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+.daily-header:hover { background: var(--bg3); }
+.daily-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.daily-summary { font-size: 12px; color: var(--text3); }
+.daily-catches { padding: 10px 0; display: none; }
+.daily-catches.open { display: block; }
+.daily-catch-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; background: var(--card); border: 1px solid var(--border); }
+.records-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.record-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; text-align: center; }
+.record-icon { font-size: 32px; margin-bottom: 8px; }
+.record-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 900; color: var(--accent); }
+.record-lbl { font-size: 12px; color: var(--text3); margin-top: 4px; }
+.catch-gps-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: rgba(22,163,74,.1); color: var(--green); border-radius: 4px; font-size: 10px; font-weight: 700; }
 .stat-card { background: var(--bg2); border-radius: 10px; padding: 14px; text-align: center; }
 .stat-num { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 900; color: var(--accent); }
 .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
@@ -665,36 +687,52 @@ canvas { display: block; }
     </div>
 
     <!-- ══ CATCH SCREEN ══ -->
-    <div class="screen" id="catchScreen">
-      <div class="catch-left">
-        <div class="stat-card">
-          <div class="stat-num" id="totalCatches">0</div>
-          <div class="stat-lbl">Total Catches</div>
+    <div class="screen" id="catchScreen" style="overflow-y:auto;">
+      <div style="padding:20px;max-width:1100px;margin:0 auto;width:100%;">
+
+        <!-- Stats bar -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-num" id="totalCatches">0</div>
+            <div class="stat-lbl">Total Catches</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="bestWeight">—</div>
+            <div class="stat-lbl">Best (kg)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="totalWeight">—</div>
+            <div class="stat-lbl">Total (kg)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="topSpecies" style="font-size:14px;">—</div>
+            <div class="stat-lbl">Top Species</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="daysFished">0</div>
+            <div class="stat-lbl">Days Fished</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-num" id="bestWeight">—</div>
-          <div class="stat-lbl">Best Catch (kg)</div>
+
+        <!-- Action bar -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+          <button class="log-btn" onclick="openCatchModal()" style="flex:1;min-width:140px;">🐟 Log a Catch</button>
+          <div style="display:flex;gap:6px;align-items:center;flex:1;min-width:200px;">
+            <input id="catchSearch" placeholder="🔍 Search species, location..." style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;outline:none;" oninput="filterCatches()">
+            <select id="catchFilterSpecies" style="padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;" onchange="filterCatches()">
+              <option value="">All Species</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="setCatchView('cards')" id="viewCards" style="padding:8px 14px;border:1.5px solid var(--accent);border-radius:8px;background:var(--accent);color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Cards</button>
+            <button onclick="setCatchView('daily')" id="viewDaily" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Daily</button>
+            <button onclick="setCatchView('records')" id="viewRecords" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Records</button>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-num" id="topSpecies">—</div>
-          <div class="stat-lbl">Top Species</div>
-        </div>
-        <button class="log-btn" onclick="openCatchModal()">🐟 Log a Catch</button>
-      </div>
-      <div class="catch-right">
-        <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;color:var(--text);">My Catch Log</h2>
-        <div style="overflow-x:auto;">
-          <table class="catch-table">
-            <thead>
-              <tr>
-                <th>Species</th><th>Weight</th><th>Location</th><th>Method</th><th>Date</th><th></th>
-              </tr>
-            </thead>
-            <tbody id="catchTbody">
-              <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px;">No catches logged yet</td></tr>
-            </tbody>
-          </table>
-        </div>
+
+        <!-- Catch content -->
+        <div id="catchContent"></div>
+
       </div>
     </div>
 
@@ -1012,6 +1050,10 @@ canvas { display: block; }
 
     <div class="form-group">
       <label class="form-label">Location</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="getCatchGPS()" id="gpsBtn" style="padding:8px 14px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(0,102,204,.06);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">📍 Get GPS Location</button>
+        <div id="gpsStatus" style="font-size:11px;color:var(--text3);display:flex;align-items:center;"></div>
+      </div>
       <select class="form-input" id="cf_location">
         <optgroup label="🏘 Lakes Entrance">
           <option>Entrance Channel</option><option>Cunninghame Arm</option>
@@ -2211,188 +2253,170 @@ window.addEventListener('load', () => {
 });
 
 // ══ CATCHES ══
+let allCatches = [];
+let catchView = 'cards';
+
+function setCatchView(view) {
+  catchView = view;
+  ['cards','daily','records'].forEach(v => {
+    const btn = document.getElementById('view'+v.charAt(0).toUpperCase()+v.slice(1));
+    if (btn) {
+      btn.style.background = v===view ? 'var(--accent)' : 'var(--bg2)';
+      btn.style.color = v===view ? 'white' : 'var(--text2)';
+      btn.style.borderColor = v===view ? 'var(--accent)' : 'var(--border)';
+    }
+  });
+  renderCatches(allCatches);
+}
+
+function filterCatches() {
+  const search = (document.getElementById('catchSearch')?.value||'').toLowerCase();
+  const species = document.getElementById('catchFilterSpecies')?.value||'';
+  const filtered = allCatches.filter(r => {
+    const matchSearch = !search||(r.species||'').toLowerCase().includes(search)||(r.location||'').toLowerCase().includes(search);
+    const matchSpecies = !species||r.species===species;
+    return matchSearch && matchSpecies;
+  });
+  renderCatches(filtered);
+}
+
+function getSpeciesEmoji(species) {
+  const map = {Snapper:'🎣',Bream:'🐠',Flathead:'🐟',Whiting:'🐡',Mulloway:'🐟',Trevally:'🐠',Salmon:'🐟',Tailor:'🐟',Luderick:'🐟','Gummy Shark':'🦈','Yellowfin Tuna':'🐟','Bluefin Tuna':'🐟','Striped Marlin':'🎣',Sailfish:'🎣','Mahi Mahi':'🐟','School Prawns':'🦐','Blue Swimmer Crab':'🦀'};
+  return Object.entries(map).find(([k]) => (species||'').includes(k))?.[1] || '🐟';
+}
+
+function renderCatches(data) {
+  const el = document.getElementById('catchContent');
+  if (!el) return;
+  if (!data.length) {
+    el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text3)"><div style="font-size:48px;margin-bottom:12px;">🎣</div><div style="font-size:16px;font-weight:600;">No catches logged yet</div><div style="font-size:13px;margin-top:8px;">Tap "Log a Catch" to start your fishing journal</div></div>';
+    return;
+  }
+
+  if (catchView === 'cards') {
+    el.innerHTML = '<div class="catch-card-grid">' + data.map(r => {
+      const date = new Date(r.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+      const time = new Date(r.created_at).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+      const emoji = getSpeciesEmoji(r.species);
+      const sp = (r.species||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
+      const loc = (r.location||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
+      const nt = (r.notes||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
+      const gpsTag = r.lat ? '<span class="catch-gps-badge">📍 GPS</span>' : '';
+      return `<div class="catch-card-item">
+        <div class="catch-card-photo">${emoji}</div>
+        <div class="catch-card-body">
+          <div class="catch-card-species">${emoji} ${r.species||'Unknown'}</div>
+          <div class="catch-card-meta">${date} · ${time} ${gpsTag}</div>
+          <div class="catch-card-detail">
+            <div>⚖️ ${r.weight_kg ? r.weight_kg+'kg' : '—'}</div>
+            <div>📍 ${r.location||'—'}</div>
+            <div>🎣 ${r.method||'—'}</div>
+            <div>🚤 ${r.vessel_name||'—'}</div>
+          </div>
+          ${r.notes ? '<div style="font-size:11px;color:var(--text3);background:var(--bg2);padding:6px 8px;border-radius:6px;margin-bottom:10px;">'+r.notes+'</div>' : ''}
+          <div class="catch-card-actions">
+            <button onclick="openEditCatch('${r.id}','${sp}',${r.weight_kg||0},'${loc}','${r.method||''}','${nt}')" style="flex:1;padding:7px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">✏️ Edit</button>
+            <button onclick="openShareModal('${sp}',${r.weight_kg||0},'${loc}')" style="flex:1;padding:7px;border:1px solid var(--accent);border-radius:6px;background:var(--accent);color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
+            <button onclick="deleteCatch('${r.id}')" style="padding:7px 10px;border:1px solid rgba(220,38,38,.3);border-radius:6px;background:rgba(220,38,38,.06);color:var(--red);font-size:12px;cursor:pointer;font-family:inherit;">🗑️</button>
+          </div>
+          ${r.lat ? '<button onclick="viewOnMap('+r.lat+','+r.lng+')" style="width:100%;margin-top:6px;padding:6px;border:1px solid var(--green);border-radius:6px;background:rgba(22,163,74,.06);color:var(--green);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">🗺 View on Map</button>' : ''}
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+
+  } else if (catchView === 'daily') {
+    const groups = {};
+    data.forEach(r => {
+      const d = new Date(r.created_at).toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      if (!groups[d]) groups[d] = [];
+      groups[d].push(r);
+    });
+    el.innerHTML = Object.entries(groups).map(([date, catches]) => {
+      const totalW = catches.reduce((s,r)=>s+(r.weight_kg||0),0);
+      const species = [...new Set(catches.map(r=>r.species).filter(Boolean))].join(', ');
+      return '<div class="daily-group"><div class="daily-header" onclick="toggleDaily(this)"><div><div class="daily-title">📅 '+date+'</div><div class="daily-summary">'+catches.length+' catch'+(catches.length>1?'es':'')+' · '+totalW.toFixed(1)+'kg · '+species+'</div></div><div style="font-size:20px;">▼</div></div><div class="daily-catches open">' +
+        catches.map(r => {
+          const time = new Date(r.created_at).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+          const emoji = getSpeciesEmoji(r.species);
+          const sp = (r.species||'').replace(/'/g,"\'");
+          const loc = (r.location||'').replace(/'/g,"\'");
+          const nt = (r.notes||'').replace(/'/g,"\'");
+          return '<div class="daily-catch-row"><div style="font-size:28px;">'+emoji+'</div><div style="flex:1;"><div style="font-weight:700;font-size:13px;color:var(--text);">'+( r.species||'Unknown')+' · '+(r.weight_kg ? r.weight_kg+'kg' : '—')+'</div><div style="font-size:11px;color:var(--text3);">'+time+' · '+(r.location||'—')+' · '+(r.method||'—')+'</div>'+(r.notes?'<div style="font-size:11px;color:var(--text3);margin-top:2px;">'+r.notes+'</div>':'')+'</div>'+(r.lat?'<span class="catch-gps-badge">📍</span>':'')+'<div style="display:flex;gap:4px;"><button onclick="openEditCatch(''+r.id+'',''+sp+'','+( r.weight_kg||0)+',''+loc+'',''+(r.method||'')+'',''+nt+'')" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">✏️</button><button onclick="deleteCatch(''+r.id+'')" style="padding:5px 8px;border:1px solid rgba(220,38,38,.3);border-radius:6px;background:rgba(220,38,38,.06);color:var(--red);font-size:11px;cursor:pointer;font-family:inherit;">🗑️</button></div></div>';
+        }).join('') + '</div></div>';
+    }).join('');
+
+  } else if (catchView === 'records') {
+    const weights = data.filter(r=>r.weight_kg).sort((a,b)=>b.weight_kg-a.weight_kg);
+    const speciesCounts = {}, locationCounts = {};
+    data.forEach(r => {
+      if (r.species) speciesCounts[r.species]=(speciesCounts[r.species]||0)+1;
+      if (r.location) locationCounts[r.location]=(locationCounts[r.location]||0)+1;
+    });
+    const topSp = Object.entries(speciesCounts).sort((a,b)=>b[1]-a[1]);
+    const topLoc = Object.entries(locationCounts).sort((a,b)=>b[1]-a[1]);
+    const totalW = data.reduce((s,r)=>s+(r.weight_kg||0),0);
+    const days = new Set(data.map(r=>new Date(r.created_at).toDateString())).size;
+    el.innerHTML = '<div style="margin-bottom:20px;"><h3 style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px;">🏆 Personal Records</h3><div class="records-grid"><div class="record-card"><div class="record-icon">⚖️</div><div class="record-val">'+(weights[0]?.weight_kg||0)+'kg</div><div class="record-lbl">Biggest · '+(weights[0]?.species||'—')+'</div></div><div class="record-card"><div class="record-icon">🐟</div><div class="record-val">'+data.length+'</div><div class="record-lbl">Total Catches</div></div><div class="record-card"><div class="record-icon">📦</div><div class="record-val">'+totalW.toFixed(1)+'kg</div><div class="record-lbl">Total Weight</div></div><div class="record-card"><div class="record-icon">📅</div><div class="record-val">'+days+'</div><div class="record-lbl">Days Fished</div></div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;"><div class="card"><div class="card-title">🎯 Top Species</div>'+topSp.slice(0,5).map(([sp,count])=>'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div style="font-size:22px;">'+getSpeciesEmoji(sp)+'</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--text);">'+sp+'</div><div style="height:6px;background:var(--bg2);border-radius:3px;margin-top:4px;"><div style="height:100%;width:'+(count/topSp[0][1]*100)+'%;background:var(--accent);border-radius:3px;"></div></div></div><div style="font-size:13px;font-weight:700;color:var(--orange);">'+count+'</div></div>').join('')+'</div><div class="card"><div class="card-title">📍 Top Locations</div>'+topLoc.slice(0,5).map(([loc,count])=>'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bg2);font-size:12px;"><span style="color:var(--text2);">'+loc+'</span><span style="font-weight:700;color:var(--orange);">'+count+'</span></div>').join('')+'</div></div>';
+  }
+}
+
+function toggleDaily(header) {
+  const catches = header.nextElementSibling;
+  const arrow = header.querySelector('div:last-child');
+  catches.classList.toggle('open');
+  arrow.style.transform = catches.classList.contains('open') ? '' : 'rotate(-90deg)';
+}
+
+function viewOnMap(lat, lng) {
+  showScreen('mapScreen', null);
+  setMobActive('mob-map');
+  if (map) map.flyTo({ center:[lng, lat], zoom:16, duration:1200 });
+}
+
+async function deleteCatch(id) {
+  if (!confirm('Delete this catch?')) return;
+  await _sb.from('catches').delete().eq('id', id);
+  loadCatches();
+}
+
 async function loadCatches() {
   if (!currentUser) return;
   const { data } = await _sb.from('catches').select('*').order('created_at', { ascending:false });
   if (!data) return;
+  allCatches = data.filter(r => r.species !== 'Location saved');
 
-  const tbody = document.getElementById('catchTbody');
   const total = document.getElementById('totalCatches');
   const best = document.getElementById('bestWeight');
+  const totalW = document.getElementById('totalWeight');
   const top = document.getElementById('topSpecies');
-  const recent = document.getElementById('recentCatches');
+  const days = document.getElementById('daysFished');
 
-  if (total) total.textContent = data.length;
-  if (best && data.length) best.textContent = Math.max(...data.map(r=>r.weight_kg||0)).toFixed(1);
-  if (top && data.length) {
+  if (total) total.textContent = allCatches.length;
+  if (best) best.textContent = allCatches.length ? Math.max(...allCatches.map(r=>r.weight_kg||0)).toFixed(1) : '—';
+  if (totalW) totalW.textContent = allCatches.length ? allCatches.reduce((s,r)=>s+(r.weight_kg||0),0).toFixed(1) : '—';
+  if (top && allCatches.length) {
     const counts = {};
-    data.forEach(r => { if(r.species) counts[r.species]=(counts[r.species]||0)+1; });
+    allCatches.forEach(r => { if(r.species) counts[r.species]=(counts[r.species]||0)+1; });
     top.textContent = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
   }
+  if (days) days.textContent = new Set(allCatches.map(r=>new Date(r.created_at).toDateString())).size;
 
-  if (tbody) {
-    if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px;">No catches logged yet</td></tr>';
-    } else {
-      tbody.innerHTML = data.map(r => {
-        const date = new Date(r.created_at).toLocaleDateString('en-AU', { day:'numeric', month:'short' });
-        return `<tr>
-          <td><strong>${r.species||'—'}</strong></td>
-          <td>${r.weight_kg ? r.weight_kg+'kg' : '—'}</td>
-          <td>${r.location||'—'}</td>
-          <td>${r.method||'—'}</td>
-          <td>${date}</td>
-          <td><button class="share-btn" onclick="openShareModal('${r.species||''}','${r.weight_kg||0}','${r.location||''}')">Share</button></td>
-        </tr>`;
-      }).join('');
-    }
+  const sel = document.getElementById('catchFilterSpecies');
+  if (sel) {
+    const species = [...new Set(allCatches.map(r=>r.species).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">All Species</option>' + species.map(s=>'<option>'+s+'</option>').join('');
   }
 
+  renderCatches(allCatches);
+
+  const recent = document.getElementById('recentCatches');
   if (recent) {
-    recent.innerHTML = data.slice(0,3).map(r => {
-      const date = new Date(r.created_at);
-      const time = date.toLocaleTimeString('en-AU', { hour:'2-digit', minute:'2-digit' });
-      return `<div class="catch-mini-row">
-        <span class="catch-mini-fish">${r.species||'—'} · ${r.weight_kg||0}kg</span>
-        <span class="catch-mini-who">${time}</span>
-      </div>`;
+    recent.innerHTML = allCatches.slice(0,3).map(r => {
+      const time = new Date(r.created_at).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+      return '<div class="catch-mini-row"><span class="catch-mini-fish">'+getSpeciesEmoji(r.species)+' '+(r.species||'—')+' · '+(r.weight_kg||0)+'kg</span><span class="catch-mini-who">'+time+'</span></div>';
     }).join('') || '<div style="color:var(--text3);font-size:12px;">No catches yet</div>';
   }
-
-  // Refresh catch dots on map
   loadCatchDots();
-}
-
-// Photo capture for catch
-let catchPhotoBase64 = null;
-let editingCatchId = null;
-
-function catchPhotoSelected(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    catchPhotoBase64 = e.target.result;
-    document.getElementById('catchPhotoImg').src = catchPhotoBase64;
-    document.getElementById('catchPhotoImg').style.display = 'block';
-    document.getElementById('catchPhotoIcon').style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-}
-
-async function identifyFromCatch() {
-  if (!catchPhotoBase64) {
-    alert('Please take or upload a photo first');
-    return;
-  }
-  const btn = document.getElementById('fishIdFromCatch');
-  btn.textContent = '🔍 Identifying...';
-  btn.disabled = true;
-  try {
-    const b64 = catchPhotoBase64.split(',')[1];
-    const mtype = catchPhotoBase64.split(';')[0].split(':')[1];
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01'},
-      body: JSON.stringify({
-        model:'claude-haiku-4-5-20251001', max_tokens:200,
-        messages:[{ role:'user', content:[
-          { type:'image', source:{ type:'base64', media_type:mtype, data:b64 } },
-          { type:'text', text:'What species is this fish? Reply with just the common name, e.g. "Bream" or "Flathead". One word or short phrase only.' }
-        ]}]
-      })
-    });
-    const d = await res.json();
-    const species = d.content[0].text.trim();
-    // Auto-fill species dropdown
-    const sel = document.getElementById('cf_species');
-    for (let i=0; i<sel.options.length; i++) {
-      if (sel.options[i].text.toLowerCase().includes(species.toLowerCase()) ||
-          species.toLowerCase().includes(sel.options[i].text.toLowerCase())) {
-        sel.selectedIndex = i; break;
-      }
-    }
-    btn.textContent = `✅ Identified: ${species}`;
-  } catch(e) {
-    btn.textContent = '❌ Could not identify';
-  }
-  setTimeout(() => { btn.textContent = '🔍 Identify with AI Fish ID'; btn.disabled=false; }, 3000);
-}
-
-function openCatchModal() {
-  editingCatchId = null;
-  catchPhotoBase64 = null;
-  document.getElementById('catchModalTitle').textContent = '🐟 Log a Catch';
-  document.getElementById('catchPhotoImg').style.display = 'none';
-  document.getElementById('catchPhotoIcon').style.display = 'block';
-  document.getElementById('cf_species').selectedIndex = 0;
-  document.getElementById('cf_weight').value = '';
-  document.getElementById('cf_length').value = '';
-  document.getElementById('cf_bait').value = '';
-  document.getElementById('cf_vessel').value = '';
-  document.getElementById('cf_notes').value = '';
-  document.getElementById('catchModal').classList.add('open');
-}
-
-function openEditCatch(id, species, weight, location, method, notes) {
-  editingCatchId = id;
-  document.getElementById('catchModalTitle').textContent = '✏️ Edit Catch';
-  const sel = document.getElementById('cf_species');
-  for (let i=0; i<sel.options.length; i++) {
-    if (sel.options[i].text === species) { sel.selectedIndex = i; break; }
-  }
-  document.getElementById('cf_weight').value = weight || '';
-  const locSel = document.getElementById('cf_location');
-  for (let i=0; i<locSel.options.length; i++) {
-    if (locSel.options[i].text === location) { locSel.selectedIndex = i; break; }
-  }
-  document.getElementById('cf_notes').value = notes || '';
-  document.getElementById('catchModal').classList.add('open');
-}
-
-function closeCatchModal() {
-  document.getElementById('catchModal').classList.remove('open');
-  editingCatchId = null;
-  catchPhotoBase64 = null;
-}
-
-async function submitCatch() {
-  const species = document.getElementById('cf_species').value;
-  const weight = parseFloat(document.getElementById('cf_weight').value)||0;
-  const length = parseFloat(document.getElementById('cf_length').value)||0;
-  const location = document.getElementById('cf_location').value;
-  const method = document.getElementById('cf_method').value;
-  const vessel = document.getElementById('cf_vessel').value;
-  const bait = document.getElementById('cf_bait').value;
-  const keeprelease = document.getElementById('cf_keeprelease').value;
-  const conditions = document.getElementById('cf_conditions').value;
-  const notes = document.getElementById('cf_notes').value;
-
-  const notesEnhanced = [
-    bait ? `Bait: ${bait}` : '',
-    length ? `Length: ${length}cm` : '',
-    keeprelease ? keeprelease : '',
-    conditions ? `Conditions: ${conditions}` : '',
-    notes
-  ].filter(Boolean).join(' · ');
-
-  if (editingCatchId) {
-    const { error } = await _sb.from('catches').update({
-      species, weight_kg:weight, location, method,
-      vessel_name:vessel||'Anonymous', notes:notesEnhanced
-    }).eq('id', editingCatchId);
-    if (!error) { closeCatchModal(); loadCatches(); }
-    else alert('Error: ' + error.message);
-  } else {
-    const { error } = await _sb.from('catches').insert([{
-      species, weight_kg:weight, location, method,
-      vessel_name:vessel||'Anonymous',
-      notes:notesEnhanced, fisher_type:'recreational', quantity:1,
-      lat:null, lng:null
-    }]);
-    if (!error) { closeCatchModal(); loadCatches(); alert(`✅ ${species} logged!`); }
-    else alert('Error saving catch: ' + error.message);
-  }
 }
 
 // ══ SHARE ══
@@ -2558,6 +2582,29 @@ function updateCompass(e) {
 }
 
 // ══ SAVE LOCATION ══
+// GPS for catch logging
+let catchGPSLat = null, catchGPSLng = null;
+function getCatchGPS() {
+  const btn = document.getElementById('gpsBtn');
+  const status = document.getElementById('gpsStatus');
+  if (!navigator.geolocation) { if(status) status.textContent='GPS not available'; return; }
+  btn.textContent = '📍 Getting GPS...'; btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(pos => {
+    catchGPSLat = pos.coords.latitude;
+    catchGPSLng = pos.coords.longitude;
+    const acc = Math.round(pos.coords.accuracy);
+    btn.textContent = '✅ GPS Saved';
+    btn.style.background = 'rgba(22,163,74,.1)';
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
+    if (status) status.innerHTML = `<span class="catch-gps-badge">📍 ±${acc}m accuracy</span>`;
+    setTimeout(() => { btn.textContent='📍 Get GPS Location'; btn.disabled=false; btn.style.background=''; btn.style.borderColor=''; btn.style.color=''; }, 5000);
+  }, () => {
+    btn.textContent = '❌ GPS failed'; btn.disabled = false;
+    if (status) status.textContent = 'Enable location in browser';
+  });
+}
+
 function saveCurrentLocation() {
   if (!navigator.geolocation) { alert('GPS not available on this device'); return; }
   navigator.geolocation.getCurrentPosition(pos => {
