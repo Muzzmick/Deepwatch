@@ -2524,22 +2524,42 @@ async function submitCatch() {
     if (!error) { closeCatchModal(); loadCatches(); }
     else alert('Error: ' + error.message);
   } else {
-    // Compress and store photo as base64 in DB (no storage bucket needed)
+    // Compress photo and upload to Supabase Storage
     let photoUrl = null;
     if (catchPhotoBase64) {
       try {
-        // Compress image to ~200px wide thumbnail using canvas
+        // Step 1: Compress to small thumbnail
         const img = new Image();
-        await new Promise(resolve => { img.onload = resolve; img.src = catchPhotoBase64; });
+        await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = catchPhotoBase64; });
         const canvas = document.createElement('canvas');
-        const maxW = 400, maxH = 300;
+        const maxW = 600, maxH = 450;
         let w = img.width, h = img.height;
-        if (w > maxW) { h = h * maxW / w; w = maxW; }
-        if (h > maxH) { w = w * maxH / h; h = maxH; }
+        if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+        if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        photoUrl = canvas.toDataURL('image/jpeg', 0.7); // compressed jpeg
-      } catch(e) { console.log('Photo compress failed:', e); photoUrl = catchPhotoBase64; }
+        const compressed = canvas.toDataURL('image/jpeg', 0.65);
+        const b64 = compressed.split(',')[1];
+        const byteArr = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+
+        // Step 2: Upload to Supabase Storage bucket 'catch-photos'
+        const fileName = 'catch_' + currentUser.id + '_' + Date.now() + '.jpg';
+        const { data: upData, error: upErr } = await _sb.storage
+          .from('catch-photos')
+          .upload(fileName, byteArr, { contentType: 'image/jpeg', upsert: true });
+
+        if (!upErr) {
+          const { data: urlData } = _sb.storage.from('catch-photos').getPublicUrl(fileName);
+          photoUrl = urlData.publicUrl;
+          console.log('Photo uploaded:', photoUrl);
+        } else {
+          console.log('Storage upload failed:', upErr.message);
+          // Fallback: store compressed base64 directly
+          photoUrl = compressed;
+        }
+      } catch(e) {
+        console.log('Photo error:', e);
+      }
     }
 
     const { error } = await _sb.from('catches').insert([{
