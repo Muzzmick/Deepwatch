@@ -447,21 +447,28 @@ body {
   #app { padding-bottom: 64px; height: 100%; }
   .screens { height: calc(100vh - 64px); }
 
-  /* MAP SCREEN — full screen map, sidebar slides up from bottom */
-  #mapScreen { flex-direction: column !important; position: relative; }
-  .map-main { flex: 1; min-height: 0; order: 1; }
-  #mapbox { position: absolute; inset: 0; }
+  /* MAP SCREEN — map on top, sidebar below */
+  #mapScreen { flex-direction: column !important; overflow: hidden !important; }
+  .map-main {
+    width: 100% !important;
+    height: 52vh !important;
+    min-height: 52vh !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    order: 1;
+  }
+  #mapbox { position: absolute !important; top: 0; left: 0; right: 0; bottom: 0; }
 
-  /* Sidebar becomes a bottom sheet */
+  /* Sidebar scrollable panel below map */
   .map-sidebar {
     width: 100% !important;
-    height: 48vh !important;
-    max-height: 48vh;
+    height: calc(48vh - 64px) !important;
+    max-height: calc(48vh - 64px) !important;
     border-right: none !important;
     border-top: 2px solid var(--border) !important;
     order: 2;
-    overflow-y: auto;
-    flex-shrink: 0;
+    overflow-y: auto !important;
+    flex-shrink: 0 !important;
     background: var(--card);
   }
 
