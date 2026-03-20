@@ -1210,6 +1210,13 @@ canvas { display: block; }
             <div id="windOutlook" style="display:flex;flex-direction:column;gap:6px;"></div>
           </div>
 
+          <!-- 7-DAY SOLUNAR -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">🐟 Fish Activity — 7-Day Solunar</div>
+            <div id="solunar7day" style="display:flex;flex-direction:column;gap:8px;"></div>
+            <div style="font-size:10px;color:var(--text3);margin-top:10px;text-align:center;">Based on solunar theory · Major feeding windows shown in green</div>
+          </div>
+
         </div>
         </div>
 
@@ -2840,6 +2847,7 @@ async function build7DayPlan() {
     render7DayCards();
     renderTidesWeek();
     renderWindOutlook();
+    renderSolunar7Day();
     showBestDay();
 
   } catch(e) {
@@ -2868,8 +2876,16 @@ function switchPlanTab(tab) {
     sevenBtn.style.borderBottom = '3px solid var(--accent)';
     todayBtn.style.color = 'var(--text3)';
     todayBtn.style.borderBottom = 'none';
-    if (!weekForecastData) build7DayPlan();
-    else { render7DayCards(); renderMoonStrip(); renderTidesWeek(); renderWindOutlook(); showBestDay(); }
+    if (!weekForecastData) {
+      build7DayPlan();
+    } else {
+      render7DayCards();
+      renderMoonStrip();
+      renderTidesWeek();
+      renderWindOutlook();
+      renderSolunar7Day();
+      showBestDay();
+    }
   }
 }
 
