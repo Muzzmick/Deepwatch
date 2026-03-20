@@ -3752,6 +3752,90 @@ function getCatchGPS() {
   });
 }
 
+// ── SOLUNAR 7 DAY ──
+function renderSolunar7Day() {
+  const el = document.getElementById('solunar7day');
+  if (!el || !weekForecastData) return;
+  el.innerHTML = weekForecastData.map((day, i) => {
+    const futureMoonTransit = (getSolunarHour() + i * 0.83) % 24;
+    const major1 = (futureMoonTransit - 0.75 + 24) % 24;
+    const major2 = (futureMoonTransit + 11.25 + 24) % 24;
+    const fmt = h => {
+      const hh = Math.floor(h) % 24, mm = Math.round((h % 1) * 60);
+      const ap = hh >= 12 ? 'PM' : 'AM', d = hh > 12 ? hh - 12 : hh === 0 ? 12 : hh;
+      return d + ':' + String(mm).padStart(2,'0') + ' ' + ap;
+    };
+    const moonPhase = (getMoonPhase() + i * 0.034) % 1;
+    const quality = Math.min(Math.abs(moonPhase), Math.abs(moonPhase-0.5)) < 0.1 ? 'Excellent' :
+      Math.min(Math.abs(moonPhase), Math.abs(moonPhase-0.5)) < 0.2 ? 'Good' : 'Moderate';
+    const qColor = quality==='Excellent' ? '#16a34a' : quality==='Good' ? '#f97316' : 'var(--text3)';
+    const isToday = i === 0;
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:'+(isToday?'rgba(0,102,204,.06)':'var(--bg2)')+';border-radius:10px;border:'+(isToday?'1px solid var(--accent)':'1px solid transparent')+';">'
+      + '<div style="min-width:90px;"><div style="font-size:12px;font-weight:700;color:'+(isToday?'var(--accent)':'var(--text)')+';">'+day.name+'</div><div style="font-size:10px;color:var(--text3);">'+day.d2.getDate()+' '+months[day.d2.getMonth()]+'</div></div>'
+      + '<div style="flex:1;display:flex;gap:6px;flex-wrap:wrap;">'
+      + '<span style="font-size:11px;padding:3px 8px;border-radius:5px;background:rgba(22,163,74,.1);color:#16a34a;font-weight:700;">🔴 '+fmt(major1)+'</span>'
+      + '<span style="font-size:11px;padding:3px 8px;border-radius:5px;background:rgba(22,163,74,.1);color:#16a34a;font-weight:700;">🔴 '+fmt(major2)+'</span>'
+      + '</div>'
+      + '<div style="text-align:right;"><div style="font-size:12px;font-weight:700;color:'+qColor+';">'+quality+'</div><div style="font-size:16px;">'+day.moonEmoji+'</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── TIDES WEEK ──
+function renderTidesWeek() {
+  const el = document.getElementById('tidesWeek');
+  if (!el || !weekForecastData) return;
+  el.innerHTML = weekForecastData.map((day, i) => {
+    const isToday = i === 0;
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:'+(isToday?'rgba(0,102,204,.06)':'var(--bg2)')+';border-radius:10px;border:'+(isToday?'1px solid var(--accent)':'1px solid transparent')+';">'
+      + '<div style="min-width:90px;"><div style="font-size:12px;font-weight:700;color:'+(isToday?'var(--accent)':'var(--text)')+';">'+day.name+'</div><div style="font-size:10px;color:var(--text3);">'+day.d2.getDate()+' '+months[day.d2.getMonth()]+'</div></div>'
+      + '<div style="flex:1;display:flex;gap:12px;flex-wrap:wrap;font-size:12px;">'
+      + '<span><span style="color:var(--accent);font-weight:700;">▲</span> '+day.tides.hw1+'</span>'
+      + '<span><span style="color:var(--text3);">▼</span> '+day.tides.lw1+'</span>'
+      + '<span><span style="color:var(--accent);font-weight:700;">▲</span> '+day.tides.hw2+'</span>'
+      + '<span><span style="color:var(--text3);">▼</span> '+day.tides.lw2+'</span>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── WIND OUTLOOK ──
+function renderWindOutlook() {
+  const el = document.getElementById('windOutlook');
+  if (!el || !weekForecastData) return;
+  const maxWind = Math.max(...weekForecastData.map(d => d.wind), 25);
+  el.innerHTML = weekForecastData.map((day, i) => {
+    const isToday = i === 0;
+    const sc = day.wind < 10 ? '#16a34a' : day.wind < 18 ? '#f97316' : '#dc2626';
+    const lbl = day.wind < 10 ? 'Calm' : day.wind < 18 ? 'Moderate' : 'Strong';
+    const pct = Math.round((day.wind / maxWind) * 100);
+    return '<div style="display:flex;align-items:center;gap:12px;">'
+      + '<div style="min-width:90px;"><div style="font-size:12px;font-weight:700;color:'+(isToday?'var(--accent)':'var(--text)')+';">'+day.name+'</div><div style="font-size:10px;color:var(--text3);">'+day.d2.getDate()+' '+months[day.d2.getMonth()]+'</div></div>'
+      + '<div style="flex:1;height:10px;background:var(--bg2);border-radius:5px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+sc+';border-radius:5px;"></div></div>'
+      + '<div style="min-width:70px;text-align:right;"><div style="font-size:13px;font-weight:700;color:'+sc+';">💨 '+day.wind+'kn</div><div style="font-size:9px;color:'+sc+';">'+lbl+'</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── BEST DAY ──
+function showBestDay() {
+  if (!weekForecastData) return;
+  let bestScore = 0, bestDay = null;
+  weekForecastData.forEach(day => {
+    const s = Math.max(day.boatScore, day.landScore, day.gameScore, day.prawnScore);
+    if (s > bestScore) { bestScore = s; bestDay = day; }
+  });
+  const card = document.getElementById('bestDayCard');
+  if (!card || !bestDay) return;
+  const bestType = bestDay.boatScore===bestScore?'boat fishing':bestDay.landScore===bestScore?'land-based':bestDay.gameScore===bestScore?'game fishing':'prawning';
+  const barSafe = bestDay.wave < 1.0 && bestDay.wind < 15;
+  card.style.display = 'block';
+  const nameEl = document.getElementById('bestDayName');
+  const reasonEl = document.getElementById('bestDayReason');
+  if (nameEl) nameEl.textContent = bestDay.name + ' — ' + bestDay.d2.getDate() + ' ' + months[bestDay.d2.getMonth()] + ' · Score ' + bestScore + '/100';
+  if (reasonEl) reasonEl.textContent = 'Best for ' + bestType + ' · ' + bestDay.wind + 'kn wind · ' + bestDay.wave + 'm swell · Bar ' + (barSafe ? 'safe ✅' : 'check conditions ⚠️');
+}
+
 function saveCurrentLocation() {
   if (!navigator.geolocation) { alert('GPS not available on this device'); return; }
   navigator.geolocation.getCurrentPosition(pos => {
