@@ -1009,117 +1009,208 @@ canvas { display: block; }
 
     <!-- ══ PLAN SCREEN ══ -->
     <div class="screen" id="planScreen">
-      <div class="page-wrap" style="max-width:900px;padding:16px;">
+      <div style="display:flex;flex-direction:column;height:100%;overflow:hidden;">
 
-        <!-- Header -->
-        <div style="margin-bottom:20px;">
-          <div class="page-title">📅 Trip Planner</div>
-          <div class="page-sub">Lakes Entrance · Gippsland Lakes</div>
+        <!-- Tab Bar -->
+        <div style="display:flex;border-bottom:2px solid var(--border);background:var(--card);flex-shrink:0;">
+          <button id="planTabToday" onclick="switchPlanTab('today')" style="flex:1;padding:14px;border:none;background:none;font-size:15px;font-weight:700;color:var(--accent);border-bottom:3px solid var(--accent);margin-bottom:-2px;cursor:pointer;font-family:inherit;">Today</button>
+          <button id="planTab7day" onclick="switchPlanTab('7day')" style="flex:1;padding:14px;border:none;background:none;font-size:15px;font-weight:700;color:var(--text3);cursor:pointer;font-family:inherit;">7-Day Forecast</button>
         </div>
 
-        <!-- TODAY SUMMARY CARD -->
-        <div id="todaySummaryCard" style="background:linear-gradient(135deg,var(--accent),#0044aa);border-radius:16px;padding:20px;color:white;margin-bottom:16px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
-            <div>
-              <div style="font-size:13px;opacity:.7;margin-bottom:4px;">TODAY'S FISHING SCORE</div>
-              <div style="font-family:'Syne',sans-serif;font-size:56px;font-weight:900;line-height:1;" id="planTodayScore">—</div>
-              <div style="font-size:14px;font-weight:600;margin-top:4px;" id="planTodayLabel">Loading...</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:32px;" id="planTodayIcon">🌤</div>
-              <div style="font-size:13px;opacity:.8;margin-top:4px;" id="planTodayWind">—</div>
-              <div style="font-size:13px;opacity:.8;" id="planTodayWave">—</div>
-            </div>
-          </div>
-          <!-- Category scores -->
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
-              <div style="font-size:16px;">🚤</div>
-              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;" id="planBoatScore">—</div>
-              <div style="font-size:9px;opacity:.7;">BOAT</div>
-            </div>
-            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
-              <div style="font-size:16px;">🚶</div>
-              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;" id="planLandScore">—</div>
-              <div style="font-size:9px;opacity:.7;">LAND</div>
-            </div>
-            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
-              <div style="font-size:16px;">🎣</div>
-              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;" id="planGameScore">—</div>
-              <div style="font-size:9px;opacity:.7;">GAME</div>
-            </div>
-            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
-              <div style="font-size:16px;">🦐</div>
-              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;" id="planPrawnScore">—</div>
-              <div style="font-size:9px;opacity:.7;">PRAWNS</div>
-            </div>
-          </div>
-        </div>
+        <!-- ══ TODAY TAB ══ -->
+        <div id="planToday" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+        <div style="padding:16px;display:flex;flex-direction:column;gap:14px;max-width:680px;margin:0 auto;width:100%;box-sizing:border-box;">
 
-        <!-- 7-DAY FORECAST -->
-        <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;margin-bottom:16px;">
-          <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">📅 7-Day Forecast</div>
-          <div id="sevenDayCards" style="display:flex;flex-direction:column;gap:10px;"></div>
-        </div>
-
-        <!-- TIDES TODAY -->
-        <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;margin-bottom:16px;">
-          <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">🌊 Tides Today</div>
-          <canvas id="tideCanvas" style="width:100%;height:100px;display:block;margin-bottom:12px;"></canvas>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
-            <div style="background:var(--bg2);border-radius:10px;padding:10px;">
-              <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">NOW</div>
-              <div style="font-size:18px;font-weight:700;color:var(--text);" id="tideNow">—</div>
-            </div>
-            <div style="background:var(--bg2);border-radius:10px;padding:10px;">
-              <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">NEXT HIGH</div>
-              <div style="font-size:14px;font-weight:700;color:var(--accent);" id="tideNextHW">—</div>
-            </div>
-            <div style="background:var(--bg2);border-radius:10px;padding:10px;">
-              <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">NEXT LOW</div>
-              <div style="font-size:14px;font-weight:700;color:var(--text2);" id="tideNextLW">—</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SOLUNAR -->
-        <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;margin-bottom:16px;">
-          <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">🐟 Fish Activity — Solunar</div>
-          <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
-            <div style="text-align:center;background:var(--bg2);border-radius:12px;padding:12px 16px;">
-              <div id="solScore" style="font-family:'Syne',sans-serif;font-size:40px;font-weight:900;color:var(--accent);line-height:1;">—</div>
-              <div id="solLabel" style="font-size:10px;color:var(--text3);margin-top:2px;">Loading...</div>
-            </div>
-            <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
-              <div style="background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2);border-radius:8px;padding:8px 10px;">
-                <div style="font-size:9px;font-weight:700;color:#16a34a;letter-spacing:1px;">MAJOR FEEDING</div>
-                <div id="majorTimes" style="font-size:12px;font-weight:600;color:var(--text);margin-top:2px;">—</div>
+          <!-- 1. FISHING SCORE -->
+          <div style="background:linear-gradient(135deg,#0055cc,#0033aa);border-radius:18px;padding:20px;color:white;">
+            <div style="font-size:10px;letter-spacing:2px;opacity:.7;margin-bottom:8px;">AI FISHING SCORE · TODAY</div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-size:72px;font-weight:900;line-height:1;" id="planTodayScore">—</div>
+                <div style="font-size:15px;font-weight:600;margin-top:6px;" id="planTodayLabel">Loading...</div>
               </div>
-              <div style="background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.15);border-radius:8px;padding:8px 10px;">
-                <div style="font-size:9px;font-weight:700;color:#f97316;letter-spacing:1px;">MINOR FEEDING</div>
-                <div id="minorTimes" style="font-size:12px;font-weight:600;color:var(--text);margin-top:2px;">—</div>
+              <div style="text-align:right;">
+                <div style="font-size:38px;" id="planTodayIcon">🌤</div>
+                <div style="font-size:12px;opacity:.8;margin-top:8px;" id="planTodayWind">—</div>
+                <div style="font-size:12px;opacity:.8;margin-top:2px;" id="planTodayWave">—</div>
+                <div style="font-size:12px;opacity:.8;margin-top:2px;" id="planTodayTemp">—</div>
+              </div>
+            </div>
+            <!-- Bar Status -->
+            <div id="planBarStatus" style="padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.15);font-size:13px;font-weight:700;margin-bottom:12px;">
+              🌊 Checking bar conditions...
+            </div>
+            <!-- Category scores -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+              <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+                <div style="font-size:18px;">🚤</div>
+                <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;" id="planBoatScore">—</div>
+                <div style="font-size:9px;opacity:.7;letter-spacing:.5px;margin-top:2px;">BOAT</div>
+              </div>
+              <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+                <div style="font-size:18px;">🚶</div>
+                <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;" id="planLandScore">—</div>
+                <div style="font-size:9px;opacity:.7;letter-spacing:.5px;margin-top:2px;">LAND</div>
+              </div>
+              <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+                <div style="font-size:18px;">🎣</div>
+                <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;" id="planGameScore">—</div>
+                <div style="font-size:9px;opacity:.7;letter-spacing:.5px;margin-top:2px;">GAME</div>
+              </div>
+              <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+                <div style="font-size:18px;">🦐</div>
+                <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;" id="planPrawnScore">—</div>
+                <div style="font-size:9px;opacity:.7;letter-spacing:.5px;margin-top:2px;">PRAWNS</div>
               </div>
             </div>
           </div>
-          <canvas id="solunarCanvas" style="width:100%;height:120px;display:block;"></canvas>
-          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:6px;">Drag line to see activity at any time</div>
-        </div>
 
-        <!-- MOON & BEST WINDOWS — side by side -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;" class="plan-bottom-grid">
+          <!-- 2. LIVE CONDITIONS -->
           <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
-            <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">🌙 Moon</div>
-            <div style="text-align:center;">
-              <div id="moonEmoji" style="font-size:48px;margin-bottom:8px;"></div>
-              <div id="moonPhaseName" style="font-size:13px;font-weight:700;color:var(--text);"></div>
-              <div id="moonDetail" style="font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5;"></div>
-              <div id="moonFishTip" style="font-size:11px;color:var(--accent);margin-top:8px;font-weight:600;"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📡 Live Conditions</div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;" id="planCondGrid">
+              <div style="background:var(--bg2);border-radius:10px;padding:12px;">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">SWELL</div>
+                <div style="font-size:22px;font-weight:700;color:var(--text);" id="planWaveVal">—</div>
+              </div>
+              <div style="background:var(--bg2);border-radius:10px;padding:12px;">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">WIND</div>
+                <div style="font-size:22px;font-weight:700;color:var(--text);" id="planWindVal">—</div>
+              </div>
+              <div style="background:var(--bg2);border-radius:10px;padding:12px;">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">SEA TEMP</div>
+                <div style="font-size:22px;font-weight:700;color:var(--text);" id="planTempVal">—</div>
+              </div>
+              <div style="background:var(--bg2);border-radius:10px;padding:12px;">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">PRESSURE</div>
+                <div style="font-size:22px;font-weight:700;color:var(--text);" id="planPresVal">—</div>
+              </div>
             </div>
           </div>
+
+          <!-- 3. BEST SPECIES NOW -->
           <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
-            <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">⏰ Best Times</div>
-            <div id="fishWindows" style="font-size:12px;line-height:2;color:var(--text2);"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">🐟 Best Species Right Now</div>
+            <div id="planSpeciesList" style="display:flex;flex-direction:column;gap:10px;"></div>
           </div>
+
+          <!-- 4. SOLUNAR NOW -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">🔴 Fish Activity — Solunar</div>
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+              <div style="background:var(--bg2);border-radius:12px;padding:14px 18px;text-align:center;flex-shrink:0;">
+                <div id="solScore" style="font-family:'Syne',sans-serif;font-size:38px;font-weight:900;color:var(--accent);line-height:1;">—</div>
+                <div id="solLabel" style="font-size:10px;color:var(--text3);margin-top:4px;max-width:80px;">Loading...</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                <div style="background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.25);border-radius:10px;padding:10px 12px;">
+                  <div style="font-size:9px;font-weight:700;color:#16a34a;letter-spacing:1px;margin-bottom:3px;">🔴 MAJOR FEEDING</div>
+                  <div id="majorTimes" style="font-size:12px;font-weight:600;color:var(--text);">—</div>
+                </div>
+                <div style="background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:10px;padding:10px 12px;">
+                  <div style="font-size:9px;font-weight:700;color:#f97316;letter-spacing:1px;margin-bottom:3px;">🟡 MINOR FEEDING</div>
+                  <div id="minorTimes" style="font-size:12px;font-weight:600;color:var(--text);">—</div>
+                </div>
+              </div>
+            </div>
+            <canvas id="solunarCanvas" style="width:100%;height:110px;display:block;border-radius:8px;overflow:hidden;"></canvas>
+            <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:6px;">← Drag line to see activity at any time →</div>
+          </div>
+
+          <!-- 5. TIDES -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">🌊 Tides Today</div>
+            <canvas id="tideCanvas" style="width:100%;height:90px;display:block;margin-bottom:12px;"></canvas>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
+              <div style="background:var(--bg2);border-radius:10px;padding:10px;">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">NOW</div>
+                <div style="font-size:18px;font-weight:700;color:var(--text);" id="tideNow">—</div>
+              </div>
+              <div style="background:rgba(0,102,204,.08);border-radius:10px;padding:10px;">
+                <div style="font-size:10px;color:var(--accent);margin-bottom:4px;">NEXT HIGH ▲</div>
+                <div style="font-size:13px;font-weight:700;color:var(--accent);" id="tideNextHW">—</div>
+              </div>
+              <div style="background:var(--bg2);border-radius:10px;padding:10px;">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">NEXT LOW ▼</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text2);" id="tideNextLW">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. TOP SPOTS TODAY -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📍 Best Spots Right Now</div>
+            <div id="planTopSpots" style="display:flex;flex-direction:column;gap:8px;"></div>
+            <button onclick="showScreen('mapScreen',null);setMobActive('mob-map');" style="width:100%;margin-top:12px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">🗺 View All on Map</button>
+          </div>
+
+          <!-- 7. MOON -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">🌙 Moon Phase</div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div id="moonEmoji" style="font-size:56px;flex-shrink:0;"></div>
+              <div>
+                <div id="moonPhaseName" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;"></div>
+                <div id="moonDetail" style="font-size:12px;color:var(--text3);line-height:1.6;"></div>
+                <div id="moonFishTip" style="font-size:12px;color:var(--accent);margin-top:8px;font-weight:600;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 8. BEST TIMES -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">⏰ Best Fishing Times Today</div>
+            <div id="fishWindows" style="font-size:13px;line-height:2.2;color:var(--text2);"></div>
+          </div>
+
+        </div>
+        </div>
+
+        <!-- ══ 7-DAY TAB ══ -->
+        <div id="plan7day" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;">
+        <div style="padding:16px;display:flex;flex-direction:column;gap:14px;max-width:680px;margin:0 auto;width:100%;box-sizing:border-box;">
+
+          <!-- BEST DAY THIS WEEK -->
+          <div id="bestDayCard" style="background:linear-gradient(135deg,#16a34a,#15803d);border-radius:18px;padding:18px;color:white;display:none;">
+            <div style="font-size:10px;letter-spacing:2px;opacity:.7;margin-bottom:6px;">⭐ BEST DAY THIS WEEK</div>
+            <div style="font-size:22px;font-weight:900;margin-bottom:4px;" id="bestDayName">—</div>
+            <div style="font-size:13px;opacity:.85;" id="bestDayReason">—</div>
+          </div>
+
+          <!-- 7-DAY CARDS -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📅 7-Day Fishing Forecast</div>
+            <div id="sevenDayCards" style="display:flex;flex-direction:column;gap:10px;"></div>
+          </div>
+
+          <!-- AI SUMMARY (appears on tap) -->
+          <div id="aiDaySummary" style="display:none;background:var(--card);border-radius:16px;border:2px solid var(--accent);padding:16px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <div style="font-size:20px;">🤖</div>
+              <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:1px;">AI TRIP SUMMARY</div>
+            </div>
+            <div id="aiDaySummaryText" style="font-size:13px;color:var(--text2);line-height:1.8;"></div>
+          </div>
+
+          <!-- MOON THIS WEEK -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">🌙 Moon This Week</div>
+            <div id="moonStrip7" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;"></div>
+          </div>
+
+          <!-- TIDES THIS WEEK -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">🌊 Tides This Week</div>
+            <div id="tidesWeek" style="display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+
+          <!-- WIND OUTLOOK -->
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">💨 Wind Outlook</div>
+            <div id="windOutlook" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+
+        </div>
         </div>
 
       </div>
@@ -1757,7 +1848,7 @@ function showScreen(id, btn) {
   document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (id === 'planScreen') { setTimeout(() => { build7DayPlan(); buildSolunar(); buildTides(); updateMoon(); initSolunarDrag(); buildFishWindows(); populateTodaySummary(); render7DayCards(); }, 100); }
+  if (id === 'planScreen') { setTimeout(() => { build7DayPlan(); buildSolunar(); buildTides(); updateMoon(); initSolunarDrag(); buildFishWindows(); }, 100); }
   if (id === 'catchScreen') loadCatches();
 }
 
@@ -2747,9 +2838,38 @@ async function build7DayPlan() {
     renderOverview();
     populateTodaySummary();
     render7DayCards();
+    renderTidesWeek();
+    renderWindOutlook();
+    showBestDay();
 
   } catch(e) {
     console.log('7-day plan error:', e);
+  }
+}
+
+function switchPlanTab(tab) {
+  const todayTab = document.getElementById('planToday');
+  const sevenTab = document.getElementById('plan7day');
+  const todayBtn = document.getElementById('planTabToday');
+  const sevenBtn = document.getElementById('planTab7day');
+  if (!todayTab || !sevenTab) return;
+  if (tab === 'today') {
+    todayTab.style.display = 'block';
+    sevenTab.style.display = 'none';
+    todayBtn.style.color = 'var(--accent)';
+    todayBtn.style.borderBottom = '3px solid var(--accent)';
+    sevenBtn.style.color = 'var(--text3)';
+    sevenBtn.style.borderBottom = 'none';
+    setTimeout(() => { buildSolunar(); buildTides(); updateMoon(); buildFishWindows(); populateTodaySummary(); }, 100);
+  } else {
+    todayTab.style.display = 'none';
+    sevenTab.style.display = 'block';
+    sevenBtn.style.color = 'var(--accent)';
+    sevenBtn.style.borderBottom = '3px solid var(--accent)';
+    todayBtn.style.color = 'var(--text3)';
+    todayBtn.style.borderBottom = 'none';
+    if (!weekForecastData) build7DayPlan();
+    else { render7DayCards(); renderMoonStrip(); renderTidesWeek(); renderWindOutlook(); showBestDay(); }
   }
 }
 
@@ -2758,21 +2878,92 @@ function populateTodaySummary() {
   const today = weekForecastData[0];
   const best = Math.max(today.boatScore, today.landScore, today.gameScore, today.prawnScore);
   const lbl = best>=75?'Excellent conditions!':best>=60?'Good conditions':best>=45?'Fair conditions':'Poor conditions';
-  const scoreEl = document.getElementById('planTodayScore');
-  const labelEl = document.getElementById('planTodayLabel');
-  const iconEl = document.getElementById('planTodayIcon');
-  const windEl = document.getElementById('planTodayWind');
-  const waveEl = document.getElementById('planTodayWave');
-  if (scoreEl) scoreEl.textContent = best;
-  if (labelEl) labelEl.textContent = lbl;
-  if (iconEl) iconEl.textContent = today.icon;
-  if (windEl) windEl.textContent = '💨 ' + today.wind + 'kn';
-  if (waveEl) waveEl.textContent = '🌊 ' + today.wave + 'm';
-  const b = document.getElementById('planBoatScore'); if(b) b.textContent = today.boatScore;
-  const l = document.getElementById('planLandScore'); if(l) l.textContent = today.landScore;
-  const g = document.getElementById('planGameScore'); if(g) g.textContent = today.gameScore;
-  const p = document.getElementById('planPrawnScore'); if(p) p.textContent = today.prawnScore;
+
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('planTodayScore', best);
+  set('planTodayLabel', lbl);
+  set('planTodayIcon', today.icon);
+  set('planTodayWind', '💨 ' + today.wind + 'kn');
+  set('planTodayWave', '🌊 ' + today.wave + 'm');
+  set('planTodayTemp', realSST ? '🌡 ' + realSST.toFixed(1) + '°C' : '');
+  set('planBoatScore', today.boatScore);
+  set('planLandScore', today.landScore);
+  set('planGameScore', today.gameScore);
+  set('planPrawnScore', today.prawnScore);
+
+  // Conditions grid
+  set('planWaveVal', today.wave + 'm');
+  set('planWindVal', today.wind + 'kn');
+  set('planTempVal', realSST ? realSST.toFixed(1) + '°C' : '~18°C');
+  const presEl = document.getElementById('livePres');
+  set('planPresVal', presEl ? presEl.textContent : '—');
+
+  // Bar status
+  const wave = today.wave, wind2 = today.wind;
+  const barEl = document.getElementById('planBarStatus');
+  if (barEl) {
+    if (wave < 1.0 && wind2 < 15) {
+      barEl.innerHTML = '✅ Bar safe to cross · ' + wave + 'm · ' + wind2 + 'kn';
+      barEl.style.background = 'rgba(22,163,74,.25)';
+    } else if (wave < 1.5 && wind2 < 20) {
+      barEl.innerHTML = '⚠️ Caution at bar · ' + wave + 'm · ' + wind2 + 'kn';
+      barEl.style.background = 'rgba(217,119,6,.25)';
+    } else {
+      barEl.innerHTML = '🚫 Bar dangerous — stay inside · ' + wave + 'm · ' + wind2 + 'kn';
+      barEl.style.background = 'rgba(220,38,38,.25)';
+    }
+  }
+
+  // Species forecast
+  const sst = realSST || 18;
+  const hour = new Date().getHours();
+  const sol = getSolunarScore(hour) / 100;
+  const month = new Date().getMonth() + 1;
+  const species = [
+    { name:'Bream', emoji:'🐠', score: Math.round(70 + sol*15 + (sst>=18?10:0)) },
+    { name:'Flathead', emoji:'🐟', score: Math.round(60 + (hour<10||hour>17?15:5) + sol*10) },
+    { name:'Whiting', emoji:'🐡', score: Math.round(55 + (sst>=18?15:5) + (wind2<10?10:0)) },
+    { name:'Mulloway', emoji:'🐟', score: Math.round((hour>=19||hour<=6?80:25) + sol*15) },
+    { name:'Snapper', emoji:'🎣', score: Math.round(50 + (sst>=17?15:5) + sol*10) },
+    { name:'Tuna', emoji:'🔵', score: Math.round((month>=10||month<=4?60:20) + (sst>=20?25:5)) },
+    { name:'Prawns', emoji:'🦐', score: Math.round((hour>=20||hour<=5?75:20) + (sst>=18?10:0)) },
+  ].sort((a,b) => b.score-a.score);
+
+  const spEl = document.getElementById('planSpeciesList');
+  if (spEl) {
+    spEl.innerHTML = species.slice(0,5).map(s => {
+      const sc = s.score>=75?'var(--green)':s.score>=55?'var(--orange)':'var(--text3)';
+      return `<div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:22px;width:28px;">${s.emoji}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);min-width:80px;">${s.name}</div>
+        <div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${s.score}%;background:${sc};border-radius:4px;transition:width .6s;"></div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:${sc};min-width:36px;text-align:right;">${s.score}%</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Top spots
+  const spotsEl = document.getElementById('planTopSpots');
+  if (spotsEl) {
+    const scores = hotspots.map(h => ({ h, score: getSpotScore(h) }))
+      .sort((a,b) => b.score-a.score).slice(0,3);
+    spotsEl.innerHTML = scores.map(({h, score}, rank) => {
+      const sc = score>=75?'var(--green)':score>=60?'var(--orange)':'var(--red)';
+      const typeEmoji = {boat:'🚤',land:'🚶',game:'🎣',prawn:'🦐'}[h.type]||'📍';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg2);border-radius:10px;cursor:pointer;" onclick="showScreen('mapScreen',null);setMobActive('mob-map');setTimeout(()=>flyToSpot(${hotspots.indexOf(h)}),300);">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:900;color:var(--accent);min-width:28px;">#${rank+1}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">${typeEmoji} ${h.name}</div>
+          <div style="font-size:11px;color:var(--text3);">${h.species.split(' · ').slice(0,2).join(' · ')}</div>
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;color:${sc};">${score}</div>
+      </div>`;
+    }).join('');
+  }
 }
+
 
 function render7DayCards() {
   const el = document.getElementById('sevenDayCards');
@@ -2782,30 +2973,81 @@ function render7DayCards() {
     const sc = best>=75?'#16a34a':best>=60?'#f97316':best>=45?'#d97706':'#dc2626';
     const lbl = best>=75?'GREAT':best>=60?'GOOD':best>=45?'FAIR':'POOR';
     const isToday = i === 0;
-    return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${isToday?'rgba(0,102,204,.06)':'var(--bg2)'};border-radius:12px;border:${isToday?'1.5px solid var(--accent)':'1px solid var(--border)'};">
-      <!-- Day -->
-      <div style="min-width:60px;">
-        <div style="font-size:12px;font-weight:700;color:${isToday?'var(--accent)':'var(--text)'};">${day.name}</div>
-        <div style="font-size:10px;color:var(--text3);">${day.d2.getDate()} ${months[day.d2.getMonth()]}</div>
-      </div>
-      <!-- Icon + conditions -->
-      <div style="font-size:24px;">${day.icon}</div>
-      <div style="flex:1;">
-        <div style="font-size:11px;color:var(--text3);">💨 ${day.wind}kn · 🌊 ${day.wave}m · ${day.moonEmoji}</div>
-        <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;">
-          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(0,102,204,.1);color:var(--accent);font-weight:700;">🚤 ${day.boatScore}</span>
-          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(22,163,74,.1);color:#16a34a;font-weight:700;">🚶 ${day.landScore}</span>
-          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(124,58,237,.1);color:#7c3aed;font-weight:700;">🎣 ${day.gameScore}</span>
-          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(217,119,6,.1);color:#d97706;font-weight:700;">🦐 ${day.prawnScore}</span>
+    const barSafe = day.wave < 1.0 && day.wind < 15;
+    const barWarn = day.wave < 1.5 && day.wind < 20;
+    const barColor = barSafe ? '#16a34a' : barWarn ? '#d97706' : '#dc2626';
+    const barText = barSafe ? '✅ Bar safe' : barWarn ? '⚠️ Bar caution' : '🚫 Bar dangerous';
+    return `<div id="daycard-${i}" onclick="selectDayCard(${i})" style="background:${isToday?'rgba(0,102,204,.06)':'var(--card)'};border-radius:14px;border:${isToday?'1.5px solid var(--accent)':'1px solid var(--border)'};padding:14px;cursor:pointer;transition:all .2s;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="min-width:70px;">
+          <div style="font-size:13px;font-weight:700;color:${isToday?'var(--accent)':'var(--text)'};">${day.name}</div>
+          <div style="font-size:10px;color:var(--text3);">${day.d2.getDate()} ${months[day.d2.getMonth()]}</div>
+          <div style="font-size:9px;font-weight:700;color:${barColor};margin-top:3px;">${barText}</div>
         </div>
-      </div>
-      <!-- Score -->
-      <div style="text-align:center;min-width:44px;">
-        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:${sc};">${best}</div>
-        <div style="font-size:8px;font-weight:700;color:${sc};">${lbl}</div>
+        <div style="font-size:26px;">${day.icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:11px;color:var(--text2);font-weight:600;">💨 ${day.wind}kn &nbsp; 🌊 ${day.wave}m &nbsp; ${day.moonEmoji}</div>
+          <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+            <span style="font-size:10px;padding:3px 7px;border-radius:5px;background:rgba(0,102,204,.1);color:var(--accent);font-weight:700;">🚤 ${day.boatScore}</span>
+            <span style="font-size:10px;padding:3px 7px;border-radius:5px;background:rgba(22,163,74,.1);color:#16a34a;font-weight:700;">🚶 ${day.landScore}</span>
+            <span style="font-size:10px;padding:3px 7px;border-radius:5px;background:rgba(124,58,237,.1);color:#7c3aed;font-weight:700;">🎣 ${day.gameScore}</span>
+            <span style="font-size:10px;padding:3px 7px;border-radius:5px;background:rgba(217,119,6,.1);color:#d97706;font-weight:700;">🦐 ${day.prawnScore}</span>
+          </div>
+        </div>
+        <div style="text-align:center;min-width:48px;">
+          <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:${sc};">${best}</div>
+          <div style="font-size:9px;font-weight:700;color:${sc};">${lbl}</div>
+          <div style="font-size:16px;margin-top:4px;color:var(--text3);">›</div>
+        </div>
       </div>
     </div>`;
   }).join('');
+}
+
+async function selectDayCard(i) {
+  if (!weekForecastData) return;
+  const day = weekForecastData[i];
+  const panel = document.getElementById('aiDaySummary');
+  const text = document.getElementById('aiDaySummaryText');
+  if (!panel || !text) return;
+
+  // Highlight selected card
+  weekForecastData.forEach((_, idx) => {
+    const card = document.getElementById('daycard-'+idx);
+    if (card) card.style.borderColor = idx===i ? 'var(--accent)' : 'var(--border)';
+  });
+
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Use cached summary if available
+  if (aiSummaryCache[i]) { text.innerHTML = aiSummaryCache[i]; return; }
+
+  text.innerHTML = '🤔 Generating AI summary for ' + day.name + '...';
+
+  const best = Math.max(day.boatScore, day.landScore, day.gameScore, day.prawnScore);
+  const bestType = day.boatScore===best?'boat':day.landScore===best?'land-based':day.gameScore===best?'game fishing':'prawning';
+  const barSafe = day.wave < 1.0 && day.wind < 15;
+  const barWarn = day.wave < 1.5 && day.wind < 20;
+  const barStatus = barSafe ? 'safe to cross' : barWarn ? 'marginal — use caution' : 'dangerous — stay inside';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-api-key':CLAUDE_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001', max_tokens: 200,
+        messages: [{ role: 'user', content: `Write a 3-4 sentence plain English fishing trip summary for a Gippsland Lakes fisher planning a trip on ${day.name} ${day.d2.getDate()} ${months[day.d2.getMonth()]}. Conditions: ${day.wind}kn wind, ${day.wave}m swell, ${day.moonEmoji} ${day.moonName}, bar crossing ${barStatus}. Scores: Boat ${day.boatScore}/100, Land ${day.landScore}/100, Game ${day.gameScore}/100, Prawns ${day.prawnScore}/100. Best activity is ${bestType}. Give practical advice — best time to leave, which spots to target, what species to expect, bar safety. Australian fishing tone, be specific to Gippsland Lakes / Lakes Entrance.` }]
+      })
+    });
+    const d = await res.json();
+    const summary = d.content[0].text;
+    aiSummaryCache[i] = summary;
+    text.innerHTML = summary;
+  } catch(e) {
+    const best2 = Math.max(day.boatScore, day.landScore, day.gameScore, day.prawnScore);
+    text.innerHTML = `<strong>${day.name} looks ${best2>=75?'excellent':best2>=60?'good':best2>=45?'fair':'tough'} for ${bestType}.</strong> Wind ${day.wind}kn, swell ${day.wave}m. Bar is ${barStatus}. Boat score ${day.boatScore} · Land ${day.landScore} · Game ${day.gameScore} · Prawns ${day.prawnScore}.`;
+  }
 }
 
 function renderWeatherStrip() {
