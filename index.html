@@ -526,6 +526,7 @@ body {
   .page-title { font-size: 20px !important; margin-bottom: 2px !important; }
   .page-sub { font-size: 11px !important; margin-bottom: 14px !important; }
   .plan-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .plan-bottom-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
   .card { padding: 14px !important; }
   .card-title { font-size: 11px !important; margin-bottom: 10px !important; }
 
@@ -1008,127 +1009,119 @@ canvas { display: block; }
 
     <!-- ══ PLAN SCREEN ══ -->
     <div class="screen" id="planScreen">
-      <div class="page-wrap" style="max-width:1200px;">
-        <div class="page-title">📅 Trip Planner</div>
-        <div class="page-sub">7-day forecast for Gippsland Lakes · Lakes Entrance</div>
+      <div class="page-wrap" style="max-width:900px;padding:16px;">
 
-        <!-- ── 1. WEATHER ── -->
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-title">☀️ 7-Day Weather Forecast</div>
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;" id="weatherStrip">
-            <div style="color:var(--text3);font-size:12px;grid-column:1/-1;padding:8px;">Loading...</div>
-          </div>
+        <!-- Header -->
+        <div style="margin-bottom:20px;">
+          <div class="page-title">📅 Trip Planner</div>
+          <div class="page-sub">Lakes Entrance · Gippsland Lakes</div>
         </div>
 
-        <!-- ── 2. FISHING ACTIVITY ── -->
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-title">🎣 7-Day Fishing Activity by Category</div>
-          <div style="overflow-x:auto;">
-            <table style="width:100%;border-collapse:collapse;min-width:600px;">
-              <thead>
-                <tr style="border-bottom:2px solid var(--border);">
-                  <th style="text-align:left;padding:10px 8px;font-size:11px;color:var(--text3);font-weight:600;min-width:80px;">DAY</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--accent);font-weight:600;">🚤 BOAT</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--green);font-weight:600;">🚶 LAND</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--purple);font-weight:600;">🎣 GAME</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--yellow);font-weight:600;">🦐 PRAWNS</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--text3);font-weight:600;">OVERALL</th>
-                </tr>
-              </thead>
-              <tbody id="fishingActivity7"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- ── 3. TIDES ── -->
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-title">🌊 7-Day Tides</div>
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;" id="tideStrip7">
-            <div style="color:var(--text3);font-size:12px;grid-column:1/-1;padding:8px;">Loading...</div>
-          </div>
-        </div>
-
-        <!-- ── 4. MOON ── -->
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-title">🌙 7-Day Moon Phases</div>
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;" id="moonStrip7"></div>
-        </div>
-
-        <!-- ── 5. OVERVIEW ── -->
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-title">📊 7-Day Overview</div>
-          <div style="overflow-x:auto;">
-            <table style="width:100%;border-collapse:collapse;min-width:700px;">
-              <thead>
-                <tr style="border-bottom:2px solid var(--border);">
-                  <th style="text-align:left;padding:10px 8px;font-size:11px;color:var(--text3);font-weight:600;">DAY</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--text3);font-weight:600;">WEATHER</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--text3);font-weight:600;">WIND</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--text3);font-weight:600;">SWELL</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--text3);font-weight:600;">MOON</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--text3);font-weight:600;">TIDES</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--accent);font-weight:600;">BEST SCORE</th>
-                  <th style="padding:10px 8px;font-size:11px;color:var(--text3);font-weight:600;">RECOMMENDATION</th>
-                </tr>
-              </thead>
-              <tbody id="overviewTbody7"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- ── SOLUNAR TODAY ── -->
-        <div class="plan-grid">
-          <div class="card">
-            <div class="card-title">🐟 Fish Activity — Solunar Today</div>
-            <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
-              <div style="text-align:center;">
-                <div id="solScore" style="font-family:'Syne',sans-serif;font-size:44px;font-weight:900;color:var(--accent);line-height:1;">—</div>
-                <div id="solLabel" style="font-size:11px;color:var(--text3);margin-top:2px;">Loading...</div>
-              </div>
-              <div style="flex:1;">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                  <div class="solunar-major">
-                    <div class="sol-label sol-major-label">Major Times</div>
-                    <div id="majorTimes" class="sol-time">—</div>
-                  </div>
-                  <div class="solunar-minor">
-                    <div class="sol-label sol-minor-label">Minor Times</div>
-                    <div id="minorTimes" class="sol-time">—</div>
-                  </div>
-                </div>
-              </div>
+        <!-- TODAY SUMMARY CARD -->
+        <div id="todaySummaryCard" style="background:linear-gradient(135deg,var(--accent),#0044aa);border-radius:16px;padding:20px;color:white;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+            <div>
+              <div style="font-size:13px;opacity:.7;margin-bottom:4px;">TODAY'S FISHING SCORE</div>
+              <div style="font-family:'Syne',sans-serif;font-size:56px;font-weight:900;line-height:1;" id="planTodayScore">—</div>
+              <div style="font-size:14px;font-weight:600;margin-top:4px;" id="planTodayLabel">Loading...</div>
             </div>
-            <canvas id="solunarCanvas"></canvas>
-            <div style="font-size:10px;color:var(--text3);margin-top:6px;text-align:center;">Drag line to see activity at any time · Based on solunar theory</div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">🌊 Tides — Today</div>
-            <canvas id="tideCanvas"></canvas>
-            <div class="tide-stats">
-              <div class="tide-stat"><div class="tide-stat-val" id="tideNow">—</div><div class="tide-stat-lbl">Now</div></div>
-              <div class="tide-stat"><div class="tide-stat-val" id="tideNextHW">—</div><div class="tide-stat-lbl">Next High</div></div>
-              <div class="tide-stat"><div class="tide-stat-val" id="tideNextLW">—</div><div class="tide-stat-lbl">Next Low</div></div>
+            <div style="text-align:right;">
+              <div style="font-size:32px;" id="planTodayIcon">🌤</div>
+              <div style="font-size:13px;opacity:.8;margin-top:4px;" id="planTodayWind">—</div>
+              <div style="font-size:13px;opacity:.8;" id="planTodayWave">—</div>
             </div>
           </div>
+          <!-- Category scores -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:16px;">🚤</div>
+              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;" id="planBoatScore">—</div>
+              <div style="font-size:9px;opacity:.7;">BOAT</div>
+            </div>
+            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:16px;">🚶</div>
+              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;" id="planLandScore">—</div>
+              <div style="font-size:9px;opacity:.7;">LAND</div>
+            </div>
+            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:16px;">🎣</div>
+              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;" id="planGameScore">—</div>
+              <div style="font-size:9px;opacity:.7;">GAME</div>
+            </div>
+            <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:16px;">🦐</div>
+              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;" id="planPrawnScore">—</div>
+              <div style="font-size:9px;opacity:.7;">PRAWNS</div>
+            </div>
+          </div>
+        </div>
 
-          <div class="card">
-            <div class="card-title">🌙 Moon Phase</div>
-            <div style="display:flex;align-items:center;gap:20px;">
-              <div id="moonEmoji" style="font-size:64px;"></div>
-              <div>
-                <div id="moonPhaseName" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;"></div>
-                <div id="moonDetail" style="font-size:12px;color:var(--text3);line-height:1.6;"></div>
-                <div id="moonFishTip" style="font-size:12px;color:var(--accent);margin-top:8px;font-weight:600;"></div>
+        <!-- 7-DAY FORECAST -->
+        <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">📅 7-Day Forecast</div>
+          <div id="sevenDayCards" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+
+        <!-- TIDES TODAY -->
+        <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">🌊 Tides Today</div>
+          <canvas id="tideCanvas" style="width:100%;height:100px;display:block;margin-bottom:12px;"></canvas>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
+            <div style="background:var(--bg2);border-radius:10px;padding:10px;">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">NOW</div>
+              <div style="font-size:18px;font-weight:700;color:var(--text);" id="tideNow">—</div>
+            </div>
+            <div style="background:var(--bg2);border-radius:10px;padding:10px;">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">NEXT HIGH</div>
+              <div style="font-size:14px;font-weight:700;color:var(--accent);" id="tideNextHW">—</div>
+            </div>
+            <div style="background:var(--bg2);border-radius:10px;padding:10px;">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">NEXT LOW</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text2);" id="tideNextLW">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOLUNAR -->
+        <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">🐟 Fish Activity — Solunar</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+            <div style="text-align:center;background:var(--bg2);border-radius:12px;padding:12px 16px;">
+              <div id="solScore" style="font-family:'Syne',sans-serif;font-size:40px;font-weight:900;color:var(--accent);line-height:1;">—</div>
+              <div id="solLabel" style="font-size:10px;color:var(--text3);margin-top:2px;">Loading...</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+              <div style="background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2);border-radius:8px;padding:8px 10px;">
+                <div style="font-size:9px;font-weight:700;color:#16a34a;letter-spacing:1px;">MAJOR FEEDING</div>
+                <div id="majorTimes" style="font-size:12px;font-weight:600;color:var(--text);margin-top:2px;">—</div>
+              </div>
+              <div style="background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.15);border-radius:8px;padding:8px 10px;">
+                <div style="font-size:9px;font-weight:700;color:#f97316;letter-spacing:1px;">MINOR FEEDING</div>
+                <div id="minorTimes" style="font-size:12px;font-weight:600;color:var(--text);margin-top:2px;">—</div>
               </div>
             </div>
           </div>
+          <canvas id="solunarCanvas" style="width:100%;height:120px;display:block;"></canvas>
+          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:6px;">Drag line to see activity at any time</div>
+        </div>
 
-          <div class="card">
-            <div class="card-title">⏰ Best Fishing Windows Today</div>
-            <div id="fishWindows" style="font-size:13px;line-height:2;color:var(--text2);"></div>
+        <!-- MOON & BEST WINDOWS — side by side -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;" class="plan-bottom-grid">
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">🌙 Moon</div>
+            <div style="text-align:center;">
+              <div id="moonEmoji" style="font-size:48px;margin-bottom:8px;"></div>
+              <div id="moonPhaseName" style="font-size:13px;font-weight:700;color:var(--text);"></div>
+              <div id="moonDetail" style="font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5;"></div>
+              <div id="moonFishTip" style="font-size:11px;color:var(--accent);margin-top:8px;font-weight:600;"></div>
+            </div>
+          </div>
+          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">⏰ Best Times</div>
+            <div id="fishWindows" style="font-size:12px;line-height:2;color:var(--text2);"></div>
           </div>
         </div>
+
       </div>
     </div>
 
@@ -1764,7 +1757,7 @@ function showScreen(id, btn) {
   document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (id === 'planScreen') { setTimeout(() => { build7DayPlan(); buildSolunar(); buildTides(); updateMoon(); initSolunarDrag(); buildFishWindows(); }, 100); }
+  if (id === 'planScreen') { setTimeout(() => { build7DayPlan(); buildSolunar(); buildTides(); updateMoon(); initSolunarDrag(); buildFishWindows(); populateTodaySummary(); render7DayCards(); }, 100); }
   if (id === 'catchScreen') loadCatches();
 }
 
@@ -2752,10 +2745,67 @@ async function build7DayPlan() {
     renderTideStrip();
     renderMoonStrip();
     renderOverview();
+    populateTodaySummary();
+    render7DayCards();
 
   } catch(e) {
     console.log('7-day plan error:', e);
   }
+}
+
+function populateTodaySummary() {
+  if (!weekForecastData || !weekForecastData[0]) return;
+  const today = weekForecastData[0];
+  const best = Math.max(today.boatScore, today.landScore, today.gameScore, today.prawnScore);
+  const lbl = best>=75?'Excellent conditions!':best>=60?'Good conditions':best>=45?'Fair conditions':'Poor conditions';
+  const scoreEl = document.getElementById('planTodayScore');
+  const labelEl = document.getElementById('planTodayLabel');
+  const iconEl = document.getElementById('planTodayIcon');
+  const windEl = document.getElementById('planTodayWind');
+  const waveEl = document.getElementById('planTodayWave');
+  if (scoreEl) scoreEl.textContent = best;
+  if (labelEl) labelEl.textContent = lbl;
+  if (iconEl) iconEl.textContent = today.icon;
+  if (windEl) windEl.textContent = '💨 ' + today.wind + 'kn';
+  if (waveEl) waveEl.textContent = '🌊 ' + today.wave + 'm';
+  const b = document.getElementById('planBoatScore'); if(b) b.textContent = today.boatScore;
+  const l = document.getElementById('planLandScore'); if(l) l.textContent = today.landScore;
+  const g = document.getElementById('planGameScore'); if(g) g.textContent = today.gameScore;
+  const p = document.getElementById('planPrawnScore'); if(p) p.textContent = today.prawnScore;
+}
+
+function render7DayCards() {
+  const el = document.getElementById('sevenDayCards');
+  if (!el || !weekForecastData) return;
+  el.innerHTML = weekForecastData.map((day, i) => {
+    const best = Math.max(day.boatScore, day.landScore, day.gameScore, day.prawnScore);
+    const sc = best>=75?'#16a34a':best>=60?'#f97316':best>=45?'#d97706':'#dc2626';
+    const lbl = best>=75?'GREAT':best>=60?'GOOD':best>=45?'FAIR':'POOR';
+    const isToday = i === 0;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${isToday?'rgba(0,102,204,.06)':'var(--bg2)'};border-radius:12px;border:${isToday?'1.5px solid var(--accent)':'1px solid var(--border)'};">
+      <!-- Day -->
+      <div style="min-width:60px;">
+        <div style="font-size:12px;font-weight:700;color:${isToday?'var(--accent)':'var(--text)'};">${day.name}</div>
+        <div style="font-size:10px;color:var(--text3);">${day.d2.getDate()} ${months[day.d2.getMonth()]}</div>
+      </div>
+      <!-- Icon + conditions -->
+      <div style="font-size:24px;">${day.icon}</div>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--text3);">💨 ${day.wind}kn · 🌊 ${day.wave}m · ${day.moonEmoji}</div>
+        <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;">
+          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(0,102,204,.1);color:var(--accent);font-weight:700;">🚤 ${day.boatScore}</span>
+          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(22,163,74,.1);color:#16a34a;font-weight:700;">🚶 ${day.landScore}</span>
+          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(124,58,237,.1);color:#7c3aed;font-weight:700;">🎣 ${day.gameScore}</span>
+          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(217,119,6,.1);color:#d97706;font-weight:700;">🦐 ${day.prawnScore}</span>
+        </div>
+      </div>
+      <!-- Score -->
+      <div style="text-align:center;min-width:44px;">
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:${sc};">${best}</div>
+        <div style="font-size:8px;font-weight:700;color:${sc};">${lbl}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderWeatherStrip() {
