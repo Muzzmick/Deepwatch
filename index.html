@@ -1580,6 +1580,13 @@ const _sb = window._sb;
 
 // ══ STATE ══
 let map, currentUser, editMode = false;
+// Enhanced scoring variables
+let realWindDir = 180;       // wind direction in degrees
+let recentRainfall = 0;      // mm in last 48hrs
+let sstTrend = 0;            // SST change over last week (positive = warming)
+let realCurrentSpeed = 0;    // ocean current speed in knots
+let communityHotspots = {};  // recent catches per spot from Supabase
+let personalPatterns = {};   // personal catch patterns per spot
 let realSST = null, realWave = null, realWind = null;
 let currentTypeFilter = 'all', currentAreaFilter = 'all';
 let compassActive = false, compassHeadingVal = 0;
@@ -1587,100 +1594,74 @@ let compassActive = false, compassHeadingVal = 0;
 // ══ HOTSPOTS ══
 const hotspots = [
   // LAKES ENTRANCE — BOAT
-  {lng:147.9718, lat:-37.8862, name:'Entrance Channel', area:'Lakes Entrance', type:'boat', species:'Snapper · Bream · Whiting · Mulloway', depth:'4–8m', access:'Boat'},
-  {lng:147.9866, lat:-37.8793, name:'Cunninghame Arm', area:'Lakes Entrance', type:'boat', species:'Trevally · Bream · Luderick · Salmon', depth:'2–4m', access:'Boat/Kayak'},
-  {lng:147.9617, lat:-37.8810, name:'Reeve Channel', area:'Lakes Entrance', type:'boat', species:'Flathead · Luderick · Whiting · Bream', depth:'3–5m', access:'Boat'},
-  {lng:147.9548, lat:-37.8770, name:'Kalimna Water', area:'Lakes Entrance', type:'boat', species:'Bream · Trevally · Whiting · Mullet', depth:'2–4m', access:'Boat/Kayak'},
-  // LAKES ENTRANCE — LAND
-  {lng:147.9933, lat:-37.8785, name:'Cunninghame Arm Footbridge', area:'Lakes Entrance', type:'land', species:'Trevally · Bream · Luderick', depth:'2–4m', access:'Footbridge'},
-  {lng:147.9908, lat:-37.8775, name:'Myer St Jetty', area:'Lakes Entrance', type:'land', species:'Bream · Trevally · Luderick · Mullet', depth:'2–3m', access:'Public jetty'},
-  {lng:147.9780, lat:-37.8810, name:'Entrance Rock Wall', area:'Lakes Entrance', type:'land', species:'Salmon · Tailor · Bream · Whiting', depth:'2–6m', access:'Rock wall'},
-  {lng:147.9548, lat:-37.8730, name:'Kalimna Jetty', area:'Lakes Entrance', type:'land', species:'Bream · Flathead · Whiting', depth:'2–4m', access:'Public jetty'},
+  {lng:147.9718,lat:-37.8862,name:'Entrance Channel',area:'Lakes Entrance',type:'boat',species:'Snapper · Bream · Whiting · Mulloway',depth:'4–8m',access:'Boat',sheltered:['W','NW','N'],exposedTo:['SE','E','S'],safety:'moderate'},
+  {lng:147.9866,lat:-37.8793,name:'Cunninghame Arm',area:'Lakes Entrance',type:'boat',species:'Trevally · Bream · Flathead',depth:'2–5m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9750,lat:-37.8820,name:'Reeve Channel',area:'Lakes Entrance',type:'boat',species:'Flathead · Bream · Whiting',depth:'3–6m',access:'Boat',sheltered:['S','SW','W','NW'],exposedTo:['NE','E'],safety:'moderate'},
+  {lng:147.9650,lat:-37.8780,name:'Kalimna Water',area:'Lakes Entrance',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SE','SW'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.9820,lat:-37.8760,name:'North Arm West',area:'Lakes Entrance',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9550,lat:-37.8720,name:'Nungurner Channel',area:'Lakes Entrance',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SW','W'],exposedTo:['NE','N'],safety:'moderate'},
+  {lng:147.9880,lat:-37.8810,name:'Cunninghame Arm Footbridge',area:'Lakes Entrance',type:'land',species:'Bream · Luderick · Trevally · Mulloway',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9830,lat:-37.8840,name:'Myer St Jetty',area:'Lakes Entrance',type:'land',species:'Bream · Trevally · Luderick · Garfish',depth:'2–4m',access:'Land',sheltered:['SW','W','NW','S'],exposedTo:['NE','E'],safety:'moderate'},
+  {lng:147.9700,lat:-37.8900,name:'Entrance Rock Wall',area:'Lakes Entrance',type:'land',species:'Salmon · Trevally · Snapper',depth:'4–8m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.9600,lat:-37.8750,name:'Kalimna Jetty',area:'Lakes Entrance',type:'land',species:'Bream · Whiting · Flathead · Garfish',depth:'2–4m',access:'Land',sheltered:['S','SW','W'],exposedTo:['NE','E','SE'],safety:'moderate'},
+  {lng:147.9500,lat:-37.8700,name:'Nungurner Jetty',area:'Lakes Entrance',type:'land',species:'Bream · Flathead · Trevally · Luderick',depth:'2–3m',access:'Land',sheltered:['S','SW','W','NW'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.9850,lat:-37.8950,name:'Surf Beach Access',area:'Lakes Entrance',type:'land',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
   // METUNG
-  {lng:147.8590, lat:-37.8900, name:'Bancroft Bay', area:'Metung', type:'boat', species:'Bream · Flathead · Trevally · Whiting', depth:'2–5m', access:'Boat'},
-  {lng:147.8350, lat:-37.8950, name:'Shaving Point', area:'Metung', type:'boat', species:'KG Whiting · Trevally · Snapper', depth:'3–6m', access:'Boat'},
-  {lng:147.8520, lat:-37.8850, name:'Metung Marina', area:'Metung', type:'land', species:'Bream · Whiting · Mullet · Trevally', depth:'2–4m', access:'Marina boardwalk'},
+  {lng:147.8650,lat:-37.8900,name:'Bancroft Bay',area:'Metung',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.8700,lat:-37.8850,name:'Shaving Point',area:'Metung',type:'land',species:'Bream · Flathead · Trevally',depth:'1–3m',access:'Land',sheltered:['S','SW','W','NW'],exposedTo:['NE','N'],safety:'moderate'},
+  {lng:147.8800,lat:-37.8820,name:'Lake King Tambo Bay',area:'Metung',type:'boat',species:'Bream · Flathead · Perch',depth:'2–5m',access:'Boat',sheltered:['S','SE','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.8600,lat:-37.8920,name:'Metung Marina',area:'Metung',type:'land',species:'Bream · Garfish · Trevally',depth:'2–3m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.8550,lat:-37.8950,name:'Metung Boat Ramp',area:'Metung',type:'boat',species:'Bream · Flathead · Whiting',depth:'2–4m',access:'Boat',sheltered:['N','NE','SE','S','SW'],exposedTo:['NW','W'],safety:'moderate'},
   // PAYNESVILLE
-  {lng:147.7193, lat:-37.9200, name:'McMillan Strait', area:'Paynesville', type:'boat', species:'Bream · Flathead · Trevally · Mulloway', depth:'3–6m', access:'Boat'},
-  {lng:147.6800, lat:-37.8900, name:'Mitchell River Mouth', area:'Paynesville', type:'boat', species:'Bream · Perch · Flathead · Mullet', depth:'3–6m', access:'Boat'},
-  {lng:147.7200, lat:-37.9180, name:'Paynesville Wharf', area:'Paynesville', type:'land', species:'Bream · Trevally · Luderick · Mullet', depth:'2–4m', access:'Public wharf'},
-  {lng:147.6600, lat:-37.8950, name:'Mitchell River Silt Jetties', area:'Paynesville', type:'land', species:'Bream · Flathead · Mullet · Garfish', depth:'2–4m', access:'Silt jetties walk'},
+  {lng:147.7200,lat:-37.9100,name:'McMillan Strait',area:'Paynesville',type:'boat',species:'Flathead · Bream · Snapper · Trevally',depth:'3–6m',access:'Boat',sheltered:['S','SE','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.7100,lat:-37.9050,name:'Mitchell River Mouth',area:'Paynesville',type:'boat',species:'Mulloway · Bream · Flathead · Perch',depth:'2–5m',access:'Boat',sheltered:['SW','W','NW','S'],exposedTo:['NE','E'],safety:'moderate'},
+  {lng:147.7300,lat:-37.9150,name:'Wattle Point',area:'Paynesville',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SE','SW'],exposedTo:['N','NW'],safety:'moderate'},
+  {lng:147.7150,lat:-37.9080,name:'Paynesville Wharf',area:'Paynesville',type:'land',species:'Bream · Trevally · Garfish · Luderick',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.7050,lat:-37.9020,name:'Mitchell River Silt Jetties',area:'Paynesville',type:'land',species:'Mulloway · Bream · Flathead',depth:'3–6m',access:'Land',sheltered:['SW','W','NW'],exposedTo:['NE','E','SE'],safety:'moderate'},
+  {lng:147.7400,lat:-37.9200,name:'Raymond Island Jetty',area:'Paynesville',type:'land',species:'Bream · Flathead · Trevally · Garfish',depth:'2–3m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.6950,lat:-37.8950,name:'Eagle Point Jetty',area:'Paynesville',type:'land',species:'Bream · Flathead · Trevally',depth:'1–3m',access:'Land',sheltered:['S','SW','W','SE'],exposedTo:['N','NE'],safety:'moderate'},
   // TAMBO RIVER
-  {lng:147.8200, lat:-37.8800, name:'Tambo River Mouth', area:'Tambo River', type:'boat', species:'Bream · Flathead · Mulloway · Perch', depth:'3–8m', access:'Boat'},
-  {lng:147.6730, lat:-37.8230, name:'Tambo Princes Hwy Bridge', area:'Tambo River', type:'land', species:'Bream · Perch · Catfish', depth:'2–4m', access:'Bridge & bank'},
+  {lng:147.8500,lat:-37.8600,name:'Tambo River Mouth',area:'Tambo River',type:'boat',species:'Mulloway · Bream · Flathead · Perch',depth:'2–5m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.8200,lat:-37.8300,name:'Tambo Johnsonville',area:'Tambo River',type:'land',species:'Bream · Perch · Mulloway · Flathead',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.7900,lat:-37.8100,name:'Tambo Princes Hwy Bridge',area:'Tambo River',type:'land',species:'Bream · Perch · Mulloway',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.8300,lat:-37.8450,name:'Marshalls Flat',area:'Tambo River',type:'boat',species:'Bream · Perch · Mulloway · Flathead',depth:'2–4m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
   // NICHOLSON RIVER
-  {lng:147.7300, lat:-37.8700, name:'Nicholson River', area:'Nicholson River', type:'boat', species:'Bream · Luderick · Flathead · Perch', depth:'2–5m', access:'Boat/Kayak'},
+  {lng:147.7300,lat:-37.8200,name:'Nicholson River',area:'Nicholson River',type:'boat',species:'Bream · Perch · Flathead',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.7200,lat:-37.8100,name:'Nicholson River Bank',area:'Nicholson River',type:'land',species:'Bream · Perch · Flathead · Tench',depth:'1–2m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
   // LAKE WELLINGTON
-  {lng:147.3500, lat:-38.0500, name:'Lake Wellington', area:'Lake Wellington', type:'boat', species:'Flathead · Whiting · Bream', depth:'2–4m', access:'Boat'},
-  {lng:147.0700, lat:-38.1100, name:'Sale Canal Jetty', area:'Lake Wellington', type:'land', species:'Bream · Trevally · Mullet', depth:'2–4m', access:'Public jetty'},
+  {lng:147.4500,lat:-38.0500,name:'Lake Wellington',area:'Lake Wellington',type:'boat',species:'Bream · Flathead · Trevally · Perch',depth:'2–4m',access:'Boat',sheltered:['S','SW','SE'],exposedTo:['N','NW','NE'],safety:'moderate'},
+  {lng:147.5000,lat:-38.0300,name:'McLennans Strait',area:'Lake Wellington',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.0700,lat:-38.1000,name:'Sale Canal Jetty',area:'Lake Wellington',type:'land',species:'Bream · Perch · Redfin · Tench',depth:'1–3m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.5700,lat:-37.9500,name:'Loch Sport Jetty',area:'Lake Wellington',type:'land',species:'Bream · Trevally · Flathead · Whiting',depth:'2–3m',access:'Land',sheltered:['S','SW','W','SE'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.4000,lat:-38.0800,name:'Wellington River Mouth',area:'Lake Wellington',type:'boat',species:'Mulloway · Bream · Flathead',depth:'2–5m',access:'Boat',sheltered:['S','SW','W'],exposedTo:['N','NE','E'],safety:'moderate'},
   // LAKE VICTORIA
-  {lng:147.6000, lat:-37.9600, name:'Jones Bay', area:'Lake Victoria', type:'boat', species:'Bream · Flathead · Whiting · Trevally', depth:'2–5m', access:'Boat'},
-  {lng:147.5750, lat:-37.9280, name:'Loch Sport Foreshore', area:'Lake Victoria', type:'land', species:'Bream · Trevally · Whiting', depth:'1–3m', access:'Foreshore banks'},
+  {lng:147.7500,lat:-37.9500,name:'Jones Bay',area:'Lake Victoria',type:'boat',species:'Bream · Flathead · Trevally · Snapper',depth:'3–6m',access:'Boat',sheltered:['S','SE','SW'],exposedTo:['N','NW','NE'],safety:'moderate'},
+  {lng:147.8000,lat:-37.9200,name:'Bunga Arm',area:'Lake Victoria',type:'boat',species:'Bream · Flathead · Perch',depth:'2–4m',access:'Boat',sheltered:['S','SW','SE','W'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.5800,lat:-37.9400,name:'Loch Sport Foreshore',area:'Lake Victoria',type:'land',species:'Bream · Trevally · Flathead · Whiting',depth:'1–3m',access:'Land',sheltered:['S','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
   // LAKE TYERS
-  {lng:148.0900, lat:-37.8350, name:'Lake Tyers Channel', area:'Lake Tyers', type:'boat', species:'Bream · Flathead · Whiting · Mullet', depth:'2–5m', access:'Boat'},
-  {lng:148.0850, lat:-37.8400, name:'Lake Tyers Boat Ramp', area:'Lake Tyers', type:'land', species:'Bream · Flathead · Whiting', depth:'2–4m', access:'Boat ramp banks'},
+  {lng:148.0700,lat:-37.8600,name:'Lake Tyers Channel',area:'Lake Tyers',type:'boat',species:'Bream · Flathead · Trevally · Mulloway',depth:'2–5m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:148.0800,lat:-37.8500,name:'Lake Tyers Upper',area:'Lake Tyers',type:'boat',species:'Bream · Perch · Flathead',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:148.0600,lat:-37.8700,name:'Lake Tyers Boat Ramp',area:'Lake Tyers',type:'boat',species:'Bream · Flathead · Trevally',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:148.0900,lat:-37.8800,name:'Lake Tyers Beach',area:'Lake Tyers',type:'land',species:'Salmon · Bream · Flathead · Whiting',depth:'1–4m',access:'Land',sheltered:['N','NW','W'],exposedTo:['SE','E','S'],safety:'moderate'},
   // NINETY MILE BEACH
-  {lng:147.8000, lat:-38.0400, name:'Seaspray Beach', area:'Ninety Mile Beach', type:'land', species:'Salmon · Tailor · Whiting', depth:'1–4m', access:'Beach surf'},
-  {lng:147.6500, lat:-38.0600, name:'Golden Beach', area:'Ninety Mile Beach', type:'land', species:'Salmon · Tailor · Whiting', depth:'1–3m', access:'Beach surf'},
+  {lng:147.5200,lat:-38.2500,name:'Seaspray Beach',area:'Ninety Mile Beach',type:'land',species:'Salmon · Tailor · Gummy Shark · Snapper',depth:'1–5m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.3500,lat:-38.3000,name:'Golden Beach',area:'Ninety Mile Beach',type:'land',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.1500,lat:-38.3500,name:'Paradise Beach',area:'Ninety Mile Beach',type:'land',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
   // GAME FISHING
-  {lng:147.9500, lat:-37.9800, name:'Snapper Grounds (8nm)', area:'Game Fishing', type:'game', species:'Snapper · Morwong · Blue Eye Trevalla', depth:'60–80m', access:'Boat 8nm offshore'},
-  {lng:148.0500, lat:-37.9500, name:'Tuna Grounds (10nm)', area:'Game Fishing', type:'game', species:'Yellowfin Tuna · Bluefin Tuna · Albacore', depth:'50–100m', access:'Boat 10nm offshore'},
-  {lng:148.0371, lat:-38.0018, name:'6 Mile Reef', area:'Game Fishing', type:'game', species:'Snapper · Gummy Shark · Reef Perch', depth:'37–40m', access:'Boat 6nm offshore'},
-  {lng:148.1500, lat:-38.1000, name:'Bass Strait 20nm', area:'Game Fishing', type:'game', species:'Yellowfin Tuna · Sailfish · Marlin · Mahi Mahi', depth:'200–400m', access:'Offshore 20nm+'},
+  {lng:148.1000,lat:-37.9800,name:'Snapper Grounds 8nm',area:'Game Fishing',type:'game',species:'Snapper · Gummy Shark · Trevally',depth:'30–50m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.1500,lat:-38.0200,name:'Tuna Grounds 10nm',area:'Game Fishing',type:'game',species:'Yellowfin Tuna · Bluefin Tuna · Mahi Mahi',depth:'50–80m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.0800,lat:-37.9600,name:'6 Mile Reef',area:'Game Fishing',type:'game',species:'Snapper · Trevally · Kingfish · Gummy',depth:'20–35m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.3000,lat:-38.1500,name:'Continental Shelf Edge 15nm',area:'Game Fishing',type:'game',species:'Marlin · Tuna · Mahi Mahi · Wahoo',depth:'100–200m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.5000,lat:-38.3000,name:'Bass Strait 20nm',area:'Game Fishing',type:'game',species:'Bluefin Tuna · Marlin · Kingfish',depth:'50–100m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.8000,lat:-38.5000,name:'Bass Strait 30nm',area:'Game Fishing',type:'game',species:'Bluefin Tuna · Southern Bluefin · Marlin',depth:'80–150m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
   // PRAWNING & CRABBING
-  {lng:147.9617, lat:-37.8790, name:'North Arm Prawning', area:'Prawning & Crabbing', type:'prawn', species:'School Prawns · Endeavour Prawns', depth:'1–3m', access:'Boat/Kayak — dip net night'},
-  {lng:147.9933, lat:-37.8785, name:'Cunninghame Arm Crabbing', area:'Prawning & Crabbing', type:'prawn', species:'Blue Swimmer Crab · School Prawns', depth:'1–3m', access:'Drop nets from footbridge'},
-  {lng:147.9908, lat:-37.8775, name:'Myer St Jetty Crabbing', area:'Prawning & Crabbing', type:'prawn', species:'Blue Swimmer Crab · School Prawns', depth:'2–3m', access:'Drop nets from jetty'},
-  {lng:147.9548, lat:-37.8730, name:'Kalimna Jetty Crabbing', area:'Prawning & Crabbing', type:'prawn', species:'Blue Swimmer Crab · School Prawns', depth:'2–3m', access:'Drop nets from jetty'},
-  {lng:147.8520, lat:-37.8850, name:'Metung Prawning', area:'Prawning & Crabbing', type:'prawn', species:'School Prawns · Blue Swimmer Crab', depth:'1–2m', access:'Dip net at night'},
-  {lng:147.7193, lat:-37.9180, name:'Paynesville Prawning', area:'Prawning & Crabbing', type:'prawn', species:'School Prawns · Blue Swimmer Crab', depth:'1–3m', access:'Boat/Kayak — net'},
-
-  // LAKES ENTRANCE — extra boat spots
-  {lng:147.9400, lat:-37.8740, name:'Nungurner Channel', area:'Lakes Entrance', type:'boat', species:'Whiting · Flathead · Mullet', depth:'2–4m', access:'Boat/Kayak'},
-  {lng:147.9100, lat:-37.8760, name:'North Arm West', area:'Lakes Entrance', type:'boat', species:'Bream · Whiting · Trevally · Luderick', depth:'2–4m', access:'Boat/Kayak'},
-
-  // LAKES ENTRANCE — extra land spots
-  {lng:147.9400, lat:-37.8720, name:'Nungurner Jetty', area:'Lakes Entrance', type:'land', species:'Bream · Whiting · Mullet · Luderick', depth:'1–3m', access:'Public jetty'},
-  {lng:148.0124, lat:-37.8783, name:'Surf Beach Access', area:'Lakes Entrance', type:'land', species:'Salmon · Tailor · Whiting', depth:'1–3m', access:'Ninety Mile Beach'},
-
-  // METUNG — extra
-  {lng:147.8100, lat:-37.9000, name:'Lake King — Tambo Bay', area:'Metung', type:'boat', species:'Bream · Flathead · Whiting', depth:'2–4m', access:'Boat/Kayak'},
-  {lng:147.8400, lat:-37.8870, name:'Metung Boat Ramp', area:'Metung', type:'land', species:'Bream · Flathead · Luderick', depth:'2–3m', access:'Boat ramp banks'},
-
-  // PAYNESVILLE — extra
-  {lng:147.7400, lat:-37.9100, name:'Wattle Point', area:'Paynesville', type:'boat', species:'Bream · Whiting · Flathead', depth:'2–4m', access:'Boat/Kayak'},
-  {lng:147.7300, lat:-37.9100, name:'Raymond Island Jetty', area:'Paynesville', type:'land', species:'Bream · Flathead · Whiting', depth:'2–4m', access:'Public jetty'},
-  {lng:147.6800, lat:-37.8950, name:'Eagle Point Jetty', area:'Paynesville', type:'land', species:'Bream · Perch · Flathead · Garfish', depth:'2–5m', access:'Public jetty'},
-
-  // TAMBO RIVER — extra
-  {lng:147.7500, lat:-37.8200, name:'Tambo River — Johnsonville', area:'Tambo River', type:'boat', species:'Bream · Perch · Flathead · Mullet', depth:'2–5m', access:'Boat — ramp at Johnsonville'},
-  {lng:147.8200, lat:-37.8790, name:'Marshalls Flat', area:'Tambo River', type:'land', species:'Bream · Mulloway · Flathead', depth:'2–6m', access:'River bank — Metung Rd'},
-
-  // NICHOLSON RIVER — extra
-  {lng:147.7250, lat:-37.8680, name:'Nicholson River Bank', area:'Nicholson River', type:'land', species:'Bream · Perch · Luderick', depth:'1–3m', access:'West bank — below Hwy bridge'},
-
-  // LAKE WELLINGTON — extra
-  {lng:147.2800, lat:-38.0700, name:'McLennans Strait', area:'Lake Wellington', type:'boat', species:'Bream · Perch · Flathead · Trevally', depth:'3–6m', access:'Boat'},
-  {lng:147.3800, lat:-38.0600, name:'Loch Sport Jetty', area:'Lake Wellington', type:'land', species:'Bream · Trevally · Flathead · Whiting', depth:'2–4m', access:'Public jetty'},
-  {lng:147.3500, lat:-38.0820, name:'Wellington River Mouth', area:'Lake Wellington', type:'land', species:'Mulloway · Bream · Flathead', depth:'3–6m', access:'River mouth bank'},
-
-  // LAKE VICTORIA — extra
-  {lng:147.5500, lat:-37.9800, name:'Bunga Arm', area:'Lake Victoria', type:'boat', species:'Bream · Trevally · Flathead', depth:'2–4m', access:'Boat'},
-
-  // LAKE TYERS — extra
-  {lng:148.0750, lat:-37.8200, name:'Lake Tyers Upper', area:'Lake Tyers', type:'boat', species:'Bream · Whiting · Perch', depth:'1–3m', access:'Boat/Kayak'},
-  {lng:148.0900, lat:-37.8600, name:'Lake Tyers Beach', area:'Lake Tyers', type:'land', species:'Salmon · Tailor · Whiting', depth:'1–3m', access:'Beach surf'},
-
-  // NINETY MILE BEACH — extra
-  {lng:147.4500, lat:-38.0800, name:'Paradise Beach', area:'Ninety Mile Beach', type:'land', species:'Salmon · Tailor · Snapper · Mulloway', depth:'1–4m', access:'Beach surf'},
-
-  // GAME FISHING — extra
-  {lng:148.0800, lat:-38.0500, name:'Continental Shelf Edge', area:'Game Fishing', type:'game', species:'Yellowfin Tuna · Sailfish · Marlin · Wahoo', depth:'100–200m', access:'Offshore 15nm+'},
-  {lng:148.2000, lat:-38.2000, name:'Bass Strait 30nm', area:'Game Fishing', type:'game', species:'Striped Marlin · Sailfish · Bluefin Tuna · Swordfish', depth:'400–600m', access:'Offshore 30nm+'},
-];
-
-// Area list
-const areas = [...new Set(hotspots.map(h => h.area))];
+  {lng:147.9820,lat:-37.8760,name:'North Arm Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9866,lat:-37.8793,name:'Cunninghame Arm Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'Blue Swimmer Crab · School Prawns',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9830,lat:-37.8840,name:'Myer St Jetty Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'Blue Swimmer Crab · School Prawns',depth:'2–4m',access:'Land',sheltered:['SW','W','NW','S'],exposedTo:['NE','E'],safety:'moderate'},
+  {lng:147.9600,lat:-37.8750,name:'Kalimna Jetty Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'2–3m',access:'Land',sheltered:['S','SW','W'],exposedTo:['NE','E','SE'],safety:'moderate'},
+  {lng:147.8600,lat:-37.8920,name:'Metung Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.7150,lat:-37.9080,name:'Paynesville Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+]
 
 // ══ THEME ══
 let isDark = false;
@@ -1839,6 +1820,7 @@ function startApp(user) {
   buildAreaButtons();
   fetchConditions();
   updateScores();
+  setTimeout(() => { loadCommunityHotspots(); loadPersonalPatterns(); }, 2000);
   updateMoon();
   build7DayPlan();
   buildSolunar();
@@ -2194,6 +2176,59 @@ function toggleLayer(layer, row) {
 }
 
 // ══ LOAD CATCH DOTS ══
+// ── COMMUNITY HOTSPOTS (recent catches per spot) ──
+async function loadCommunityHotspots() {
+  try {
+    const cutoff = new Date(Date.now() - 24*60*60*1000).toISOString();
+    const { data } = await _sb.from('catches')
+      .select('location')
+      .gte('created_at', cutoff)
+      .not('location', 'is', null);
+    if (!data) return;
+    communityHotspots = {};
+    data.forEach(r => {
+      if (r.location) communityHotspots[r.location] = (communityHotspots[r.location]||0)+1;
+    });
+    updateScores();
+  } catch(e) { console.log('Community hotspots error:', e); }
+}
+
+// ── PERSONAL PATTERNS (your catch history per spot) ──
+async function loadPersonalPatterns() {
+  if (!currentUser) return;
+  try {
+    const { data } = await _sb.from('catches')
+      .select('location,notes,created_at,weight_kg')
+      .eq('vessel_name', currentUser.email.split('@')[0])
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (!data) return;
+    personalPatterns = {};
+    data.forEach(r => {
+      if (!r.location) return;
+      if (!personalPatterns[r.location]) personalPatterns[r.location] = { catches:[], catchCount:0 };
+      personalPatterns[r.location].catchCount++;
+      personalPatterns[r.location].catches.push(r);
+    });
+    // Calculate best conditions per spot
+    Object.keys(personalPatterns).forEach(loc => {
+      const p = personalPatterns[loc];
+      if (p.catchCount >= 2) {
+        // Extract conditions from notes if available
+        const notes = p.catches.map(c => c.notes || '').join(' ');
+        const windMatch = notes.match(/([0-9]+)kn/);
+        const waveMatch = notes.match(/([0-9.]+)m swell/);
+        if (windMatch) p.bestWind = parseFloat(windMatch[1]);
+        if (waveMatch) p.bestWave = parseFloat(waveMatch[1]);
+        // Best hour from timestamps
+        const hours = p.catches.map(c => new Date(c.created_at).getHours());
+        p.bestHour = Math.round(hours.reduce((a,b)=>a+b,0)/hours.length);
+      }
+    });
+    updateScores();
+  } catch(e) { console.log('Personal patterns error:', e); }
+}
+
 async function loadCatchDots() {
   try {
     const { data } = await _sb.from('catches').select('lat,lng,species,vessel_name').not('lat','is',null);
@@ -2322,6 +2357,94 @@ function getPressureTrend() {
   return newest - oldest; // positive = rising, negative = falling
 }
 
+// ══ ENHANCED 10-FACTOR SCORING ══
+
+// Wind direction degrees to compass
+function getWindDir() {
+  return realWindDir || 180; // default S if no data
+}
+
+function degreesToCompass(deg) {
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg / 22.5) % 16];
+}
+
+function getWindShelterBonus(h) {
+  if (!h.sheltered || !h.exposedTo) return 0;
+  const windDeg = getWindDir();
+  const windDir = degreesToCompass(windDeg);
+  // Check main compass directions
+  const mainDir = ['N','NE','E','SE','S','SW','W','NW'].find(d => windDir.includes(d)) || windDir;
+  const wind = realWind || 10;
+  if (wind < 8) return 0; // calm — no shelter advantage needed
+  if (h.sheltered.some(d => mainDir.includes(d) || d.includes(mainDir))) {
+    // Sheltered from this wind direction
+    const bonus = wind > 20 ? 20 : wind > 15 ? 15 : 10;
+    return bonus;
+  }
+  if (h.exposedTo.some(d => mainDir.includes(d) || d.includes(mainDir))) {
+    // Exposed to this wind direction
+    const penalty = wind > 20 ? -20 : wind > 15 ? -12 : -6;
+    return penalty;
+  }
+  return 0;
+}
+
+function getRainfallPenalty(h) {
+  if (!recentRainfall) return 0;
+  // River and lake spots penalised after heavy rain (turbid water)
+  if (h.area === 'Tambo River' || h.area === 'Nicholson River') {
+    return recentRainfall > 50 ? -25 : recentRainfall > 20 ? -15 : recentRainfall > 10 ? -8 : 0;
+  }
+  if (h.area === 'Lake Wellington' || h.area === 'Paynesville') {
+    return recentRainfall > 50 ? -15 : recentRainfall > 20 ? -8 : 0;
+  }
+  // Offshore spots get bonus after rain washes bait out
+  if (h.type === 'game') {
+    return recentRainfall > 20 ? 5 : 0;
+  }
+  return 0;
+}
+
+function getSSTTrendBonus() {
+  if (!sstTrend) return 0;
+  // Rising SST = fish more active
+  return sstTrend > 0.5 ? 8 : sstTrend > 0.2 ? 4 : sstTrend < -0.5 ? -6 : 0;
+}
+
+function getCurrentBonus(h) {
+  if (!realCurrentSpeed) return 0;
+  // Moderate current (0.5-1.5 knots) is ideal — bait fish active
+  if (realCurrentSpeed >= 0.5 && realCurrentSpeed <= 1.5) return 6;
+  if (realCurrentSpeed > 2.5) return -8; // too strong
+  return 0;
+}
+
+function getCommunityBonus(h) {
+  if (!communityHotspots || !communityHotspots[h.name]) return 0;
+  const catches = communityHotspots[h.name];
+  // Recent catches in last 24hrs
+  if (catches >= 5) return 15;
+  if (catches >= 3) return 10;
+  if (catches >= 1) return 5;
+  return 0;
+}
+
+function getPersonalBonus(h) {
+  if (!personalPatterns || !personalPatterns[h.name]) return 0;
+  const pattern = personalPatterns[h.name];
+  const wind = realWind || 10;
+  const wave = realWave || 0.8;
+  const hour = new Date().getHours();
+  let bonus = 0;
+  // Check if current conditions match personal best conditions
+  if (pattern.bestWind && Math.abs(wind - pattern.bestWind) < 5) bonus += 10;
+  if (pattern.bestWave && Math.abs(wave - pattern.bestWave) < 0.3) bonus += 8;
+  if (pattern.bestHour && Math.abs(hour - pattern.bestHour) < 2) bonus += 8;
+  if (pattern.catchCount >= 3) bonus += 5; // familiarity bonus
+  return Math.min(bonus, 25); // cap personal bonus at 25pts
+}
+
 function getSpotScore(h) {
   const sst = realSST || 18;
   const wave = realWave || 0.8;
@@ -2331,40 +2454,75 @@ function getSpotScore(h) {
   const sol = getSolunarScore(hour)/100;
   const moon = getMoonScore();
   const tide = getTideScore();
-  // Pressure trend bonus/penalty
   const pressTrend = getPressureTrend();
   const pressBonus = pressTrend > 1 ? 8 : pressTrend > 0.3 ? 4 : pressTrend < -1 ? -12 : pressTrend < -0.3 ? -6 : 0;
+
+  // New scoring factors
+  const shelterBonus = getWindShelterBonus(h);
+  const rainPenalty = getRainfallPenalty(h);
+  const sstTrendBonus = getSSTTrendBonus();
+  const currentBonus = getCurrentBonus(h);
+  const communityBonus = getCommunityBonus(h);
+  const personalBonus = getPersonalBonus(h);
+
+  let score = 0;
 
   if (h.type === 'game') {
     const sstOk = sst >= 20 && sst <= 28 ? 30 : sst >= 18 ? 15 : 5;
     const waveOk = wave < 1.0 ? 25 : wave < 1.5 ? 15 : wave < 2.0 ? 8 : 2;
     const windOk = wind < 12 ? 20 : wind < 18 ? 12 : wind < 25 ? 6 : 2;
     const seasonal = (month >= 10 || month <= 4) ? 15 : 5;
-    return Math.min(99, Math.max(20, Math.round(sstOk + waveOk + windOk + seasonal + sol*10)));
+    score = sstOk + waveOk + windOk + seasonal + sol*10 + sstTrendBonus + communityBonus + personalBonus;
   }
-  if (h.type === 'prawn') {
+  else if (h.type === 'prawn') {
     const night = hour >= 20 || hour <= 5 ? 35 : 5;
     const sstOk = sst >= 18 ? 20 : 8;
     const waveOk = wave < 0.5 ? 20 : wave < 1.0 ? 12 : 4;
     const windOk = wind < 10 ? 15 : wind < 15 ? 8 : 3;
-    return Math.min(99, Math.max(20, Math.round(night + moon + sstOk + waveOk + windOk)));
+    score = night + moon + sstOk + waveOk + windOk + shelterBonus + rainPenalty + communityBonus + personalBonus;
   }
-  if (h.species && (h.species.includes('Salmon') || h.species.includes('Tailor')) && h.type === 'land') {
+  else if (h.species && (h.species.includes('Salmon') || h.species.includes('Tailor')) && h.type === 'land') {
     const swellOk = wave >= 0.5 && wave <= 2.0 ? 30 : 10;
     const windOk = wind >= 5 && wind <= 20 ? 20 : 8;
     const dawn = (hour >= 5 && hour <= 8)||(hour >= 17 && hour <= 20) ? 20 : 5;
-    return Math.min(99, Math.max(20, Math.round(swellOk + windOk + dawn + sol*15)));
+    score = swellOk + windOk + dawn + sol*15 + communityBonus + personalBonus;
+    // Surf beaches: exposed is OK, actually prefer some swell
   }
-  if (h.area === 'Tambo River' || h.area === 'Nicholson River') {
+  else if (h.area === 'Tambo River' || h.area === 'Nicholson River') {
     const dawn = (hour >= 5 && hour <= 9)||(hour >= 16 && hour <= 20) ? 20 : 8;
-    return Math.min(99, Math.max(20, Math.round(sol*25 + moon + dawn + 15)));
+    score = sol*25 + moon + dawn + 15 + rainPenalty + communityBonus + personalBonus;
   }
-  // Standard inshore
-  const sstOk = sst >= 16 && sst <= 22 ? 22 : sst >= 14 ? 14 : 6;
-  const waveOk = wave < 0.5 ? 22 : wave < 1.0 ? 18 : wave < 1.5 ? 10 : 4;
-  const windOk = wind < 8 ? 22 : wind < 15 ? 16 : wind < 20 ? 8 : 3;
-  const dawn = (hour >= 5 && hour <= 8)||(hour >= 17 && hour <= 19) ? 8 : 0;
-  return Math.min(99, Math.max(20, Math.round(sstOk + waveOk + windOk + tide*0.7 + moon*0.6 + sol*14 + dawn + pressBonus)));
+  else {
+    // Standard inshore — boat and land
+    const sstOk = sst >= 16 && sst <= 22 ? 22 : sst >= 14 ? 14 : 6;
+    const waveOk = wave < 0.5 ? 22 : wave < 1.0 ? 18 : wave < 1.5 ? 10 : 4;
+    const windOk = wind < 8 ? 22 : wind < 15 ? 16 : wind < 20 ? 8 : 3;
+    const dawn = (hour >= 5 && hour <= 8)||(hour >= 17 && hour <= 19) ? 8 : 0;
+    score = sstOk + waveOk + windOk + tide*0.7 + moon*0.6 + sol*14 + dawn + pressBonus + shelterBonus + rainPenalty + sstTrendBonus + currentBonus + communityBonus + personalBonus;
+  }
+
+  return Math.min(99, Math.max(20, Math.round(score)));
+}
+
+// Safety warning for exposed spots
+function getSpotSafetyWarning(h) {
+  const wave = realWave || 0.8;
+  const wind = realWind || 10;
+  if (!h.safety || h.safety === 'sheltered') return null;
+  if (h.safety === 'exposed') {
+    if (wave > 1.2 || wind > 20) return '🚫 Unsafe in current conditions';
+    if (wave > 0.8 || wind > 15) return '⚠️ Use caution — exposed spot';
+  }
+  if (h.safety === 'moderate') {
+    if (wave > 1.5 && h.exposedTo && h.exposedTo.length > 0) {
+      const windDir = degreesToCompass(getWindDir());
+      const mainDir = ['N','NE','E','SE','S','SW','W','NW'].find(d => windDir.includes(d));
+      if (mainDir && h.exposedTo.some(d => d.includes(mainDir) || mainDir.includes(d))) {
+        return "⚠️ Exposed to current conditions";
+      }
+    }
+  }
+  return null;
 }
 
 function updateScores() {
@@ -2409,11 +2567,21 @@ function updateScores() {
     html += `<div style="font-size:10px;font-weight:700;color:${typeColors[type]};letter-spacing:1px;padding:8px 0 4px;border-top:1px solid var(--border);margin-top:4px;">${typeLabels[type]}</div>`;
     typeSpots.slice(0, currentTypeFilter==='all' ? 3 : 8).forEach(({h,i,score}, rank) => {
       const scoreColor = score >= 75 ? 'var(--green)' : score >= 55 ? 'var(--orange)' : 'var(--red)';
+      const warning = getSpotSafetyWarning(h);
+      const shelterB = getWindShelterBonus(h);
+      const communityB = getCommunityBonus(h);
+      const personalB = getPersonalBonus(h);
+      let badges = '';
+      if (warning) badges += `<span style="font-size:9px;color:var(--red);font-weight:700;display:block;">${warning}</span>`;
+      if (shelterB > 8) badges += `<span style="font-size:9px;color:var(--green);font-weight:700;">🛡️ Wind protected</span> `;
+      if (communityB > 0) badges += `<span style="font-size:9px;color:var(--orange);font-weight:700;">🔥 Active today</span> `;
+      if (personalB > 10) badges += `<span style="font-size:9px;color:var(--accent);font-weight:700;">📈 Your history</span>`;
       html += `<div class="spot-item ${rank===0?'active':''}" onclick="flyToSpot(${i})">
         <div class="spot-rank" style="color:${typeColors[type]}">#${rank+1}</div>
         <div class="spot-info">
           <div class="spot-name">${h.name}</div>
           <div class="spot-spp">${h.species.split(' · ').slice(0,2).join(' · ')}</div>
+          ${badges ? `<div style="margin-top:2px;line-height:1.6;">${badges}</div>` : ''}
           <div class="spot-bar"><div class="spot-fill" style="width:${score}%;background:${typeColors[type]}"></div></div>
         </div>
         <div class="spot-score" style="color:${scoreColor}">${score}</div>
