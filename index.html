@@ -2082,7 +2082,9 @@ function filterType(type, btn) {
 }
 
 function buildAreaButtons() {
+  const areas = [...new Set(hotspots.map(h => h.area))];
   const row = document.getElementById('areaRow');
+  if (!row) return;
   let html = '<button class="abtn active" onclick="filterArea(\'all\',this)">All Areas</button>';
   areas.forEach(a => {
     html += `<button class="abtn" onclick="filterArea('${a}',this)">${a}</button>`;
