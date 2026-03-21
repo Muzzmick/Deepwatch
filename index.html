@@ -1949,7 +1949,12 @@ function showHotspotPopup(coords, p, type) {
   const typeLabels = { boat:'🚤 Boat', land:'🚶 Land', game:'🎣 Game', prawn:'🦐 Prawns/Crabs' };
   const typeClass = { boat:'popup-boat', land:'popup-land', game:'popup-game', prawn:'popup-prawn' };
   const editHint = editMode ? '<div class="edit-drag-hint">Drag to reposition this marker</div>' : '';
-  new mapboxgl.Popup({ offset:20, closeButton:true })
+  const popScore = getSpotScore(p);
+    const popReason = getScoreReason(p, popScore);
+    const popWarning = getSpotSafetyWarning(p);
+    const popShelter = getWindShelterBonus(p);
+    const popScoreColor = popScore >= 75 ? '#16a34a' : popScore >= 55 ? '#f97316' : '#dc2626';
+    new mapboxgl.Popup({ offset:20, closeButton:true })
     .setLngLat(coords)
     .setHTML(`<div class="popup-inner">
       <div class="popup-type ${typeClass[type]}">${typeLabels[type]}</div>
@@ -1957,6 +1962,15 @@ function showHotspotPopup(coords, p, type) {
       <div class="popup-row">📏 Depth: <span>${p.depth}</span></div>
       <div class="popup-row">⚓ Access: <span>${p.access}</span></div>
       <div class="popup-species">🐟 ${p.species}</div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.1);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;font-weight:600;color:#888;">TODAY'S SCORE</span>
+          <span style="font-size:22px;font-weight:900;color:${popScoreColor};">${popScore}</span>
+        </div>
+        <div style="font-size:10px;color:#888;line-height:1.6;">${popReason}</div>
+        ${popWarning ? `<div style="font-size:11px;font-weight:700;color:#dc2626;margin-top:4px;">${popWarning}</div>` : ''}
+        ${popShelter > 8 ? `<div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:2px;">🛡️ Wind protected today</div>` : ''}
+      </div>
       ${editHint}
     </div>`)
     .addTo(map);
@@ -2251,11 +2265,16 @@ async function loadCatchDots() {
 // ══ CONDITIONS ══
 async function fetchConditions() {
   try {
-    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.88&longitude=147.98&current=wind_speed_10m,wind_direction_10m,surface_pressure&wind_speed_unit=kn&timezone=Australia/Sydney');
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.88&longitude=147.98&current=wind_speed_10m,wind_direction_10m,surface_pressure&daily=precipitation_sum&wind_speed_unit=kn&timezone=Australia/Sydney&past_days=2');
     const d = await r.json(); const c = d.current;
     realWind = c.wind_speed_10m;
+    realWindDir = c.wind_direction_10m || 180;
+    // Rainfall last 48hrs
+    if (d.daily && d.daily.precipitation_sum) {
+      recentRainfall = d.daily.precipitation_sum.slice(-2).reduce((s,v) => s+(v||0), 0);
+    }
     const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-    const dir = dirs[Math.round(c.wind_direction_10m/22.5)%16];
+    const dir = dirs[Math.round(realWindDir/22.5)%16];
     document.getElementById('liveWind').textContent = Math.round(realWind) + 'kn ' + dir;
     const pres = Math.round(c.surface_pressure);
     document.getElementById('livePres').textContent = pres + ' hPa';
@@ -2504,6 +2523,74 @@ function getSpotScore(h) {
   return Math.min(99, Math.max(20, Math.round(score)));
 }
 
+// ── SCORE REASON ──
+function getScoreReason(h, score) {
+  const sst = realSST || 18;
+  const wave = realWave || 0.8;
+  const wind = realWind || 10;
+  const hour = new Date().getHours();
+  const pressTrend = getPressureTrend();
+  const sol = getSolunarScore(hour);
+  const shelterB = getWindShelterBonus(h);
+  const communityB = getCommunityBonus(h);
+  const personalB = getPersonalBonus(h);
+  const rainP = getRainfallPenalty(h);
+  const parts = [];
+
+  // Swell
+  if (h.type !== 'game' && h.type !== 'prawn') {
+    if (wave < 0.5) parts.push('Calm swell ✅');
+    else if (wave < 1.0) parts.push('Good swell');
+    else if (wave < 1.5) parts.push('Moderate swell');
+    else parts.push('Rough swell ⚠️');
+  }
+
+  // Wind
+  if (wind < 8) parts.push('Light wind ✅');
+  else if (wind < 15) parts.push(Math.round(wind) + 'kn wind');
+  else if (wind < 20) parts.push('Strong wind ⚠️');
+  else parts.push('Very strong wind 🚫');
+
+  // Shelter bonus
+  if (shelterB > 8) parts.push('Wind protected 🛡️');
+  else if (shelterB < -10) parts.push('Exposed location');
+
+  // Pressure
+  if (pressTrend > 0.3) parts.push('Rising pressure ✅');
+  else if (pressTrend < -0.3) parts.push('Falling pressure ⚠️');
+
+  // Solunar
+  if (sol >= 80) parts.push('Major feed window 🔴');
+  else if (sol >= 60) parts.push('Minor feed window 🟡');
+
+  // SST
+  if (h.type === 'game') {
+    if (sst >= 20) parts.push('Warm water ✅ ' + sst.toFixed(1) + '°C');
+    else parts.push('Cool water ' + sst.toFixed(1) + '°C');
+  }
+
+  // Rainfall
+  if (rainP < -10) parts.push('Murky water after rain ⚠️');
+
+  // Community
+  if (communityB > 0) parts.push('Active today 🔥');
+
+  // Personal
+  if (personalB > 10) parts.push('Matches your history 📈');
+
+  // Night bonus for prawns/mulloway
+  if ((hour >= 20 || hour <= 5) && (h.type === 'prawn' || (h.species && h.species.includes('Mulloway')))) {
+    parts.push('Night bonus 🌙');
+  }
+
+  // Dawn/dusk
+  if ((hour >= 5 && hour <= 8) || (hour >= 17 && hour <= 19)) {
+    parts.push('Dawn/dusk window 🌅');
+  }
+
+  return parts.slice(0, 4).join(' · ');
+}
+
 // Safety warning for exposed spots
 function getSpotSafetyWarning(h) {
   const wave = realWave || 0.8;
@@ -2548,6 +2635,16 @@ function updateScores() {
   if (pressLabel) parts.push(pressLabel);
   document.getElementById('aiDetail').textContent = parts.join(' · ');
 
+  // Score reason under the big number
+  const reasonEl = document.getElementById('aiScoreReason');
+  if (reasonEl) {
+    const topSpot = visible.sort((a,b) => b.score-a.score)[0];
+    if (topSpot) {
+      const r = getScoreReason(topSpot.h, topSpot.score);
+      reasonEl.textContent = r;
+    }
+  }
+
   // Build category sections
   const list = document.getElementById('spotsList');
   const types = currentTypeFilter === 'all'
@@ -2576,11 +2673,13 @@ function updateScores() {
       if (shelterB > 8) badges += `<span style="font-size:9px;color:var(--green);font-weight:700;">🛡️ Wind protected</span> `;
       if (communityB > 0) badges += `<span style="font-size:9px;color:var(--orange);font-weight:700;">🔥 Active today</span> `;
       if (personalB > 10) badges += `<span style="font-size:9px;color:var(--accent);font-weight:700;">📈 Your history</span>`;
+      const reason = getScoreReason(h, score);
       html += `<div class="spot-item ${rank===0?'active':''}" onclick="flyToSpot(${i})">
         <div class="spot-rank" style="color:${typeColors[type]}">#${rank+1}</div>
         <div class="spot-info">
           <div class="spot-name">${h.name}</div>
           <div class="spot-spp">${h.species.split(' · ').slice(0,2).join(' · ')}</div>
+          ${reason ? `<div style="font-size:9px;color:var(--text3);margin-top:2px;line-height:1.5;">${reason}</div>` : ''}
           ${badges ? `<div style="margin-top:2px;line-height:1.6;">${badges}</div>` : ''}
           <div class="spot-bar"><div class="spot-fill" style="width:${score}%;background:${typeColors[type]}"></div></div>
         </div>
