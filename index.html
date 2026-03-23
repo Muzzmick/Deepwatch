@@ -589,6 +589,16 @@ body {
 }
 .quick-species-btn:active { background: var(--accent); color: white; border-color: var(--accent); transform: scale(0.95); }
 
+/* ══ SESSION ══ */
+.qsp-btn {
+  padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: var(--bg2); color: var(--text2); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all .2s;
+}
+.qsp-btn:active, .qsp-btn.selected {
+  background: var(--accent); border-color: var(--accent); color: white;
+}
+
 /* ══ UTILS ══ */
 .hidden { display: none !important; }
 .loading { opacity: .5; }
@@ -1237,145 +1247,168 @@ canvas { display: block; }
     <div class="screen" id="sessionScreen">
       <div style="display:flex;flex-direction:column;height:100%;overflow:hidden;">
 
-        <!-- Header -->
-        <div style="background:var(--card);border-bottom:1px solid var(--border);padding:16px;flex-shrink:0;">
+        <!-- Active Session Banner -->
+        <div id="activeSessionBanner" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d);color:white;padding:12px 16px;flex-shrink:0;">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div>
-              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;color:var(--text);">📍 Fishing Session</div>
-              <div id="sessionStatusText" style="font-size:12px;color:var(--text3);margin-top:2px;">No active session</div>
+              <div style="font-size:11px;opacity:.7;letter-spacing:1px;">🟢 SESSION ACTIVE</div>
+              <div style="font-size:15px;font-weight:700;" id="sessionSpotName">—</div>
+              <div style="font-size:11px;opacity:.8;" id="sessionTimer">0:00</div>
             </div>
-            <div id="sessionTimer" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:var(--accent);display:none;">0:00</div>
+            <button onclick="endSession()" style="padding:8px 16px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);border-radius:10px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">End Session</button>
+          </div>
+          <!-- Session quick stats -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">
+            <div style="text-align:center;background:rgba(255,255,255,.15);border-radius:8px;padding:8px;">
+              <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;" id="sessionCatchCount">0</div>
+              <div style="font-size:9px;opacity:.7;">CATCHES</div>
+            </div>
+            <div style="text-align:center;background:rgba(255,255,255,.15);border-radius:8px;padding:8px;">
+              <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;" id="sessionTotalWeight">0kg</div>
+              <div style="font-size:9px;opacity:.7;">TOTAL</div>
+            </div>
+            <div style="text-align:center;background:rgba(255,255,255,.15);border-radius:8px;padding:8px;">
+              <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;" id="sessionBestFish">—</div>
+              <div style="font-size:9px;opacity:.7;">BEST</div>
+            </div>
           </div>
         </div>
 
+        <!-- Main content -->
         <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-        <div style="padding:16px;display:flex;flex-direction:column;gap:14px;max-width:680px;margin:0 auto;width:100%;box-sizing:border-box;">
+        <div style="padding:16px;max-width:680px;margin:0 auto;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;">
 
-          <!-- START / ACTIVE SESSION CARD -->
-          <div id="noSessionCard" style="background:linear-gradient(135deg,#0055cc,#0033aa);border-radius:18px;padding:24px;color:white;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">🎣</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:900;margin-bottom:8px;">Ready to Fish?</div>
-            <div style="font-size:13px;opacity:.8;margin-bottom:20px;line-height:1.6;">Start a session to automatically track your GPS location, log catches with one tap, and record conditions throughout your trip.</div>
-            <button onclick="startSession()" style="width:100%;padding:16px;background:white;color:#0055cc;border:none;border-radius:12px;font-size:16px;font-weight:900;cursor:pointer;font-family:'Syne',sans-serif;">🟢 Start Fishing Session</button>
+          <!-- START SESSION CARD (shown when no session active) -->
+          <div id="startSessionCard">
+            <div style="background:linear-gradient(135deg,var(--accent),#0044aa);border-radius:18px;padding:24px;color:white;text-align:center;margin-bottom:14px;">
+              <div style="font-size:48px;margin-bottom:12px;">🎣</div>
+              <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;margin-bottom:8px;">Start Fishing Session</div>
+              <div style="font-size:13px;opacity:.8;margin-bottom:20px;line-height:1.6;">Automatically logs your GPS location and links all catches to this session. Track your time on the water and share your results.</div>
+              <button onclick="startSession()" style="width:100%;padding:16px;background:white;color:var(--accent);border:none;border-radius:12px;font-size:16px;font-weight:900;cursor:pointer;font-family:'Syne',sans-serif;">🟢 Start Session</button>
+            </div>
+
+            <!-- Previous Sessions -->
+            <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📅 Previous Sessions</div>
+              <div id="previousSessions" style="display:flex;flex-direction:column;gap:10px;">
+                <div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">No previous sessions yet</div>
+              </div>
+            </div>
           </div>
 
-          <!-- ACTIVE SESSION CARD (hidden until session starts) -->
+          <!-- ACTIVE SESSION CARD (shown when session running) -->
           <div id="activeSessionCard" style="display:none;">
-            <!-- Location -->
-            <div style="background:var(--card);border-radius:16px;border:1.5px solid var(--green);padding:16px;margin-bottom:14px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <div style="font-size:12px;font-weight:700;color:var(--green);letter-spacing:1px;">📍 CURRENT LOCATION</div>
-                <button onclick="updateSessionLocation()" style="padding:6px 12px;background:rgba(22,163,74,.1);border:1px solid var(--green);border-radius:8px;color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Update GPS</button>
-              </div>
-              <div id="sessionLocationName" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">Getting location...</div>
-              <div id="sessionLocationCoords" style="font-size:11px;color:var(--text3);">—</div>
-              <div id="sessionNearbySpot" style="font-size:11px;color:var(--accent);margin-top:4px;font-weight:600;"></div>
-            </div>
 
-            <!-- Live Conditions Strip -->
-            <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:14px;margin-bottom:14px;">
-              <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;margin-bottom:10px;">⚡ LIVE CONDITIONS</div>
-              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;">
-                <div style="background:var(--bg2);border-radius:8px;padding:8px;">
-                  <div style="font-size:9px;color:var(--text3);">SWELL</div>
-                  <div style="font-size:16px;font-weight:700;color:var(--text);" id="sesWave">—</div>
+            <!-- Current location -->
+            <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📍 Current Location</div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="flex:1;">
+                  <div style="font-size:15px;font-weight:700;color:var(--text);" id="sessionLocationName">Getting GPS...</div>
+                  <div style="font-size:11px;color:var(--text3);" id="sessionGPSCoords">—</div>
                 </div>
-                <div style="background:var(--bg2);border-radius:8px;padding:8px;">
-                  <div style="font-size:9px;color:var(--text3);">WIND</div>
-                  <div style="font-size:16px;font-weight:700;color:var(--text);" id="sesWind">—</div>
-                </div>
-                <div style="background:var(--bg2);border-radius:8px;padding:8px;">
-                  <div style="font-size:9px;color:var(--text3);">TEMP</div>
-                  <div style="font-size:16px;font-weight:700;color:var(--text);" id="sesTemp">—</div>
-                </div>
-                <div style="background:var(--bg2);border-radius:8px;padding:8px;">
-                  <div style="font-size:9px;color:var(--text3);">SOLUNAR</div>
-                  <div style="font-size:16px;font-weight:700;color:var(--text);" id="sesSolunar">—</div>
-                </div>
+                <button onclick="updateSessionLocation()" style="padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text2);">📍 Update</button>
+              </div>
+              <!-- Nearest spot -->
+              <div id="nearestSpotCard" style="display:none;background:rgba(0,102,204,.06);border:1px solid rgba(0,102,204,.2);border-radius:10px;padding:10px;">
+                <div style="font-size:10px;color:var(--accent);font-weight:700;letter-spacing:1px;margin-bottom:3px;">NEAREST SPOT</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);" id="nearestSpotName">—</div>
+                <div style="font-size:11px;color:var(--text3);" id="nearestSpotDist">—</div>
               </div>
             </div>
 
-            <!-- Quick Catch Log -->
-            <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;margin-bottom:14px;">
-              <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;margin-bottom:12px;">🐟 QUICK CATCH LOG</div>
+            <!-- Live conditions during session -->
+            <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📡 Current Conditions</div>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+                <div style="background:var(--bg2);border-radius:10px;padding:10px;text-align:center;">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">SWELL</div>
+                  <div style="font-size:18px;font-weight:700;color:var(--text);" id="sessWave">—</div>
+                </div>
+                <div style="background:var(--bg2);border-radius:10px;padding:10px;text-align:center;">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">WIND</div>
+                  <div style="font-size:18px;font-weight:700;color:var(--text);" id="sessWind">—</div>
+                </div>
+                <div style="background:var(--bg2);border-radius:10px;padding:10px;text-align:center;">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">SEA TEMP</div>
+                  <div style="font-size:18px;font-weight:700;color:var(--text);" id="sessTemp">—</div>
+                </div>
+                <div style="background:var(--bg2);border-radius:10px;padding:10px;text-align:center;">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">SOLUNAR</div>
+                  <div style="font-size:18px;font-weight:700;color:var(--text);" id="sessSol">—</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick catch log -->
+            <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">🐟 Quick Log a Catch</div>
 
               <!-- Quick species buttons -->
-              <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Tap species to log instantly:</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" id="quickSpeciesBtns">
-                <button onclick="quickLog('Bream')" class="quick-species-btn">🐠 Bream</button>
-                <button onclick="quickLog('Flathead')" class="quick-species-btn">🐟 Flathead</button>
-                <button onclick="quickLog('Whiting')" class="quick-species-btn">🐡 Whiting</button>
-                <button onclick="quickLog('Snapper')" class="quick-species-btn">🎣 Snapper</button>
-                <button onclick="quickLog('Mulloway')" class="quick-species-btn">🐟 Mulloway</button>
-                <button onclick="quickLog('Trevally')" class="quick-species-btn">🐠 Trevally</button>
-                <button onclick="quickLog('Salmon')" class="quick-species-btn">🐟 Salmon</button>
-                <button onclick="quickLog('Tailor')" class="quick-species-btn">🐟 Tailor</button>
-                <button onclick="quickLog('Gummy Shark')" class="quick-species-btn">🦈 Gummy</button>
-                <button onclick="quickLog('School Prawns')" class="quick-species-btn">🦐 Prawns</button>
+              <div style="margin-bottom:12px;">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Quick select species:</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;" id="quickSpeciesBtns">
+                  <button onclick="quickSpecies('Bream')" class="qsp-btn">🐠 Bream</button>
+                  <button onclick="quickSpecies('Flathead')" class="qsp-btn">🐟 Flathead</button>
+                  <button onclick="quickSpecies('Snapper')" class="qsp-btn">🎣 Snapper</button>
+                  <button onclick="quickSpecies('Whiting')" class="qsp-btn">🐡 Whiting</button>
+                  <button onclick="quickSpecies('Mulloway')" class="qsp-btn">🐟 Mulloway</button>
+                  <button onclick="quickSpecies('Trevally')" class="qsp-btn">🐠 Trevally</button>
+                  <button onclick="quickSpecies('Salmon')" class="qsp-btn">🐟 Salmon</button>
+                  <button onclick="quickSpecies('Tailor')" class="qsp-btn">🐟 Tailor</button>
+                  <button onclick="quickSpecies('Other')" class="qsp-btn">🐟 Other</button>
+                </div>
               </div>
 
-              <!-- Full catch form -->
-              <div style="border-top:1px solid var(--border);padding-top:12px;">
-                <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Or log with full details:</div>
-                <div style="display:flex;gap:8px;margin-bottom:8px;">
-                  <select id="sesSpecies" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
-                    <option>Bream</option><option>Flathead</option><option>Whiting</option><option>Snapper</option>
-                    <option>Mulloway</option><option>Trevally</option><option>Salmon</option><option>Tailor</option>
-                    <option>Gummy Shark</option><option>Luderick</option><option>Perch</option><option>Tuna</option>
-                    <option>Kingfish</option><option>School Prawns</option><option>Blue Swimmer Crab</option><option>Other</option>
-                  </select>
-                  <input id="sesWeight" type="number" step="0.1" placeholder="kg" style="width:70px;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
-                  <input id="sesLength" type="number" step="1" placeholder="cm" style="width:70px;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
-                </div>
-                <div style="display:flex;gap:8px;margin-bottom:8px;">
-                  <select id="sesMethod" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
-                    <option>Bait fishing</option><option>Lure fishing</option><option>Soft plastic</option>
-                    <option>Fly fishing</option><option>Trolling</option><option>Jigging</option>
-                    <option>Netting (prawns)</option><option>Other</option>
-                  </select>
-                  <select id="sesKR" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
-                    <option>Kept</option><option>Released</option><option>Under size</option>
-                  </select>
-                </div>
-                <div style="display:flex;gap:8px;">
-                  <input id="sesBait" placeholder="Bait / lure used" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
-                  <button onclick="document.getElementById('sesPhotoInput').click()" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text2);font-size:13px;cursor:pointer;">📷</button>
-                </div>
-                <input type="file" id="sesPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="sesPhotoSelected(this)">
-                <div id="sesPhotoPreview" style="display:none;margin-top:8px;border-radius:8px;overflow:hidden;height:80px;">
-                  <img id="sesPhotoImg" style="width:100%;height:100%;object-fit:cover;">
-                </div>
-                <button onclick="logSessionCatch()" style="width:100%;margin-top:10px;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🐟 Log This Catch</button>
+              <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <select id="sessSpecies" style="flex:2;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
+                  <option>Bream</option><option>Snapper</option><option>Flathead</option>
+                  <option>Whiting</option><option>Mulloway</option><option>Trevally</option>
+                  <option>Australian Salmon</option><option>Tailor</option><option>Luderick</option>
+                  <option>Gummy Shark</option><option>Yellowfin Tuna</option><option>Marlin</option>
+                  <option>School Prawns</option><option>Blue Swimmer Crab</option><option>Other</option>
+                </select>
+                <input id="sessWeight" type="number" step="0.1" placeholder="kg" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
+                <input id="sessLength" type="number" placeholder="cm" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
               </div>
+              <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <select id="sessMethod" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
+                  <option>Bait fishing</option><option>Lure fishing</option><option>Soft plastic</option>
+                  <option>Fly fishing</option><option>Trolling</option><option>Jigging</option>
+                  <option>Netting (prawns)</option><option>Drop net (crabs)</option>
+                </select>
+                <select id="sessKeepRelease" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">
+                  <option>Kept</option><option>Released</option><option>Under size</option>
+                </select>
+              </div>
+              <!-- Photo -->
+              <div style="display:flex;gap:8px;margin-bottom:10px;">
+                <button onclick="document.getElementById('sessPhoto').click()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📷 Photo</button>
+                <button onclick="quickFishId()" style="flex:1;padding:10px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(0,102,204,.06);color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">🔍 AI ID</button>
+                <div id="sessPhotoThumb" style="width:42px;height:42px;border-radius:8px;border:1px solid var(--border);overflow:hidden;display:none;"><img id="sessPhotoImg" style="width:100%;height:100%;object-fit:cover;"></div>
+              </div>
+              <input type="file" id="sessPhoto" accept="image/*" capture="environment" style="display:none" onchange="sessPhotoSelected(this)">
+              <button onclick="logSessionCatch()" style="width:100%;padding:14px;background:var(--accent);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">🐟 Log Catch — GPS Auto-Saved</button>
             </div>
 
-            <!-- Session Catches -->
-            <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;margin-bottom:14px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;">🎣 THIS SESSION</div>
-                <div id="sessionCatchCount" style="font-size:12px;font-weight:700;color:var(--accent);">0 catches</div>
-              </div>
+            <!-- Session catches -->
+            <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">📋 This Session's Catches</div>
               <div id="sessionCatchList" style="display:flex;flex-direction:column;gap:8px;">
-                <div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">No catches logged yet — start fishing!</div>
+                <div style="text-align:center;padding:16px;color:var(--text3);font-size:13px;">No catches yet this session</div>
               </div>
             </div>
 
-            <!-- End Session -->
-            <button onclick="endSession()" style="width:100%;padding:16px;background:rgba(220,38,38,.1);border:2px solid var(--red);border-radius:12px;color:var(--red);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">🔴 End Session</button>
-          </div>
+            <!-- End session -->
+            <button onclick="endSession()" style="width:100%;padding:16px;background:rgba(220,38,38,.08);border:2px solid rgba(220,38,38,.3);border-radius:12px;color:var(--red);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">🔴 End Session & Save Summary</button>
 
-          <!-- SESSION HISTORY -->
-          <div style="background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px;">
-            <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;margin-bottom:12px;">📋 PAST SESSIONS</div>
-            <div id="sessionHistory" style="display:flex;flex-direction:column;gap:10px;">
-              <div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">No past sessions yet</div>
-            </div>
           </div>
 
         </div>
         </div>
       </div>
     </div>
+
 
     <!-- ══ REGULATIONS ══ -->
     <div class="screen" id="regsScreen">
@@ -1748,81 +1781,81 @@ let compassActive = false, compassHeadingVal = 0;
 // ══ HOTSPOTS ══
 const hotspots = [
   // LAKES ENTRANCE — BOAT
-  {lng:147.9718,lat:-37.8862,name:'Entrance Channel',area:'Lakes Entrance',type:'boat',species:'Snapper · Bream · Whiting · Mulloway',depth:'4–8m',access:'Boat',sheltered:['W','NW','N'],exposedTo:['SE','E','S'],safety:'moderate'},
-  {lng:147.9866,lat:-37.8793,name:'Cunninghame Arm',area:'Lakes Entrance',type:'boat',species:'Trevally · Bream · Flathead',depth:'2–5m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.9750,lat:-37.8820,name:'Reeve Channel',area:'Lakes Entrance',type:'boat',species:'Flathead · Bream · Whiting',depth:'3–6m',access:'Boat',sheltered:['S','SW','W','NW'],exposedTo:['NE','E'],safety:'moderate'},
-  {lng:147.9650,lat:-37.8780,name:'Kalimna Water',area:'Lakes Entrance',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SE','SW'],exposedTo:['N','NE'],safety:'moderate'},
-  {lng:147.9820,lat:-37.8760,name:'North Arm West',area:'Lakes Entrance',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.9550,lat:-37.8720,name:'Nungurner Channel',area:'Lakes Entrance',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SW','W'],exposedTo:['NE','N'],safety:'moderate'},
-  {lng:147.9880,lat:-37.8810,name:'Cunninghame Arm Footbridge',area:'Lakes Entrance',type:'land',species:'Bream · Luderick · Trevally · Mulloway',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.9830,lat:-37.8840,name:'Myer St Jetty',area:'Lakes Entrance',type:'land',species:'Bream · Trevally · Luderick · Garfish',depth:'2–4m',access:'Land',sheltered:['SW','W','NW','S'],exposedTo:['NE','E'],safety:'moderate'},
-  {lng:147.9700,lat:-37.8900,name:'Entrance Rock Wall',area:'Lakes Entrance',type:'land',species:'Salmon · Trevally · Snapper',depth:'4–8m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
-  {lng:147.9600,lat:-37.8750,name:'Kalimna Jetty',area:'Lakes Entrance',type:'land',species:'Bream · Whiting · Flathead · Garfish',depth:'2–4m',access:'Land',sheltered:['S','SW','W'],exposedTo:['NE','E','SE'],safety:'moderate'},
-  {lng:147.9500,lat:-37.8700,name:'Nungurner Jetty',area:'Lakes Entrance',type:'land',species:'Bream · Flathead · Trevally · Luderick',depth:'2–3m',access:'Land',sheltered:['S','SW','W','NW'],exposedTo:['N','NE'],safety:'moderate'},
-  {lng:147.9850,lat:-37.8950,name:'Surf Beach Access',area:'Lakes Entrance',type:'land',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.981,lat:-37.8791,name:'Entrance Channel',area:'Lakes Entrance',type:'boat',species:'Snapper · Bream · Whiting · Mulloway',depth:'4–8m',access:'Boat',sheltered:['W','NW','N'],exposedTo:['SE','E','S'],safety:'moderate'},
+  {lng:147.9892,lat:-37.8768,name:'Cunninghame Arm',area:'Lakes Entrance',type:'boat',species:'Trevally · Bream · Flathead',depth:'2–5m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9825,lat:-37.8755,name:'Reeve Channel',area:'Lakes Entrance',type:'boat',species:'Flathead · Bream · Whiting',depth:'3–6m',access:'Boat',sheltered:['S','SW','W','NW'],exposedTo:['NE','E'],safety:'moderate'},
+  {lng:147.9723,lat:-37.8734,name:'Kalimna Water',area:'Lakes Entrance',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SE','SW'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.9698,lat:-37.8718,name:'North Arm West',area:'Lakes Entrance',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9398,lat:-37.882,name:'Nungurner Channel',area:'Lakes Entrance',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SW','W'],exposedTo:['NE','N'],safety:'moderate'},
+  {lng:147.9943,lat:-37.878,name:'Cunninghame Arm Footbridge',area:'Lakes Entrance',type:'land',species:'Bream · Luderick · Trevally · Mulloway',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9961,lat:-37.8808,name:'Myer St Jetty',area:'Lakes Entrance',type:'land',species:'Bream · Trevally · Luderick · Garfish',depth:'2–4m',access:'Land',sheltered:['SW','W','NW','S'],exposedTo:['NE','E'],safety:'moderate'},
+  {lng:147.9835,lat:-37.883,name:'Entrance Rock Wall',area:'Lakes Entrance',type:'land',species:'Salmon · Trevally · Snapper',depth:'4–8m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.9663,lat:-37.8688,name:'Kalimna Jetty',area:'Lakes Entrance',type:'land',species:'Bream · Whiting · Flathead · Garfish',depth:'2–4m',access:'Land',sheltered:['S','SW','W'],exposedTo:['NE','E','SE'],safety:'moderate'},
+  {lng:147.9388,lat:-37.8853,name:'Nungurner Jetty',area:'Lakes Entrance',type:'land',species:'Bream · Flathead · Trevally · Luderick',depth:'2–3m',access:'Land',sheltered:['S','SW','W','NW'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.9953,lat:-37.8892,name:'Surf Beach Access',area:'Lakes Entrance',type:'land',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
   // METUNG
-  {lng:147.8650,lat:-37.8900,name:'Bancroft Bay',area:'Metung',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.8700,lat:-37.8850,name:'Shaving Point',area:'Metung',type:'land',species:'Bream · Flathead · Trevally',depth:'1–3m',access:'Land',sheltered:['S','SW','W','NW'],exposedTo:['NE','N'],safety:'moderate'},
-  {lng:147.8800,lat:-37.8820,name:'Lake King Tambo Bay',area:'Metung',type:'boat',species:'Bream · Flathead · Perch',depth:'2–5m',access:'Boat',sheltered:['S','SE','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
-  {lng:147.8600,lat:-37.8920,name:'Metung Marina',area:'Metung',type:'land',species:'Bream · Garfish · Trevally',depth:'2–3m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.8550,lat:-37.8950,name:'Metung Boat Ramp',area:'Metung',type:'boat',species:'Bream · Flathead · Whiting',depth:'2–4m',access:'Boat',sheltered:['N','NE','SE','S','SW'],exposedTo:['NW','W'],safety:'moderate'},
+  {lng:147.8667,lat:-37.8938,name:'Bancroft Bay',area:'Metung',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.8712,lat:-37.8921,name:'Shaving Point',area:'Metung',type:'land',species:'Bream · Flathead · Trevally',depth:'1–3m',access:'Land',sheltered:['S','SW','W','NW'],exposedTo:['NE','N'],safety:'moderate'},
+  {lng:147.885,lat:-37.89,name:'Lake King Tambo Bay',area:'Metung',type:'boat',species:'Bream · Flathead · Perch',depth:'2–5m',access:'Boat',sheltered:['S','SE','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.8645,lat:-37.8932,name:'Metung Marina',area:'Metung',type:'land',species:'Bream · Garfish · Trevally',depth:'2–3m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.8622,lat:-37.8946,name:'Metung Boat Ramp',area:'Metung',type:'boat',species:'Bream · Flathead · Whiting',depth:'2–4m',access:'Boat',sheltered:['N','NE','SE','S','SW'],exposedTo:['NW','W'],safety:'moderate'},
   // PAYNESVILLE
-  {lng:147.7200,lat:-37.9100,name:'McMillan Strait',area:'Paynesville',type:'boat',species:'Flathead · Bream · Snapper · Trevally',depth:'3–6m',access:'Boat',sheltered:['S','SE','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
-  {lng:147.7100,lat:-37.9050,name:'Mitchell River Mouth',area:'Paynesville',type:'boat',species:'Mulloway · Bream · Flathead · Perch',depth:'2–5m',access:'Boat',sheltered:['SW','W','NW','S'],exposedTo:['NE','E'],safety:'moderate'},
-  {lng:147.7300,lat:-37.9150,name:'Wattle Point',area:'Paynesville',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SE','SW'],exposedTo:['N','NW'],safety:'moderate'},
-  {lng:147.7150,lat:-37.9080,name:'Paynesville Wharf',area:'Paynesville',type:'land',species:'Bream · Trevally · Garfish · Luderick',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.7050,lat:-37.9020,name:'Mitchell River Silt Jetties',area:'Paynesville',type:'land',species:'Mulloway · Bream · Flathead',depth:'3–6m',access:'Land',sheltered:['SW','W','NW'],exposedTo:['NE','E','SE'],safety:'moderate'},
-  {lng:147.7400,lat:-37.9200,name:'Raymond Island Jetty',area:'Paynesville',type:'land',species:'Bream · Flathead · Trevally · Garfish',depth:'2–3m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.6950,lat:-37.8950,name:'Eagle Point Jetty',area:'Paynesville',type:'land',species:'Bream · Flathead · Trevally',depth:'1–3m',access:'Land',sheltered:['S','SW','W','SE'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.7285,lat:-37.9198,name:'McMillan Strait',area:'Paynesville',type:'boat',species:'Flathead · Bream · Snapper · Trevally',depth:'3–6m',access:'Boat',sheltered:['S','SE','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.6985,lat:-37.9012,name:'Mitchell River Mouth',area:'Paynesville',type:'boat',species:'Mulloway · Bream · Flathead · Perch',depth:'2–5m',access:'Boat',sheltered:['SW','W','NW','S'],exposedTo:['NE','E'],safety:'moderate'},
+  {lng:147.7412,lat:-37.9235,name:'Wattle Point',area:'Paynesville',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SE','SW'],exposedTo:['N','NW'],safety:'moderate'},
+  {lng:147.7198,lat:-37.9195,name:'Paynesville Wharf',area:'Paynesville',type:'land',species:'Bream · Trevally · Garfish · Luderick',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.6912,lat:-37.8978,name:'Mitchell River Silt Jetties',area:'Paynesville',type:'land',species:'Mulloway · Bream · Flathead',depth:'3–6m',access:'Land',sheltered:['SW','W','NW'],exposedTo:['NE','E','SE'],safety:'moderate'},
+  {lng:147.7442,lat:-37.9268,name:'Raymond Island Jetty',area:'Paynesville',type:'land',species:'Bream · Flathead · Trevally · Garfish',depth:'2–3m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.6698,lat:-37.9125,name:'Eagle Point Jetty',area:'Paynesville',type:'land',species:'Bream · Flathead · Trevally',depth:'1–3m',access:'Land',sheltered:['S','SW','W','SE'],exposedTo:['N','NE'],safety:'moderate'},
   // TAMBO RIVER
-  {lng:147.8500,lat:-37.8600,name:'Tambo River Mouth',area:'Tambo River',type:'boat',species:'Mulloway · Bream · Flathead · Perch',depth:'2–5m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.8200,lat:-37.8300,name:'Tambo Johnsonville',area:'Tambo River',type:'land',species:'Bream · Perch · Mulloway · Flathead',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.7900,lat:-37.8100,name:'Tambo Princes Hwy Bridge',area:'Tambo River',type:'land',species:'Bream · Perch · Mulloway',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.8300,lat:-37.8450,name:'Marshalls Flat',area:'Tambo River',type:'boat',species:'Bream · Perch · Mulloway · Flathead',depth:'2–4m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.8492,lat:-37.8688,name:'Tambo River Mouth',area:'Tambo River',type:'boat',species:'Mulloway · Bream · Flathead · Perch',depth:'2–5m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.8012,lat:-37.8198,name:'Tambo Johnsonville',area:'Tambo River',type:'land',species:'Bream · Perch · Mulloway · Flathead',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.7842,lat:-37.8088,name:'Tambo Princes Hwy Bridge',area:'Tambo River',type:'land',species:'Bream · Perch · Mulloway',depth:'2–4m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.8198,lat:-37.8412,name:'Marshalls Flat',area:'Tambo River',type:'boat',species:'Bream · Perch · Mulloway · Flathead',depth:'2–4m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
   // NICHOLSON RIVER
-  {lng:147.7300,lat:-37.8200,name:'Nicholson River',area:'Nicholson River',type:'boat',species:'Bream · Perch · Flathead',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.7200,lat:-37.8100,name:'Nicholson River Bank',area:'Nicholson River',type:'land',species:'Bream · Perch · Flathead · Tench',depth:'1–2m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.7312,lat:-37.8142,name:'Nicholson River',area:'Nicholson River',type:'boat',species:'Bream · Perch · Flathead',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.7198,lat:-37.8098,name:'Nicholson River Bank',area:'Nicholson River',type:'land',species:'Bream · Perch · Flathead · Tench',depth:'1–2m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
   // LAKE WELLINGTON
-  {lng:147.4500,lat:-38.0500,name:'Lake Wellington',area:'Lake Wellington',type:'boat',species:'Bream · Flathead · Trevally · Perch',depth:'2–4m',access:'Boat',sheltered:['S','SW','SE'],exposedTo:['N','NW','NE'],safety:'moderate'},
-  {lng:147.5000,lat:-38.0300,name:'McLennans Strait',area:'Lake Wellington',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
-  {lng:147.0700,lat:-38.1000,name:'Sale Canal Jetty',area:'Lake Wellington',type:'land',species:'Bream · Perch · Redfin · Tench',depth:'1–3m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.5700,lat:-37.9500,name:'Loch Sport Jetty',area:'Lake Wellington',type:'land',species:'Bream · Trevally · Flathead · Whiting',depth:'2–3m',access:'Land',sheltered:['S','SW','W','SE'],exposedTo:['N','NE'],safety:'moderate'},
-  {lng:147.4000,lat:-38.0800,name:'Wellington River Mouth',area:'Lake Wellington',type:'boat',species:'Mulloway · Bream · Flathead',depth:'2–5m',access:'Boat',sheltered:['S','SW','W'],exposedTo:['N','NE','E'],safety:'moderate'},
+  {lng:147.2985,lat:-38.0892,name:'Lake Wellington',area:'Lake Wellington',type:'boat',species:'Bream · Flathead · Trevally · Perch',depth:'2–4m',access:'Boat',sheltered:['S','SW','SE'],exposedTo:['N','NW','NE'],safety:'moderate'},
+  {lng:147.5212,lat:-38.0312,name:'McLennans Strait',area:'Lake Wellington',type:'boat',species:'Bream · Flathead · Trevally',depth:'2–4m',access:'Boat',sheltered:['S','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.0698,lat:-38.1042,name:'Sale Canal Jetty',area:'Lake Wellington',type:'land',species:'Bream · Perch · Redfin · Tench',depth:'1–3m',access:'Land',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.5768,lat:-37.9688,name:'Loch Sport Jetty',area:'Lake Wellington',type:'land',species:'Bream · Trevally · Flathead · Whiting',depth:'2–3m',access:'Land',sheltered:['S','SW','W','SE'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.3842,lat:-38.0698,name:'Wellington River Mouth',area:'Lake Wellington',type:'boat',species:'Mulloway · Bream · Flathead',depth:'2–5m',access:'Boat',sheltered:['S','SW','W'],exposedTo:['N','NE','E'],safety:'moderate'},
   // LAKE VICTORIA
-  {lng:147.7500,lat:-37.9500,name:'Jones Bay',area:'Lake Victoria',type:'boat',species:'Bream · Flathead · Trevally · Snapper',depth:'3–6m',access:'Boat',sheltered:['S','SE','SW'],exposedTo:['N','NW','NE'],safety:'moderate'},
-  {lng:147.8000,lat:-37.9200,name:'Bunga Arm',area:'Lake Victoria',type:'boat',species:'Bream · Flathead · Perch',depth:'2–4m',access:'Boat',sheltered:['S','SW','SE','W'],exposedTo:['N','NE'],safety:'moderate'},
-  {lng:147.5800,lat:-37.9400,name:'Loch Sport Foreshore',area:'Lake Victoria',type:'land',species:'Bream · Trevally · Flathead · Whiting',depth:'1–3m',access:'Land',sheltered:['S','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.7512,lat:-37.9512,name:'Jones Bay',area:'Lake Victoria',type:'boat',species:'Bream · Flathead · Trevally · Snapper',depth:'3–6m',access:'Boat',sheltered:['S','SE','SW'],exposedTo:['N','NW','NE'],safety:'moderate'},
+  {lng:147.8212,lat:-37.9285,name:'Bunga Arm',area:'Lake Victoria',type:'boat',species:'Bream · Flathead · Perch',depth:'2–4m',access:'Boat',sheltered:['S','SW','SE','W'],exposedTo:['N','NE'],safety:'moderate'},
+  {lng:147.5812,lat:-37.9712,name:'Loch Sport Foreshore',area:'Lake Victoria',type:'land',species:'Bream · Trevally · Flathead · Whiting',depth:'1–3m',access:'Land',sheltered:['S','SW','W'],exposedTo:['N','NE'],safety:'moderate'},
   // LAKE TYERS
-  {lng:148.0700,lat:-37.8600,name:'Lake Tyers Channel',area:'Lake Tyers',type:'boat',species:'Bream · Flathead · Trevally · Mulloway',depth:'2–5m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:148.0800,lat:-37.8500,name:'Lake Tyers Upper',area:'Lake Tyers',type:'boat',species:'Bream · Perch · Flathead',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:148.0600,lat:-37.8700,name:'Lake Tyers Boat Ramp',area:'Lake Tyers',type:'boat',species:'Bream · Flathead · Trevally',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:148.0900,lat:-37.8800,name:'Lake Tyers Beach',area:'Lake Tyers',type:'land',species:'Salmon · Bream · Flathead · Whiting',depth:'1–4m',access:'Land',sheltered:['N','NW','W'],exposedTo:['SE','E','S'],safety:'moderate'},
+  {lng:148.0698,lat:-37.8612,name:'Lake Tyers Channel',area:'Lake Tyers',type:'boat',species:'Bream · Flathead · Trevally · Mulloway',depth:'2–5m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:148.0912,lat:-37.8498,name:'Lake Tyers Upper',area:'Lake Tyers',type:'boat',species:'Bream · Perch · Flathead',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:148.0612,lat:-37.8688,name:'Lake Tyers Boat Ramp',area:'Lake Tyers',type:'boat',species:'Bream · Flathead · Trevally',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:148.1042,lat:-37.8798,name:'Lake Tyers Beach',area:'Lake Tyers',type:'land',species:'Salmon · Bream · Flathead · Whiting',depth:'1–4m',access:'Land',sheltered:['N','NW','W'],exposedTo:['SE','E','S'],safety:'moderate'},
   // NINETY MILE BEACH
-  {lng:147.5200,lat:-38.2500,name:'Seaspray Beach',area:'Ninety Mile Beach',type:'land',species:'Salmon · Tailor · Gummy Shark · Snapper',depth:'1–5m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
-  {lng:147.3500,lat:-38.3000,name:'Golden Beach',area:'Ninety Mile Beach',type:'land',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
-  {lng:147.1500,lat:-38.3500,name:'Paradise Beach',area:'Ninety Mile Beach',type:'land',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.5312,lat:-38.2012,name:'Seaspray Beach',area:'Ninety Mile Beach',type:'land',species:'Salmon · Tailor · Gummy Shark · Snapper',depth:'1–5m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.3698,lat:-38.2412,name:'Golden Beach',area:'Ninety Mile Beach',type:'land',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.2212,lat:-38.2698,name:'Paradise Beach',area:'Ninety Mile Beach',type:'land',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
   // GAME FISHING
-  {lng:148.1000,lat:-37.9800,name:'Snapper Grounds 8nm',area:'Game Fishing',type:'game',species:'Snapper · Gummy Shark · Trevally',depth:'30–50m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
-  {lng:148.1500,lat:-38.0200,name:'Tuna Grounds 10nm',area:'Game Fishing',type:'game',species:'Yellowfin Tuna · Bluefin Tuna · Mahi Mahi',depth:'50–80m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
-  {lng:148.0800,lat:-37.9600,name:'6 Mile Reef',area:'Game Fishing',type:'game',species:'Snapper · Trevally · Kingfish · Gummy',depth:'20–35m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
-  {lng:148.3000,lat:-38.1500,name:'Continental Shelf Edge 15nm',area:'Game Fishing',type:'game',species:'Marlin · Tuna · Mahi Mahi · Wahoo',depth:'100–200m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
-  {lng:148.5000,lat:-38.3000,name:'Bass Strait 20nm',area:'Game Fishing',type:'game',species:'Bluefin Tuna · Marlin · Kingfish',depth:'50–100m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
-  {lng:148.8000,lat:-38.5000,name:'Bass Strait 30nm',area:'Game Fishing',type:'game',species:'Bluefin Tuna · Southern Bluefin · Marlin',depth:'80–150m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.1312,lat:-37.9512,name:'Snapper Grounds 8nm',area:'Game Fishing',type:'game',species:'Snapper · Gummy Shark · Trevally',depth:'30–50m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.1698,lat:-37.9712,name:'Tuna Grounds 10nm',area:'Game Fishing',type:'game',species:'Yellowfin Tuna · Bluefin Tuna · Mahi Mahi',depth:'50–80m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.0912,lat:-37.9212,name:'6 Mile Reef',area:'Game Fishing',type:'game',species:'Snapper · Trevally · Kingfish · Gummy',depth:'20–35m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.3512,lat:-38.0512,name:'Continental Shelf Edge 15nm',area:'Game Fishing',type:'game',species:'Marlin · Tuna · Mahi Mahi · Wahoo',depth:'100–200m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.5512,lat:-38.2012,name:'Bass Strait 20nm',area:'Game Fishing',type:'game',species:'Bluefin Tuna · Marlin · Kingfish',depth:'50–100m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
+  {lng:148.8512,lat:-38.4012,name:'Bass Strait 30nm',area:'Game Fishing',type:'game',species:'Bluefin Tuna · Southern Bluefin · Marlin',depth:'80–150m',access:'Boat',sheltered:[],exposedTo:['SE','S','E','SW','W','N','NE','NW'],safety:'exposed'},
   // PRAWNING & CRABBING
-  {lng:147.9820,lat:-37.8760,name:'North Arm Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.9866,lat:-37.8793,name:'Cunninghame Arm Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'Blue Swimmer Crab · School Prawns',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.9830,lat:-37.8840,name:'Myer St Jetty Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'Blue Swimmer Crab · School Prawns',depth:'2–4m',access:'Land',sheltered:['SW','W','NW','S'],exposedTo:['NE','E'],safety:'moderate'},
-  {lng:147.9600,lat:-37.8750,name:'Kalimna Jetty Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'2–3m',access:'Land',sheltered:['S','SW','W'],exposedTo:['NE','E','SE'],safety:'moderate'},
-  {lng:147.8600,lat:-37.8920,name:'Metung Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
-  {lng:147.7150,lat:-37.9080,name:'Paynesville Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9698,lat:-37.8718,name:'North Arm Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9892,lat:-37.8768,name:'Cunninghame Arm Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'Blue Swimmer Crab · School Prawns',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.9961,lat:-37.8808,name:'Myer St Jetty Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'Blue Swimmer Crab · School Prawns',depth:'2–4m',access:'Land',sheltered:['SW','W','NW','S'],exposedTo:['NE','E'],safety:'moderate'},
+  {lng:147.9663,lat:-37.8688,name:'Kalimna Jetty Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'2–3m',access:'Land',sheltered:['S','SW','W'],exposedTo:['NE','E','SE'],safety:'moderate'},
+  {lng:147.8645,lat:-37.8932,name:'Metung Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  {lng:147.7198,lat:-37.9195,name:'Paynesville Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
   // SURF BEACHES — Ninety Mile Beach & Lakes Entrance
-  {lng:147.9720,lat:-37.8980,name:'Lakes Entrance Surf Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Mulloway · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
-  {lng:147.7800,lat:-38.1500,name:'Seaspray Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Snapper · Gummy Shark',depth:'1–5m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
-  {lng:147.6200,lat:-38.2200,name:'Golden Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Gummy Shark · Whiting',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
-  {lng:147.4500,lat:-38.3000,name:'Paradise Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
-  {lng:147.5500,lat:-38.2500,name:'Woodside Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Snapper · Mulloway',depth:'1–5m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
-  {lng:147.3000,lat:-38.3500,name:'McLoughlins Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Whiting · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
-  {lng:147.1500,lat:-38.3800,name:'Loch Sport Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Gummy Shark · Flathead',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.9978,lat:-37.8935,name:'Lakes Entrance Surf Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Mulloway · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.5312,lat:-38.2012,name:'Seaspray Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Snapper · Gummy Shark',depth:'1–5m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.3698,lat:-38.2412,name:'Golden Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Gummy Shark · Whiting',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.2212,lat:-38.2698,name:'Paradise Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.4612,lat:-38.2212,name:'Woodside Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Snapper · Mulloway',depth:'1–5m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.3012,lat:-38.2812,name:'McLoughlins Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Whiting · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.5898,lat:-37.9812,name:'Loch Sport Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Gummy Shark · Flathead',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
 ]
 
 // ══ THEME ══
@@ -1983,6 +2016,7 @@ function startApp(user) {
   fetchConditions();
   updateScores();
   setTimeout(() => { loadCommunityHotspots(); loadPersonalPatterns(); }, 2000);
+  setTimeout(() => { loadSessionFromStorage(); }, 500);
   updateMoon();
   build7DayPlan();
   buildSolunar();
@@ -2002,6 +2036,7 @@ function showScreen(id, btn) {
   if (id === 'planScreen') { setTimeout(() => { build7DayPlan(); buildSolunar(); buildTides(); updateMoon(); initSolunarDrag(); buildFishWindows(); }, 100); }
   if (id === 'sessionScreen') { loadSessionHistory(); if (activeSession) { updateSessionConditions(); renderSessionCatches(); } }
   if (id === 'catchScreen') loadCatches();
+  if (id === 'sessionScreen') { updateSessionConditions(); loadPreviousSessions(); }
 }
 
 function setMobActive(id) {
@@ -4660,6 +4695,351 @@ function loadSessionHistory() {
       </div>`;
     }).join('');
   } catch(e) { el.innerHTML = '<div style="color:var(--text3);font-size:12px;">Could not load history</div>'; }
+}
+
+// ══ FISHING SESSION ══
+// session vars defined below
+
+function startSession() {
+  if (activeSession) return;
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    activeSession = {
+      id: Date.now(),
+      startTime: new Date(),
+      lat, lng,
+      catches: [],
+      locationName: 'Getting location name...',
+    };
+    // Find nearest hotspot
+    const nearest = findNearestSpot(lat, lng);
+    activeSession.locationName = nearest ? nearest.name : `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+
+    // Show active UI
+    showActiveSession();
+    startSessionTimer();
+    updateSessionConditions();
+    saveSessionToStorage();
+
+    // Show active banner
+    document.getElementById('activeSessionBanner').style.display = 'block';
+    document.getElementById('sessionSpotName').textContent = activeSession.locationName;
+
+  }, () => {
+    // No GPS - still start session
+    activeSession = {
+      id: Date.now(),
+      startTime: new Date(),
+      lat: null, lng: null,
+      catches: [],
+      locationName: 'Location unknown',
+    };
+    showActiveSession();
+    startSessionTimer();
+    saveSessionToStorage();
+    document.getElementById('activeSessionBanner').style.display = 'block';
+    document.getElementById('sessionSpotName').textContent = 'Session Active';
+  });
+}
+
+function findNearestSpot(lat, lng) {
+  let nearest = null, minDist = Infinity;
+  hotspots.forEach(h => {
+    const d = Math.sqrt(Math.pow(h.lat - lat, 2) + Math.pow(h.lng - lng, 2));
+    if (d < minDist) { minDist = d; nearest = h; }
+  });
+  // Only return if within ~5km
+  return minDist < 0.05 ? nearest : null;
+}
+
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLng = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function showActiveSession() {
+  document.getElementById('startSessionCard').style.display = 'none';
+  document.getElementById('activeSessionCard').style.display = 'block';
+  if (activeSession.lat) {
+    document.getElementById('sessionLocationName').textContent = activeSession.locationName;
+    document.getElementById('sessionGPSCoords').textContent = `${activeSession.lat.toFixed(5)}, ${activeSession.lng.toFixed(5)}`;
+    // Find nearest spot
+    const nearest = findNearestSpot(activeSession.lat, activeSession.lng);
+    if (nearest) {
+      const dist = distanceKm(activeSession.lat, activeSession.lng, nearest.lat, nearest.lng);
+      document.getElementById('nearestSpotCard').style.display = 'block';
+      document.getElementById('nearestSpotName').textContent = nearest.name;
+      document.getElementById('nearestSpotDist').textContent = dist < 1 ? Math.round(dist*1000)+'m away' : dist.toFixed(1)+'km away';
+    }
+  }
+  updateSessionStats();
+  renderSessionCatches();
+}
+
+function startSessionTimer() {
+  sessionTimerInterval = setInterval(() => {
+    if (!activeSession) return;
+    const elapsed = Math.floor((Date.now() - activeSession.startTime) / 1000);
+    const h = Math.floor(elapsed / 3600);
+    const m = Math.floor((elapsed % 3600) / 60);
+    const s = elapsed % 60;
+    const timeStr = h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+    const el = document.getElementById('sessionTimer');
+    if (el) el.textContent = timeStr;
+  }, 1000);
+}
+
+function updateSessionConditions() {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('sessWave', realWave ? realWave.toFixed(1)+'m' : '—');
+  set('sessWind', realWind ? Math.round(realWind)+'kn' : '—');
+  set('sessTemp', realSST ? realSST.toFixed(1)+'°C' : '~18°C');
+  const sol = getSolunarScore(new Date().getHours());
+  const solLabel = sol >= 80 ? '🔴 Major' : sol >= 60 ? '🟡 Minor' : '⚪ Normal';
+  set('sessSol', solLabel);
+}
+
+function updateSessionLocation() {
+  navigator.geolocation.getCurrentPosition(pos => {
+    if (!activeSession) return;
+    activeSession.lat = pos.coords.latitude;
+    activeSession.lng = pos.coords.longitude;
+    const nearest = findNearestSpot(activeSession.lat, activeSession.lng);
+    activeSession.locationName = nearest ? nearest.name : `${activeSession.lat.toFixed(4)}, ${activeSession.lng.toFixed(4)}`;
+    showActiveSession();
+    saveSessionToStorage();
+  });
+}
+
+function quickSpecies(species) {
+  document.getElementById('sessSpecies').value = species;
+  document.querySelectorAll('.qsp-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+function sessPhotoSelected(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    sessionPhotoBase64 = e.target.result;
+    document.getElementById('sessPhotoImg').src = sessionPhotoBase64;
+    document.getElementById('sessPhotoThumb').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function quickFishId() {
+  if (!sessionPhotoBase64) { document.getElementById('sessPhoto').click(); return; }
+  try {
+    const b64 = sessionPhotoBase64.split(',')[1];
+    const mtype = sessionPhotoBase64.split(';')[0].split(':')[1];
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:50,
+        messages:[{role:'user', content:[
+          {type:'image', source:{type:'base64', media_type:mtype, data:b64}},
+          {type:'text', text:'What species is this fish? Reply with just the common name only.'}
+        ]}]
+      })
+    });
+    const d = await res.json();
+    const species = d.content[0].text.trim();
+    const sel = document.getElementById('sessSpecies');
+    for (let i=0; i<sel.options.length; i++) {
+      if (sel.options[i].text.toLowerCase().includes(species.toLowerCase())) { sel.selectedIndex = i; break; }
+    }
+  } catch(e) { console.log('Fish ID error:', e); }
+}
+
+async function logSessionCatch() {
+  if (!activeSession) return;
+  const species = document.getElementById('sessSpecies').value;
+  const weight = parseFloat(document.getElementById('sessWeight').value) || 0;
+  const length = parseFloat(document.getElementById('sessLength').value) || 0;
+  const method = document.getElementById('sessMethod').value;
+  const keepRelease = document.getElementById('sessKeepRelease').value;
+
+  // Compress photo
+  let photoUrl = null;
+  if (sessionPhotoBase64) {
+    try {
+      const img = new Image();
+      await new Promise(r => { img.onload = r; img.src = sessionPhotoBase64; });
+      const canvas = document.createElement('canvas');
+      const maxW = 600; let w = img.width, h = img.height;
+      if (w > maxW) { h = Math.round(h*maxW/w); w = maxW; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const compressed = canvas.toDataURL('image/jpeg', 0.65);
+      const b64 = compressed.split(',')[1];
+      const byteArr = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      const fileName = 'catch_' + currentUser.id + '_' + Date.now() + '.jpg';
+      const { data: upData, error: upErr } = await _sb.storage.from('catch-photos').upload(fileName, byteArr, { contentType:'image/jpeg', upsert:true });
+      if (!upErr) {
+        const { data: urlData } = _sb.storage.from('catch-photos').getPublicUrl(fileName);
+        photoUrl = urlData.publicUrl;
+      } else { photoUrl = compressed; }
+    } catch(e) {}
+  }
+
+  const notes = [
+    length ? 'Length: '+length+'cm' : '',
+    keepRelease,
+    'Session: '+activeSession.id,
+    realWave ? 'Swell: '+realWave.toFixed(1)+'m' : '',
+    realWind ? 'Wind: '+Math.round(realWind)+'kn' : '',
+  ].filter(Boolean).join(' · ');
+
+  // Save to Supabase
+  const { error } = await _sb.from('catches').insert([{
+    species, weight_kg: weight, location: activeSession.locationName,
+    method, vessel_name: currentUser.email.split('@')[0],
+    notes, fisher_type: 'recreational', quantity: 1,
+    lat: activeSession.lat, lng: activeSession.lng,
+    photo_url: photoUrl
+  }]);
+
+  if (!error) {
+    // Add to session
+    activeSession.catches.push({ species, weight, method, time: new Date(), photoUrl });
+    saveSessionToStorage();
+    updateSessionStats();
+    renderSessionCatches();
+
+    // Reset form
+    document.getElementById('sessWeight').value = '';
+    document.getElementById('sessLength').value = '';
+    document.getElementById('sessPhotoThumb').style.display = 'none';
+    sessionPhotoBase64 = null;
+    document.querySelectorAll('.qsp-btn').forEach(b => b.classList.remove('selected'));
+
+    // Flash feedback
+    const btn = document.querySelector('#activeSessionCard button:last-of-type');
+  }
+}
+
+function updateSessionStats() {
+  if (!activeSession) return;
+  const catches = activeSession.catches;
+  document.getElementById('sessionCatchCount').textContent = catches.length;
+  const totalW = catches.reduce((s,c) => s+(c.weight||0), 0);
+  document.getElementById('sessionTotalWeight').textContent = totalW.toFixed(1)+'kg';
+  const best = catches.filter(c=>c.weight).sort((a,b)=>b.weight-a.weight)[0];
+  document.getElementById('sessionBestFish').textContent = best ? best.weight+'kg' : '—';
+}
+
+function renderSessionCatches() {
+  const el = document.getElementById('sessionCatchList');
+  if (!el || !activeSession) return;
+  if (!activeSession.catches.length) {
+    el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px;">No catches yet this session</div>';
+    return;
+  }
+  el.innerHTML = [...activeSession.catches].reverse().map((c,i) => {
+    const time = c.time ? new Date(c.time).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg2);border-radius:10px;">
+      ${c.photoUrl ? `<img src="${c.photoUrl}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;">` : `<div style="width:44px;height:44px;border-radius:8px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🐟</div>`}
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">${c.species} · ${c.weight ? c.weight+'kg' : '—'}</div>
+        <div style="font-size:11px;color:var(--text3);">${c.method} · ${time}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saveSessionToStorage() {
+  if (activeSession) localStorage.setItem('dw_active_session', JSON.stringify(activeSession));
+}
+
+function loadSessionFromStorage() {
+  const saved = localStorage.getItem('dw_active_session');
+  if (saved) {
+    try {
+      activeSession = JSON.parse(saved);
+      activeSession.startTime = new Date(activeSession.startTime);
+      activeSession.catches = activeSession.catches.map(c => ({ ...c, time: new Date(c.time) }));
+      showActiveSession();
+      startSessionTimer();
+      document.getElementById('activeSessionBanner').style.display = 'block';
+      document.getElementById('sessionSpotName').textContent = activeSession.locationName;
+    } catch(e) { localStorage.removeItem('dw_active_session'); }
+  }
+  loadPreviousSessions();
+}
+
+function endSession() {
+  if (!activeSession) return;
+  const duration = Math.floor((Date.now() - activeSession.startTime) / 60000);
+  const catches = activeSession.catches.length;
+  const totalW = activeSession.catches.reduce((s,c) => s+(c.weight||0), 0);
+
+  // Save to previous sessions
+  const sessions = JSON.parse(localStorage.getItem('dw_sessions') || '[]');
+  sessions.unshift({
+    id: activeSession.id,
+    date: activeSession.startTime,
+    location: activeSession.locationName,
+    lat: activeSession.lat, lng: activeSession.lng,
+    duration, catches, totalWeight: totalW,
+    catchList: activeSession.catches
+  });
+  localStorage.setItem('dw_sessions', JSON.stringify(sessions.slice(0,20)));
+
+  // Clear active session
+  clearInterval(sessionTimerInterval);
+  localStorage.removeItem('dw_active_session');
+  activeSession = null;
+
+  // Update UI
+  document.getElementById('activeSessionBanner').style.display = 'none';
+  document.getElementById('startSessionCard').style.display = 'block';
+  document.getElementById('activeSessionCard').style.display = 'none';
+
+  alert(`✅ Session saved! ${catches} catches · ${totalW.toFixed(1)}kg total · ${duration} mins on the water`);
+  loadPreviousSessions();
+  loadCatches();
+}
+
+function loadPreviousSessions() {
+  const sessions = JSON.parse(localStorage.getItem('dw_sessions') || '[]');
+  const el = document.getElementById('previousSessions');
+  if (!el) return;
+  if (!sessions.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">No previous sessions yet</div>';
+    return;
+  }
+  el.innerHTML = sessions.map(s => {
+    const date = new Date(s.date).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
+    const time = new Date(s.date).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+    return `<div style="background:var(--bg2);border-radius:12px;padding:14px;border:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);">${s.location}</div>
+          <div style="font-size:11px;color:var(--text3);">${date} · ${time}</div>
+        </div>
+        ${s.lat ? `<button onclick="showScreen('mapScreen',null);setMobActive('mob-map');setTimeout(()=>map&&map.flyTo({center:[${s.lng},${s.lat}],zoom:14}),300)" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit;">🗺 View</button>` : ''}
+      </div>
+      <div style="display:flex;gap:12px;">
+        <div style="text-align:center;flex:1;background:var(--bg);border-radius:8px;padding:8px;">
+          <div style="font-size:18px;font-weight:900;color:var(--accent);">${s.catches}</div>
+          <div style="font-size:9px;color:var(--text3);">CATCHES</div>
+        </div>
+        <div style="text-align:center;flex:1;background:var(--bg);border-radius:8px;padding:8px;">
+          <div style="font-size:18px;font-weight:900;color:var(--accent);">${(s.totalWeight||0).toFixed(1)}kg</div>
+          <div style="font-size:9px;color:var(--text3);">TOTAL</div>
+        </div>
+        <div style="text-align:center;flex:1;background:var(--bg);border-radius:8px;padding:8px;">
+          <div style="font-size:18px;font-weight:900;color:var(--accent);">${s.duration}m</div>
+          <div style="font-size:9px;color:var(--text3);">DURATION</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function saveCurrentLocation() {
