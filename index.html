@@ -845,6 +845,7 @@ canvas { display: block; }
             <button class="fbtn active" id="fAll" onclick="filterType('all',this)">All</button>
             <button class="fbtn" id="fBoat" onclick="filterType('boat',this)">🚤 Boat</button>
             <button class="fbtn" id="fLand" onclick="filterType('land',this)">🚶 Land</button>
+            <button class="fbtn" id="fSurf" onclick="filterType('surf',this)" style="border-color:#f59e0b;color:#f59e0b;">🏄 Surf</button>
             <button class="fbtn" id="fGame" onclick="filterType('game',this)" style="border-color:#7c3aed;color:#7c3aed;">🎣 Game</button>
             <button class="fbtn" id="fPrawn" onclick="filterType('prawn',this)" style="border-color:#d97706;color:#d97706;">🦐 Prawns</button>
           </div>
@@ -1661,6 +1662,14 @@ const hotspots = [
   {lng:147.9600,lat:-37.8750,name:'Kalimna Jetty Crabbing',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'2–3m',access:'Land',sheltered:['S','SW','W'],exposedTo:['NE','E','SE'],safety:'moderate'},
   {lng:147.8600,lat:-37.8920,name:'Metung Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
   {lng:147.7150,lat:-37.9080,name:'Paynesville Prawning',area:'Prawning & Crabbing',type:'prawn',species:'School Prawns · Blue Swimmer Crab',depth:'1–3m',access:'Boat',sheltered:['N','NE','E','SE','S','SW','W','NW'],exposedTo:[],safety:'sheltered'},
+  // SURF BEACHES — Ninety Mile Beach & Lakes Entrance
+  {lng:147.9720,lat:-37.8980,name:'Lakes Entrance Surf Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Mulloway · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.7800,lat:-38.1500,name:'Seaspray Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Snapper · Gummy Shark',depth:'1–5m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.6200,lat:-38.2200,name:'Golden Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Gummy Shark · Whiting',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.4500,lat:-38.3000,name:'Paradise Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.5500,lat:-38.2500,name:'Woodside Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Snapper · Mulloway',depth:'1–5m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.3000,lat:-38.3500,name:'McLoughlins Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Whiting · Gummy Shark',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
+  {lng:147.1500,lat:-38.3800,name:'Loch Sport Beach',area:'Surf Fishing',type:'surf',species:'Salmon · Tailor · Gummy Shark · Flathead',depth:'1–4m',access:'Land',sheltered:[],exposedTo:['SE','E','S','NE'],safety:'exposed'},
 ]
 
 // ══ THEME ══
@@ -1894,7 +1903,7 @@ function initMap() {
 
 function addHotspotLayers() {
   // Build GeoJSON for each type
-  const types = ['boat','land','game','prawn'];
+  const types = ['boat','land','surf','game','prawn'];
   const colors = { boat:'#0066cc', land:'#16a34a', game:'#7c3aed', prawn:'#d97706' };
   const sizes = { boat:18, land:14, game:16, prawn:14 };
 
@@ -1946,8 +1955,8 @@ function addHotspotLayers() {
 }
 
 function showHotspotPopup(coords, p, type) {
-  const typeLabels = { boat:'🚤 Boat', land:'🚶 Land', game:'🎣 Game', prawn:'🦐 Prawns/Crabs' };
-  const typeClass = { boat:'popup-boat', land:'popup-land', game:'popup-game', prawn:'popup-prawn' };
+  const typeLabels = { boat:'🚤 Boat', land:'🚶 Land', game:'🎣 Game', prawn:'🦐 Prawns/Crabs', surf:'🏄 Surf Beach' };
+  const typeClass = { boat:'popup-boat', land:'popup-land', game:'popup-game', prawn:'popup-prawn', surf:'popup-surf' };
   const editHint = editMode ? '<div class="edit-drag-hint">Drag to reposition this marker</div>' : '';
   const popScore = getSpotScore(p);
     const popReason = getScoreReason(p, popScore);
@@ -2015,7 +2024,7 @@ function toggleEditMode() {
 }
 
 function refreshHotspotLayers() {
-  const types = ['boat','land','game','prawn'];
+  const types = ['boat','land','surf','game','prawn'];
   const colors = { boat:'#0066cc', land:'#16a34a', game:'#7c3aed', prawn:'#d97706' };
   types.forEach(type => {
     const features = hotspots.filter(h => h.type === type).map(h => ({
@@ -2047,7 +2056,7 @@ loadSavedPositions();
 
 function updateMapVisibility() {
   if (!map) return;
-  const types = ['boat','land','game','prawn'];
+  const types = ['boat','land','surf','game','prawn'];
   types.forEach(type => {
     const show = currentTypeFilter === 'all' || currentTypeFilter === type;
     const areaShow = currentAreaFilter === 'all';
@@ -2502,12 +2511,38 @@ function getSpotScore(h) {
     const windOk = wind < 10 ? 15 : wind < 15 ? 8 : 3;
     score = night + moon + sstOk + waveOk + windOk + shelterBonus + rainPenalty + communityBonus + personalBonus;
   }
+  else if (h.type === 'surf') {
+    // Surf fishing — completely different scoring
+    // Swell: 0.5-2.0m is ideal — creates gutters where fish stack
+    const swellOk = wave >= 0.8 && wave <= 1.5 ? 30 :
+      wave >= 0.5 && wave <= 2.0 ? 24 :
+      wave >= 0.3 ? 14 : 6;
+    // Wind: light onshore (SE-NE) helps push bait into gutters
+    const windDeg = getWindDir();
+    const onshore = windDeg >= 45 && windDeg <= 180; // E to S = onshore Ninety Mile
+    const windOk = wind < 5 ? 12 : // too calm — no gutter action
+      wind <= 15 && onshore ? 22 : // ideal — light onshore
+      wind <= 15 ? 18 : // light offshore still ok
+      wind <= 25 ? 10 : 4; // too strong
+    // Dawn and dusk critical for salmon and tailor
+    const dawn = (hour >= 5 && hour <= 8) ? 28 :
+      (hour >= 17 && hour <= 20) ? 24 :
+      (hour >= 8 && hour <= 10) ? 10 : 5;
+    // Night is good for mulloway and gummies on surf
+    const night = (hour >= 20 || hour <= 5) ? 15 : 0;
+    // SST — salmon prefer cooler water
+    const sstOk = sst >= 14 && sst <= 20 ? 15 : sst < 14 ? 8 : 10;
+    // Incoming tide brings bait up the beach
+    const tideOk = tide > 0 ? 8 : 4;
+    // Rain can dirty the surf but attracts sharks and mulloway
+    const rainBonus = recentRainfall > 20 ? 5 : 0; // mulloway love dirty water
+    score = swellOk + windOk + dawn + night + sstOk + tideOk + sol*8 + rainBonus + communityBonus + personalBonus;
+  }
   else if (h.species && (h.species.includes('Salmon') || h.species.includes('Tailor')) && h.type === 'land') {
     const swellOk = wave >= 0.5 && wave <= 2.0 ? 30 : 10;
     const windOk = wind >= 5 && wind <= 20 ? 20 : 8;
     const dawn = (hour >= 5 && hour <= 8)||(hour >= 17 && hour <= 20) ? 20 : 5;
     score = swellOk + windOk + dawn + sol*15 + communityBonus + personalBonus;
-    // Surf beaches: exposed is OK, actually prefer some swell
   }
   else if (h.area === 'Tambo River' || h.area === 'Nicholson River') {
     const dawn = (hour >= 5 && hour <= 9)||(hour >= 16 && hour <= 20) ? 20 : 8;
@@ -2540,7 +2575,12 @@ function getScoreReason(h, score) {
   const parts = [];
 
   // Swell
-  if (h.type !== 'game' && h.type !== 'prawn') {
+  if (h.type === 'surf') {
+    if (wave >= 0.8 && wave <= 1.5) parts.push('Ideal surf 🏄 ' + wave + 'm');
+    else if (wave >= 0.5 && wave <= 2.0) parts.push('Good surf ' + wave + 'm');
+    else if (wave < 0.3) parts.push('Too flat for surf ⚠️');
+    else parts.push('Heavy surf ⚠️ ' + wave + 'm');
+  } else if (h.type !== 'game' && h.type !== 'prawn') {
     if (wave < 0.5) parts.push('Calm swell ✅');
     else if (wave < 1.0) parts.push('Good swell');
     else if (wave < 1.5) parts.push('Moderate swell');
@@ -2650,11 +2690,11 @@ function updateScores() {
   // Build category sections
   const list = document.getElementById('spotsList');
   const types = currentTypeFilter === 'all'
-    ? ['boat','land','game','prawn']
+    ? ['boat','land','surf','game','prawn']
     : [currentTypeFilter];
 
   const typeLabels = {boat:'🚤 Boat Spots', land:'🚶 Land-Based', game:'🎣 Game Fishing', prawn:'🦐 Prawns & Crabs'};
-  const typeColors = {boat:'var(--accent)', land:'var(--green)', game:'var(--purple)', prawn:'var(--yellow)'};
+  const typeColors = {boat:'var(--accent)', land:'var(--green)', game:'var(--purple)', prawn:'var(--yellow)', surf:'#f59e0b'};
 
   let html = '';
   types.forEach(type => {
@@ -2697,7 +2737,7 @@ function updateScores() {
 
 function updateMapRankLabels(scores, areaFiltered) {
   if (!map) return;
-  const types = ['boat','land','game','prawn'];
+  const types = ['boat','land','surf','game','prawn'];
   types.forEach(type => {
     const typeSpots = areaFiltered
       .filter(({h}) => h.type === type)
@@ -3946,7 +3986,35 @@ Local knowledge:
 
 VIC regulations: Snapper 27cm/10day, Bream 25cm/20day, Flathead 30-55cm slot/5day, Mulloway 58cm/3day, Whiting 27cm/20day, Marlin/Sailfish tag & release, School prawns 10L/day, Blue swimmer crab 10/day.
 
-Be concise, practical, Australian tone. Answer in 3-5 sentences max unless detail is needed.`;
+Be concise, practical, Australian tone. Answer in 3-5 sentences max unless detail is needed.
+
+KEY LOCAL KNOWLEDGE — GIPPSLAND LAKES:
+- Jones Bay on Lake King is the standout spot — confluence of Tambo, Nicholson and Mitchell rivers
+- Cunninghame Arm: protected from most winds, reliable bream and trevally year-round on sandworm
+- Entrance Channel: snapper stack near the western sand bar edge, best on run-in tide at dawn
+- Tambo River mouth: mulloway hold in the deepest bend, incoming tide after dark, use whole mullet or live herring
+- Mitchell River silt jetties: one of the best mulloway spots in Victoria — fish the channel edges at night
+- Metung (Bancroft Bay): most sheltered spot in the system — fish here in any wind
+- Lake Tyers: pristine estuary, local secret — prawn on hook is deadly for flathead and bream
+- North Arm: best prawning spot, sheltered, excellent on new/full moon Nov-Apr after 9pm
+- 6 Mile Reef: berley trail essential, anchor up-current — snapper and kingfish Oct-Apr
+- Bar crossing: ALWAYS cross at slack water or start of flood tide. Ebb tide against SE swell is DANGEROUS. Go straight.
+- After heavy rain: rivers go brown 3-5 days — fish the ocean side or Metung
+- Flathead: prefer 3-4 inch soft plastics in natural colours along channel drop-offs
+- Bream: leader-shy — use 6lb fluorocarbon max, sandworm or live nippers
+- Salmon: school at entrance Apr-Jun heading north, best in moderate swell 0.5-1.5m
+
+SURF FISHING — NINETY MILE BEACH:
+- Walk the beach at low tide first to find gutters (darker water) and rips — that's where fish stack
+- Ideal conditions: 0.8-1.5m swell, light onshore wind, incoming tide at dawn
+- Salmon schools are visible as surface commotion — cast into the middle and retrieve fast
+- Ganged hooks 4/0 with whole pilchard for salmon and tailor
+- Tailor: always use wire trace — they will bite through mono instantly
+- Mulloway and gummy sharks: fish at night in gutters, whole mullet or fresh squid on heavy gear
+- Whiting: calm days on the sandflats just behind the break, beach worms or pipi
+- Surf rod 12-14ft, 15-20lb braid, 30lb fluorocarbon leader minimum
+- Berley helps — tuna oil soaked bread thrown into the rip
+- First light at dawn is the #1 time for salmon and tailor on the surf`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
